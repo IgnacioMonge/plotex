@@ -2,154 +2,147 @@
 
 All changes relative to Veusz 4.2 (base fork).
 
+---
+
+## v2.0 (2026-04-07) — First public release
+
+### External code audit (6 rounds with ChatGPT)
+All findings from CRITICAL to LOW resolved across 10 iterations:
+
+- **Document locking**: reentrant write lock with thread-ID tracking and depth counting. No deadlocks, no skipped operations, no silent data loss.
+- **Loader safety**: side-effect-free `serializeToText()` for snapshots. Document snapshot/restore on failed load (preserves data, changeset, undo history, modified flag). Worker thread no longer mutates evaluator/document state — compile only in worker, env construction + exec on main thread.
+- **Render thread resilience**: exceptions no longer kill the thread. Queue accounting via try/finally ensures consistent state.
+- **Axis labels**: statistical widgets (KM, ROC, Bland-Altman) set labels via `defaultAxisLabels()` in `OperationWidgetAdd`, fully undoable with reference state preserved.
+- **Statistical correctness**: Hanley-McNeil 1982 SE formula for ROC AUC (Q1/Q2 terms). Mislabeled methods renamed honestly (approximate pointwise bands, not confidence bands).
+- **Crash fixes**: bracket getRange() no longer mutates axis settings. fit.py fitRange uses correct getAxes() list API. painthelper rootstate None guards on all 4 consumers. Pareto div-by-zero guard. PieChart labels filtered with same mask as values. KaplanMeier groupData included in min-length. QQ plot scipy import guard.
+- **Resource leaks**: QActionGroup parented to submenu. Loader callbacks with try/finally. HDF5 files with context manager.
+- **Fit widget**: `log=` parameter on fitLM and minuitFit (no global stdout redirect). Asymmetric errors trimmed to data length. Dead fitDataFingerprint removed.
+- **UI**: getClick uses QEventLoop with _click_valid flag. processEvents during load restricted to ExcludeUserInputEvents.
+
+### Automated tests
+39 regression tests covering: document locking (4), axis labels undo/redo (4), loader rollback (7), array alignment (2), statistical correctness (3), painthelper null guards (4), bracket getRange (1), fit safety (3), KM data edges (2), ROC edge cases (4), undo/redo extended (3), serialize roundtrip (2).
+
+### Rebranding
+- VeuszApp → PlotexApp
+- Module docstrings, tutorial, console, embed API updated
+- README with full feature list and Veusz attribution
+
+### Other
+- Qt upgraded to 6.11.0 / PyQt6 6.11.0
+- PDF export DPI fix (content now scales with DPI, not just page size)
+- Plugin add crash fix (variable shadowing of `_()` translation function)
+- Ridgeline auto-color uses document color theme instead of hardcoded palette
+- Per-graph theme application via right-click menu (14 themes)
+- Copy-to-page menu now includes "called 'name'" variant
+- KaplanMeier CI band controlled by ConfFill.hide (no redundant toggle)
+
+---
+
 ## v1.4 (2026-03-22)
 
 ### New Widgets
 - **Violin plot** — KDE density estimation, split mode, raincloud layout, inner box/quartile/stick annotations, 6 dedicated formatting tabs
-- **Bracket connector** — statistical comparison brackets for boxplots/bars, group-based positioning, auto-Y, stacking, label offset, configurable label background (white/transparent/custom), draggable
+- **Bracket connector** — statistical comparison brackets for boxplots/bars, group-based positioning, auto-Y, stacking, label offset, configurable label background
+- **Kaplan-Meier** — step-function survival curves, censored marks, CI bands (Greenwood), group stratification
+- **ROC curve** — diagnostic performance, AUC with Hanley-McNeil SE, Youden index, diagonal reference
+- **Bland-Altman** — method comparison, bias ± limits of agreement, regression line, CI bands
+- **QQ plot** — quantile-quantile against normal/uniform/exponential/t/chi2, approximate envelope band
+- **Pie chart** — auto-grouping small slices, labels, donut mode
+- **Pareto chart** — sorted bars with cumulative line
+- **Ridgeline** — stacked KDE densities with overlap control
+- **Heatmap** — 2D color matrix with annotations
+- **Polar trending** — time-series on polar coordinates
 
 ### Curve Fitting (Major Rewrite)
-- **scipy.optimize.least_squares** replaces custom Levenberg-Marquardt (10-50x faster for complex fits)
-- **Fit dialog** — dedicated dialog with function presets (Linear, Quadratic, Power, Exponential, Gaussian, Lorentzian, Sigmoidal, Michaelis-Menten, Hill, Log, Cubic), auto-detect parameters from expression, parameter table with initial/fitted/error columns, goodness-of-fit report (chi2, dof, R2)
-- **Auto result label** — checkbox to create/update a label on the graph with equation, R2, and parameter errors
-- **Confidence bands** (95% CI) — covariance-based with Jacobian propagation
-- **Prediction bands** — includes residual variance
-- Band color matches fit line color
-- Band data persists in .vsz files (instant load on reopen)
-- Fast path for linear regression (numpy-only, no eval)
-- NaN-safe fitting (clean abort on failed fits)
-- Normal approximation fallback when scipy.stats unavailable
-- Runtime warnings suppressed during optimization
+- scipy.optimize.least_squares replaces custom LM (10-50x faster)
+- Fit dialog with function presets, parameter table, goodness-of-fit report
+- Confidence bands (95% CI) and prediction bands
+- Band data persists in .vsz files
+- Fast path for linear regression (numpy-only)
 
 ### BoxPlot Enhancements
-- **Individual data points (strip plot)** — jitter as fraction of box width (ggplot2 convention)
-- **Independent point formatting** — PointsFill, PointsLine with custom SVG circle icons (vs diamond for outliers)
-- **Fill palette** — auto-color multiple datasets from discrete palettes (cb-set1, npg, nejm, lancet, jama, aaas, okabe-ito, cb-set2, cb-dark2, cb-paired, or any imported colormap)
-- **showOutliers toggle** — outliers auto-hidden when strip points active (ggplot2 behavior)
-- Fill changed from BrushExtended to simple Brush (cleaner UI: Color, Style, Transparency, Hide)
-- Settings reordered: mean marker, points, outliers
+- Individual data points (strip plot) with jitter
+- Fill palette with auto-color from discrete palettes
+- showOutliers toggle
 
-### Violin Plot Enhancements
-- Fill palette support (same as boxplot)
-- Auto-coloring with discrete palettes
-
-### Plot Themes (13 presets)
-- **Classic** — white background, L-shaped axes, no grid (Nature, Cell, Science)
-- **Black & White** — gray grid, black border
-- **Publication** — thick axes, ticks outside, no grid (NEJM, Lancet, JAMA)
-- **Minimal** — no axes, light grid
-- **Dark** — dark background for presentations
-- **ggplot2** — gray panel, white grid (Wickham, H.)
-- **Seaborn** — whitegrid style (Waskom, M.)
-- **The Economist** — blue-gray panel, horizontal grid
-- **FiveThirtyEight** — light gray, no axes, thick grid
-- **Tufte** — maximum data-ink ratio, no grid (Tufte, E.)
-- **BMJ** — box axes with ticks inside (British Medical Journal)
-- **GraphPad Prism** — L-shaped axes, ticks outside, 14pt font
-- **Solarized Light** — Schoonover palette, low contrast
+### Plot Themes (14 presets)
+Classic, Black & White, Publication, Minimal, Dark, ggplot2, Seaborn, Economist, FiveThirtyEight, Tufte, BMJ, GraphPad Prism, Solarized Light
 
 ### Color System
-- **Palette-aware color picker** — popup replaces system QColorDialog, shows active theme colors, basic colors, and discrete colormap palettes with hex input
-- **Import colormaps from file** — supports .txt/.csv (RGB 0-1), .gpl (GIMP Palette), .cpt (GMT Color Table)
-- **ColorBrewer palettes** — cb-set1, cb-set2, cb-paired, cb-dark2, cb-blues, cb-reds, cb-ylorrd, cb-rdbu
-- **Journal palettes** — npg, nejm, lancet, jama, aaas, okabe-ito
-- **Scientific colormaps** — viridis, inferno, magma, plasma, cividis, batlow, vik, roma, hot-body
+- Palette-aware color picker with hex input
+- Import colormaps from file (.txt, .csv, .gpl, .cpt)
+- ColorBrewer, journal, and scientific palettes
+- 6 new palettes: Okabe-Ito, Wong, Tol-Vibrant, Tol-Muted, Tableau 10, Plotex
 
 ### Data Import
-- **Excel import** (.xlsx, .xlsm) — sheet selector, header row, skip rows, preview, linked files
-- **ODS import** (.ods) — LibreOffice/OpenOffice support, same UI as Excel
-- **JSON import** — dict-of-arrays, array-of-dicts, nested paths
-
-### Snapping & Guides
-- **Snap engine** — objects snap to graph bounds, centers, and sibling widget edges (8px threshold)
-- **User-defined guides** — horizontal/vertical draggable lines, auto center cross on activation
-- **Guide management** — View ribbon group with icons (show, add H, add V, reset), toggle preserves positions
+- Excel (.xlsx, .xlsm), ODS (.ods), JSON import
 
 ### Rendering Optimization
-- **QPen/QBrush caching** — cached per settings object, invalidated by key comparison
-- **Axis coordinate caching** — tick coordinates cached by axis location
-- **Spatial hash for label overlap** — O(n) amortized instead of O(n2)
-- **Batch SetData** — skip setModified per dataset during file loading
-- **Bytecode cache** — .vszc files with MD5 hash for faster reload
-- **Race condition fix** — antialias + page color passed as immutable job data to render thread
+- QPen/QBrush caching, axis coordinate caching
+- Spatial hash for label overlap (O(n) vs O(n²))
+- Bytecode cache (.vszc) for faster reload
+- Debounced zoom with fast preview
 
-### UI/UX Improvements
-- **Drag & drop** — .vsz files open in new tabs (works on plot area, empty state, tab bar)
-- **Splash screen** — rounded corners (WA_TranslucentBackground + drawRoundedRect)
-- **Zoom to page** on document load
-- **Zoom preserved per page** across page switches
-- **Window layout persisted** — dock widget positions saved/restored correctly (base64 encoding)
-- **Empty state** — placeholder with logo, text, and drag & drop hint
-- **Discard All** button when closing with multiple unsaved tabs
-- **Format propagation** — hierarchical menu (this graph, this page, document, pick specific)
-- **Image "Restore"** action — resets opacity, flip, greyscale, size, rotation
-- **Rotated label background** — follows text rotation instead of axis-aligned bounding box
-- **Legend reverse order** — also reverses keys within multi-key widgets (stacked bars)
-- **Delete stays on page** — selects parent/sibling, not next page widget
-- **Ribbon icons** — shorter text, all online help actions have icons, tutorial icon matches theme
-- **Import dialog** — clears filename on show (no auto-preview of last file)
-- **Polygon** — default triangle vertices visible on creation
-- **Shapes** — fill visible by default (hide=False)
+### UI/UX
+- Ribbon toolbar, command palette, split view, rulers
+- Drag & drop .vsz files, splash screen, empty state
+- Zoom to page on load, zoom preserved per page
+- Data editor with spreadsheet editing, paste from clipboard
+- Image auto-embed, opacity, flip, greyscale, corner radius
+- Pan with middle mouse button
 
-### Data Editor
-- Spreadsheet-like editing (type to edit, Enter/Tab navigation)
-- Paste from clipboard (Ctrl+V), Paste as New
-- Readonly visual feedback, validation flash
-- Smart Add Row
-- "Use as" grouped in submenus
-
-### Images
-- Auto-embed on load (PNG, JPG, SVG)
-- Opacity, flip H/V, greyscale, corner radius
-
-### Bug Fixes
-- IndexError guard in render thread (empty job queue)
-- ZeroDivisionError guard in cgscale
-- Safe undo/redo (check empty before pop)
-- O(n2) list.pop(0) replaced by slice/index in HDF5 import
-- OperationSettingPropagate crash fix for widget names with spaces
-- TextLabel click selection bounds expansion
-- Graph draw order (annotations last)
-- Zoom across tabs (delegate pattern)
-- Ternary fill geometry fix
-- Duplicate file detection
-- Bracket crash fix on drag without valid axes
-- slotSelectMode KeyError fix for unknown actions
-- Fit NaN crash prevention
-- Force render after document load (fixes blank screen on open)
+### Security (22 items)
+- Remote protocol: pickle+eval → JSON + whitelist
+- MIME clipboard: eval() → ast.literal_eval()
+- Render thread isolation via QReadWriteLock
+- Console safe mode, path traversal prevention
+- All bare excepts replaced with except Exception
 
 ### Build
-- PyInstaller spec optimized: strip=True, unnecessary DLLs excluded (opengl32sw 20MB, Qt6Pdf 5MB, SSL 4MB)
-- Unnecessary Qt plugins removed (qoffscreen, qminimal, qtga, qwbmp, qicns)
-- Build size: 198 MB -> 168 MB (-15%)
-- Inno Setup installer with LZMA2 compression: 45 MB
-- File associations for .vsz and .vszh5
+- PyInstaller optimized: 198 MB → 168 MB
+- Inno Setup installer with LZMA2: 45 MB
+- File associations for .vsz/.vszh5
 
-### Security (Full audit — 22 items resolved)
-- **CRITICAL**: Remote protocol rewritten from pickle+eval to JSON + whitelist command dispatch
-- **CRITICAL**: MIME clipboard eval() replaced with ast.literal_eval() + type validation
-- **CRITICAL**: Render thread isolation via QReadWriteLock on Document (concurrent readers, exclusive writers)
-- **HIGH**: Console safe mode enabled by default — only documented commands allowed, arbitrary exec() blocked
-- **HIGH**: Feedback/QSettings eval() replaced with ast.literal_eval() safe helpers
-- **HIGH**: Bytecode cache (.vszc) hardened — reject symlinks, atomic write via tempfile+os.replace
-- **HIGH**: Path traversal prevented in findFileOnImportPath — realpath + commonpath validation
-- **HIGH**: eval() lambda in minuit fitting replaced with normal callable
-- **HIGH**: Division by zero guard when dof==0 (N.nan fallback)
-- **HIGH**: Empty array guard in image.py trimGrid/trimEdge
-- **MEDIUM**: All bare excepts (13+) replaced with except Exception: (0 remaining)
-- **MEDIUM**: JSON import wrapped in try/except with user-friendly error messages
-- **MEDIUM**: Signal disconnect before reconnect in datasetbrowser (prevents duplicate calls)
-- **MEDIUM**: QTimer/QMenu created with explicit parent (prevents ownership leaks)
-- **MEDIUM**: Import moved from draw path to module level in fit.py
-- **LOW**: Band settings (bandXData, etc.) marked readonly=True
+---
 
-### Code Quality
-- Unused imports cleaned
-- Strict main thread / render thread separation in fit widget
-- No settings writes from render thread
-- Debug logging in OperationSettingPropagate for path resolution failures
+## v0.0–v1.3 (2026-03-15)
+
+### v0.0 — Baseline
+- Build patches: sip-build fallback, 64-bit pointer cast fix, PyInstaller exclusions (721→197 MB)
+
+### v0.1 — Quick Wins
+- Expression context spread operator, asarray for float64, array copy elimination
+- Marker path LRU cache, regex precompile, min/max vectorization
+
+### v0.2 — Startup & Security
+- ast.literal_eval() for settings persistence
+- Lazy console loading
+
+### v0.3 — Rendering Pipeline
+- Error bar path batching, contour list comprehension, colormap consolidation
+
+### v0.4 — Data Pipeline
+- Expression evaluation resize optimization, numpy safe items cache
+- HDF5/FITS asarray optimization
+
+### v1.0 — 2D Rendering
+- Full antialiasing (screen + export)
+- Linear and radial gradient fills
+
+### v1.1 — Curves & Interpolation
+- Catmull-Rom spline for XY plots
+- Bicubic image interpolation
+- Smooth contours
+
+### v1.2 — Image Performance
+- Colormap QImage cache (skip recalc on zoom/pan)
+
+### v1.3 — Feedback & Decimation
+- Progress dialog during file load
+- Auto point decimation for large datasets
+- Wait cursor during render
 
 ---
 
 *Plotex is based on Veusz 4.2 by Jeremy Sanders.*
-*Extended by M. Ignacio Monge Garcia.*
+*Extended by M. Ignacio Monge Garcia with assistance from Claude (Anthropic).*
