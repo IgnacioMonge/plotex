@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+MANIFEST
+
+# Compiled extensions
+build/
+veusz/helpers/*.pyd
+veusz/helpers/*.so
+*.so
+*.o
+
+# IDE / editor
+.claude/
+.idea/
+.vscode/
+*~
+
+# Testing
+.pytest_cache/
+
+# Development snapshots (kept locally, not in repo)
+versions/
+
+# Audit / temp files
+AUDIT_PROMPT*.md
+plotex_audit*.zip
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Generated docs
+Documents/man-page/*.1
+Documents/man-page/*.man.txt
+Documents/manual/

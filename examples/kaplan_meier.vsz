@@ -1,0 +1,186 @@
+# Plotex saved document (version 4.2)
+# Kaplan-Meier example — survival analysis with two treatment groups
+
+AddImportPath(u'.')
+
+# Time to event (months) for 40 patients — sorted within each group
+ImportString(u'time(numeric)','''
+1
+3
+5
+7
+9
+12
+14
+16
+18
+21
+24
+26
+28
+30
+33
+36
+38
+40
+42
+48
+2
+4
+6
+10
+13
+15
+17
+20
+22
+25
+27
+30
+34
+36
+39
+42
+44
+46
+48
+50
+''')
+
+# Event indicator: 1=death, 0=censored
+# Treatment A: higher event rate (worse outcome)
+ImportString(u'event(numeric)','''
+1
+1
+0
+1
+1
+0
+1
+1
+0
+1
+0
+1
+1
+0
+1
+0
+1
+1
+0
+1
+0
+0
+1
+0
+0
+0
+1
+0
+0
+0
+0
+1
+0
+0
+0
+0
+0
+0
+0
+0
+''')
+
+# Group labels
+ImportString(u'group(text)',r'''
+u'Drug A'
+u'Drug A'
+u'Drug A'
+u'Drug A'
+u'Drug A'
+u'Drug A'
+u'Drug A'
+u'Drug A'
+u'Drug A'
+u'Drug A'
+u'Drug A'
+u'Drug A'
+u'Drug A'
+u'Drug A'
+u'Drug A'
+u'Drug A'
+u'Drug A'
+u'Drug A'
+u'Drug A'
+u'Drug A'
+u'Drug B'
+u'Drug B'
+u'Drug B'
+u'Drug B'
+u'Drug B'
+u'Drug B'
+u'Drug B'
+u'Drug B'
+u'Drug B'
+u'Drug B'
+u'Drug B'
+u'Drug B'
+u'Drug B'
+u'Drug B'
+u'Drug B'
+u'Drug B'
+u'Drug B'
+u'Drug B'
+u'Drug B'
+u'Drug B'
+''')
+
+Set('width', '17cm')
+Set('height', '13cm')
+
+Add('page', name='page1', autoadd=False)
+To('page1')
+Set('width', '17cm')
+Set('height', '13cm')
+
+Add('graph', name='graph1', autoadd=False)
+To('graph1')
+
+Add('axis', name='x', autoadd=False)
+To('x')
+Set('label', u'Time (months)')
+Set('min', 0)
+To('..')
+
+Add('axis', name='y', autoadd=False)
+To('y')
+Set('label', u'Survival probability (%)')
+Set('direction', 'vertical')
+Set('min', -2)
+Set('max', 105)
+To('..')
+
+Add('kaplanmeier', name='km1', autoadd=False)
+To('km1')
+Set('timeData', u'time')
+Set('eventData', u'event')
+Set('groupData', u'group')
+Set('showCensored', True)
+Set('showConfBand', True)
+Set('censorMarker', u'plus')
+Set('censorSize', u'4pt')
+To('..')
+
+Add('label', name='title', autoadd=False)
+To('title')
+Set('label', u'Kaplan-Meier: Survival by Treatment')
+Set('xPos', 0.5)
+Set('yPos', 1.02)
+Set('alignHorz', u'centre')
+Set('Text/size', u'14pt')
+Set('Text/bold', True)
+To('..')
+
+To('..')
+To('..')

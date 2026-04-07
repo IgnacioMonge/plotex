@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Ridge 1 (back) -->
+  <path d="M3,26 Q10,18 16,26 Q22,18 29,26 Z" fill="#8cb4d5" fill-opacity="0.6" stroke="#336" stroke-width="0.8"/>
+  <!-- Ridge 2 (middle) -->
+  <path d="M3,20 Q10,11 16,20 Q22,13 29,20 Z" fill="#6aa84f" fill-opacity="0.6" stroke="#363" stroke-width="0.8"/>
+  <!-- Ridge 3 (front) -->
+  <path d="M3,14 Q10,4 16,14 Q22,7 29,14 Z" fill="#d94a4a" fill-opacity="0.6" stroke="#633" stroke-width="0.8"/>
+</svg>

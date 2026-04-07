@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60" width="60" height="60">
+  <!-- Page -->
+  <rect x="12" y="4" width="36" height="46" rx="2" ry="2"
+        fill="#fff" stroke="#333" stroke-width="2.5"/>
+  <!-- Text lines on page -->
+  <line x1="18" y1="14" x2="42" y2="14" stroke="#aaa" stroke-width="2" stroke-linecap="round"/>
+  <line x1="18" y1="21" x2="42" y2="21" stroke="#aaa" stroke-width="2" stroke-linecap="round"/>
+  <line x1="18" y1="28" x2="36" y2="28" stroke="#aaa" stroke-width="2" stroke-linecap="round"/>
+  <line x1="18" y1="35" x2="42" y2="35" stroke="#aaa" stroke-width="2" stroke-linecap="round"/>
+  <!-- Magnifier -->
+  <circle cx="42" cy="44" r="10" fill="none" stroke="#4a7ebf" stroke-width="3"/>
+  <line x1="49" y1="51" x2="56" y2="58" stroke="#4a7ebf" stroke-width="3" stroke-linecap="round"/>
+  <!-- White fill behind magnifier -->
+  <circle cx="42" cy="44" r="8" fill="#d6e6f5" opacity="0.7"/>
+</svg>

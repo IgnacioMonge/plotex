@@ -1,0 +1,82 @@
+# Plotex saved document (version 4.2)
+# Ridgeline plot example — temperature distributions by month
+
+AddImportPath(u'.')
+
+# Simulated daily temperatures for 5 months (approx normal, shifted means)
+ImportString(u'january(numeric)','''
+-2.1 -1.5 -0.8 0.2 0.5 1.1 1.3 1.8 2.0 2.3
+2.5 2.8 3.0 3.2 3.5 3.7 3.9 4.1 4.3 4.5
+4.7 4.9 5.1 5.4 5.6 5.9 6.2 6.5 7.0 7.8
+''')
+
+ImportString(u'march(numeric)','''
+3.2 4.0 4.5 5.0 5.5 6.0 6.3 6.7 7.0 7.2
+7.5 7.8 8.0 8.3 8.5 8.8 9.0 9.3 9.5 9.8
+10.0 10.3 10.6 11.0 11.5 12.0 12.5 13.2 14.0 15.1
+''')
+
+ImportString(u'may(numeric)','''
+10.5 11.2 12.0 12.5 13.0 13.5 14.0 14.3 14.7 15.0
+15.2 15.5 15.8 16.0 16.3 16.5 16.8 17.0 17.3 17.5
+17.8 18.0 18.3 18.7 19.0 19.5 20.0 20.8 21.5 22.5
+''')
+
+ImportString(u'july(numeric)','''
+18.5 19.5 20.2 21.0 21.5 22.0 22.5 22.8 23.2 23.5
+23.8 24.0 24.3 24.5 24.8 25.0 25.3 25.5 25.8 26.0
+26.3 26.5 26.8 27.2 27.5 28.0 28.5 29.2 30.0 31.5
+''')
+
+ImportString(u'september(numeric)','''
+12.0 13.0 13.8 14.5 15.0 15.5 16.0 16.3 16.7 17.0
+17.2 17.5 17.8 18.0 18.2 18.5 18.8 19.0 19.3 19.5
+19.8 20.0 20.3 20.7 21.0 21.5 22.0 22.8 23.5 24.8
+''')
+
+Set('width', '18cm')
+Set('height', '14cm')
+
+Add('page', name='page1', autoadd=False)
+To('page1')
+Set('width', '18cm')
+Set('height', '14cm')
+
+Add('graph', name='graph1', autoadd=False)
+To('graph1')
+
+Add('axis', name='x', autoadd=False)
+To('x')
+Set('label', u'Temperature (\xb0C)')
+To('..')
+
+Add('axis', name='y', autoadd=False)
+To('y')
+Set('label', u'Month')
+Set('direction', 'vertical')
+To('..')
+
+Add('ridgeline', name='ridge1', autoadd=False)
+To('ridge1')
+Set('data', (u'january', u'march', u'may', u'july', u'september'))
+Set('overlap', 0.6)
+Set('bandwidth', 0)
+Set('gridPoints', 200)
+Set('filled', True)
+Set('autoColor', True)
+Set('Fill/transparency', 30)
+Set('Line/width', u'1.5pt')
+To('..')
+
+Add('label', name='title', autoadd=False)
+To('title')
+Set('label', u'Temperature Distribution by Month')
+Set('xPos', 0.5)
+Set('yPos', 1.02)
+Set('alignHorz', u'centre')
+Set('Text/size', u'14pt')
+Set('Text/bold', True)
+To('..')
+
+To('..')
+To('..')

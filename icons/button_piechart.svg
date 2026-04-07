@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16" height="16" xmlns="http://www.w3.org/2000/svg">
+  <!-- Pie chart icon -->
+  <circle cx="8" cy="8" r="6.5" fill="none" stroke="#000" stroke-width="0.8"/>
+  <!-- Slice 1: ~40% -->
+  <path d="M8,8 L8,1.5 A6.5,6.5 0 0,1 13.6,5.2 Z" fill="#e74c3c" stroke="#000" stroke-width="0.4"/>
+  <!-- Slice 2: ~35% -->
+  <path d="M8,8 L13.6,5.2 A6.5,6.5 0 0,1 8.8,14.5 Z" fill="#3498db" stroke="#000" stroke-width="0.4"/>
+  <!-- Slice 3: ~25% -->
+  <path d="M8,8 L8.8,14.5 A6.5,6.5 0 0,1 8,1.5 Z" fill="#2ecc71" stroke="#000" stroke-width="0.4"/>
+</svg>

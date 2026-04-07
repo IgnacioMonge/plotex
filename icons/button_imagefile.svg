@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16" height="16" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <!-- Clean image placeholder icon -->
+  <rect x="1.5" y="2" width="13" height="12" rx="1.5" fill="none" stroke="#888" stroke-width="0.8"/>
+  <!-- Mountains (landscape) -->
+  <path d="M 1.5,12 L 5,7 L 7.5,9.5 L 10.5,5.5 L 14.5,12 Z" fill="#b8d4e8" stroke="none"/>
+  <!-- Sun -->
+  <circle cx="4.5" cy="5" r="1.5" fill="#f0c040"/>
+</svg>

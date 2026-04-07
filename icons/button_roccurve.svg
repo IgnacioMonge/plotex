@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16" height="16" xmlns="http://www.w3.org/2000/svg">
+  <!-- ROC curve icon: curve + diagonal -->
+  <line x1="1" y1="14" x2="14" y2="1" stroke="#ccc" stroke-width="0.6" stroke-dasharray="2,1"/>
+  <path d="M1,14 Q1,4 5,3 Q9,2 14,1" fill="none" stroke="#2196F3" stroke-width="1.2"/>
+</svg>

@@ -1,0 +1,119 @@
+# Plotex saved document (version 4.2)
+# Bland-Altman example — method comparison (glucose meters)
+
+AddImportPath(u'.')
+
+# Two glucose meters measuring the same 30 patients (mg/dL)
+ImportString(u'meter_A(numeric)','''
+95
+102
+87
+120
+110
+98
+130
+115
+105
+140
+92
+88
+125
+108
+135
+100
+112
+96
+118
+128
+90
+106
+142
+99
+116
+85
+122
+138
+104
+93
+''')
+
+ImportString(u'meter_B(numeric)','''
+92
+105
+84
+118
+114
+95
+126
+112
+108
+136
+94
+90
+121
+104
+132
+103
+109
+93
+122
+125
+87
+110
+138
+96
+119
+82
+118
+141
+101
+96
+''')
+
+Set('width', '17cm')
+Set('height', '13cm')
+
+Add('page', name='page1', autoadd=False)
+To('page1')
+Set('width', '17cm')
+Set('height', '13cm')
+
+Add('graph', name='graph1', autoadd=False)
+To('graph1')
+
+Add('axis', name='x', autoadd=False)
+To('x')
+Set('label', u'Mean of two methods (mg/dL)')
+To('..')
+
+Add('axis', name='y', autoadd=False)
+To('y')
+Set('label', u'Difference (Meter A \u2212 Meter B)')
+Set('direction', 'vertical')
+To('..')
+
+Add('blandaltman', name='ba1', autoadd=False)
+To('ba1')
+Set('method1Data', u'meter_A')
+Set('method2Data', u'meter_B')
+Set('showBias', True)
+Set('showLOA', True)
+Set('showZero', True)
+Set('showConfBands', True)
+Set('showLineLabels', True)
+Set('marker', u'circle')
+Set('markerSize', u'3pt')
+To('..')
+
+Add('label', name='title', autoadd=False)
+To('title')
+Set('label', u'Bland-Altman: Glucose Meter Comparison')
+Set('xPos', 0.5)
+Set('yPos', 1.02)
+Set('alignHorz', u'centre')
+Set('Text/size', u'14pt')
+Set('Text/bold', True)
+To('..')
+
+To('..')
+To('..')

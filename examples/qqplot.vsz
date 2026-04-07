@@ -1,0 +1,119 @@
+# Plotex saved document (version 4.2)
+# Q-Q Plot example — normality check
+
+AddImportPath(u'.')
+
+# Generate sample data: approximately normal with slight skew
+# (70 observations from a slightly skewed distribution)
+ImportString(u'measurements(numeric)','''
+2.14
+3.51
+4.02
+4.38
+4.55
+4.71
+4.89
+5.01
+5.12
+5.23
+5.31
+5.42
+5.48
+5.55
+5.62
+5.68
+5.74
+5.79
+5.85
+5.91
+5.96
+6.01
+6.06
+6.11
+6.16
+6.21
+6.26
+6.31
+6.35
+6.40
+6.45
+6.50
+6.55
+6.60
+6.65
+6.70
+6.76
+6.81
+6.87
+6.93
+6.99
+7.05
+7.12
+7.19
+7.26
+7.34
+7.42
+7.51
+7.60
+7.70
+7.81
+7.93
+8.06
+8.21
+8.38
+8.58
+8.82
+9.12
+9.52
+10.15
+''')
+
+Set('width', '16cm')
+Set('height', '14cm')
+
+Add('page', name='page1', autoadd=False)
+To('page1')
+Set('width', '16cm')
+Set('height', '14cm')
+
+Add('graph', name='graph1', autoadd=False)
+To('graph1')
+
+Add('axis', name='x', autoadd=False)
+To('x')
+Set('label', u'Theoretical quantiles (Normal)')
+To('..')
+
+Add('axis', name='y', autoadd=False)
+To('y')
+Set('label', u'Observed quantiles')
+Set('direction', 'vertical')
+To('..')
+
+Add('qqplot', name='qq1', autoadd=False)
+To('qq1')
+Set('data', u'measurements')
+Set('distribution', u'normal')
+Set('showRefLine', True)
+Set('showCI', True)
+Set('marker', u'circle')
+Set('markerSize', u'3pt')
+Set('MarkerFill/color', u'#4a90d9')
+Set('RefLine/color', u'#888888')
+Set('RefLine/style', u'dashed')
+Set('CIFill/color', u'#4a90d9')
+Set('CIFill/transparency', 80)
+To('..')
+
+Add('label', name='title', autoadd=False)
+To('title')
+Set('label', u'Q-Q Plot: Normality Assessment')
+Set('xPos', 0.5)
+Set('yPos', 1.02)
+Set('alignHorz', u'centre')
+Set('Text/size', u'14pt')
+Set('Text/bold', True)
+To('..')
+
+To('..')
+To('..')

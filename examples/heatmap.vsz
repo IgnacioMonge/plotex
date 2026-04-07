@@ -1,0 +1,56 @@
+# Plotex saved document (version 1.5)
+# Annotated heatmap example — correlation matrix
+
+AddImportPath(u'.')
+
+# --- 5x5 correlation matrix ---
+SetData2D('corr_matrix', [
+    [1.00, 0.72, -0.31, 0.45, -0.68],
+    [0.72, 1.00, -0.15, 0.58, -0.82],
+    [-0.31, -0.15, 1.00, 0.23, 0.11],
+    [0.45, 0.58, 0.23, 1.00, -0.47],
+    [-0.68, -0.82, 0.11, -0.47, 1.00]
+], xrange=(0, 5), yrange=(0, 5))
+
+SetDataText('var_names', [u'Age', u'SBP', u'HR', u'CO', u'SVR'])
+
+# === Annotated Heatmap ===
+Add('page', name=u'heatmap_page', autoadd=False)
+To(u'heatmap_page')
+
+Add('graph', name=u'graph1', autoadd=False)
+To(u'graph1')
+Set('leftMargin', u'2cm')
+Set('bottomMargin', u'1.5cm')
+
+Add('axis', name=u'x', autoadd=False)
+To(u'x')
+Set('label', u'')
+Set('mode', u'labels')
+Set('MajorTicks/hide', True)
+Set('MinorTicks/hide', True)
+To(u'..')
+
+Add('axis', name=u'y', autoadd=False)
+To(u'y')
+Set('label', u'')
+Set('direction', u'vertical')
+Set('mode', u'labels')
+Set('MajorTicks/hide', True)
+Set('MinorTicks/hide', True)
+To(u'..')
+
+Add('heatmap', name=u'hm1', autoadd=False)
+To(u'hm1')
+Set('data', u'corr_matrix')
+Set('xlabels', u'var_names')
+Set('ylabels', u'var_names')
+Set('colorMap', u'cb-rdbu')
+Set('showValues', True)
+Set('valueFormat', u'%.2f')
+Set('min', -1.0)
+Set('max', 1.0)
+To(u'..')
+
+To(u'..')
+To(u'..')

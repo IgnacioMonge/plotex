@@ -1,0 +1,78 @@
+# Plotex saved document (version 4.2)
+# Pareto chart example — defect analysis
+
+AddImportPath(u'.')
+
+# Defect categories and counts
+ImportString(u'categories(text)',r'''
+u'Missing parts'
+u'Wrong color'
+u'Scratches'
+u'Alignment'
+u'Cracks'
+u'Stains'
+u'Dents'
+u'Other'
+''')
+
+ImportString(u'counts(numeric)','''
+42
+28
+19
+14
+9
+6
+4
+3
+''')
+
+Set('width', '18cm')
+Set('height', '12cm')
+
+Add('page', name='page1', autoadd=False)
+To('page1')
+Set('width', '18cm')
+Set('height', '12cm')
+
+Add('graph', name='graph1', autoadd=False)
+To('graph1')
+Set('topMargin', u'1.2cm')
+
+Add('axis', name='x', autoadd=False)
+To('x')
+Set('label', u'Defect type')
+Set('mode', u'labels')
+Set('MajorTicks/number', 10)
+To('..')
+
+Add('axis', name='y', autoadd=False)
+To('y')
+Set('label', u'Count')
+Set('direction', 'vertical')
+Set('min', 0)
+To('..')
+
+Add('pareto', name='pareto1', autoadd=False)
+To('pareto1')
+Set('values', u'counts')
+Set('labels', u'categories')
+Set('barWidth', 0.7)
+Set('showCumulative', True)
+Set('showPercentAxis', True)
+Set('BarFill/color', u'#4a90d9')
+Set('CumulativeLine/color', u'#d94a4a')
+Set('CumulativeLine/width', u'2pt')
+To('..')
+
+Add('label', name='title', autoadd=False)
+To('title')
+Set('label', u'Pareto Analysis: Manufacturing Defects')
+Set('xPos', 0.5)
+Set('yPos', 1.02)
+Set('alignHorz', u'centre')
+Set('Text/size', u'14pt')
+Set('Text/bold', True)
+To('..')
+
+To('..')
+To('..')

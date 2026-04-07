@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>exceltab</class>
+ <widget class="QWidget" name="exceltab">
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTableWidget" name="previewtableexcel">
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
+     <property name="alternatingRowColors">
+      <bool>true</bool>
+     </property>
+     <property name="selectionMode">
+      <enum>QAbstractItemView::NoSelection</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="optionsLayout">
+     <item>
+      <widget class="QGroupBox" name="sheetGroup">
+       <property name="title">
+        <string>Sheet</string>
+       </property>
+       <layout class="QFormLayout" name="sheetFormLayout">
+        <item row="0" column="0">
+         <widget class="QLabel">
+          <property name="text">
+           <string>Sheet</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QComboBox" name="excelsheetcombo"/>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="behaviourGroup">
+       <property name="title">
+        <string>Behaviour</string>
+       </property>
+       <layout class="QFormLayout" name="behaviourFormLayout">
+        <item row="0" column="0">
+         <widget class="QLabel">
+          <property name="text">
+           <string>Header row</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="HistoryCheck" name="excelheadercheck">
+          <property name="text">
+           <string>First row is header</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel">
+          <property name="text">
+           <string>Skip rows</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="HistorySpinBox" name="excelskiprowsspin">
+          <property name="minimum">
+           <number>0</number>
+          </property>
+          <property name="maximum">
+           <number>1000</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>HistoryCheck</class>
+   <extends>QCheckBox</extends>
+   <header>veusz.qtwidgets.historycheck</header>
+  </customwidget>
+  <customwidget>
+   <class>HistorySpinBox</class>
+   <extends>QSpinBox</extends>
+   <header>veusz.qtwidgets.historyspinbox</header>
+  </customwidget>
+ </customwidgets>
+</ui>

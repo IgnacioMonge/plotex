@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Reference line -->
+  <line x1="4" y1="28" x2="28" y2="4" stroke="#aaa" stroke-width="1" stroke-dasharray="2,2"/>
+  <!-- Points roughly along the line -->
+  <circle cx="7" cy="26" r="1.5" fill="#4a90d9"/>
+  <circle cx="9" cy="23" r="1.5" fill="#4a90d9"/>
+  <circle cx="11" cy="21" r="1.5" fill="#4a90d9"/>
+  <circle cx="13" cy="19" r="1.5" fill="#4a90d9"/>
+  <circle cx="15" cy="16.5" r="1.5" fill="#4a90d9"/>
+  <circle cx="17" cy="14" r="1.5" fill="#4a90d9"/>
+  <circle cx="19" cy="12.5" r="1.5" fill="#4a90d9"/>
+  <circle cx="21" cy="10" r="1.5" fill="#4a90d9"/>
+  <circle cx="24" cy="8" r="1.5" fill="#4a90d9"/>
+  <circle cx="26" cy="5" r="1.5" fill="#4a90d9"/>
+  <!-- Axes -->
+  <line x1="3" y1="29" x2="29" y2="29" stroke="#333" stroke-width="0.8"/>
+  <line x1="3" y1="3" x2="3" y2="29" stroke="#333" stroke-width="0.8"/>
+</svg>
