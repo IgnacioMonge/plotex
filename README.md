@@ -2,6 +2,17 @@
 
 **Plotex** is a scientific plotting application for creating publication-quality graphs. It is a fork of [Veusz 4.2](https://veusz.github.io/) by Jeremy Sanders, extended with new plot types, a modernized UI, and improved reliability.
 
+## Screenshots
+
+| | |
+|---|---|
+| ![Main UI](screenshots/plotex-ui.png) | ![ROC Curve](screenshots/plotex-roc.png) |
+| Main interface with ribbon toolbar | ROC curve with confidence band |
+| ![Ridgeline](screenshots/plotex-ridgeline.png) | ![Scatter + Preferences](screenshots/plotex-scatter.png) |
+| Ridgeline plot with auto-color | Multiple scatter plots with preferences |
+| ![Fit Dialog](screenshots/plotex-fit.png) | |
+| Curve fitting with confidence/prediction bands | |
+
 ## Features
 
 ### Inherited from Veusz
