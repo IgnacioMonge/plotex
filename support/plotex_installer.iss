@@ -2,7 +2,7 @@
 ; Compile with: "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" plotex_installer.iss
 
 #define MyAppName "Plotex"
-#define MyAppVersion "2.0"
+#define MyAppVersion "1.5.1"
 #define MyAppPublisher "M. Ignacio Monge García"
 #define MyAppURL "https://github.com/IgnacioMonge/plotex"
 #define MyAppExeName "plotex.exe"
