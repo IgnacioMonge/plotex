@@ -4,6 +4,25 @@ All changes relative to Veusz 4.2 (base fork).
 
 ---
 
+## v1.5.1 (2026-04-11) — Hotfix: file loading hang on installed version
+
+### Bug fix
+- **Loader hang on Windows**: `tempfile.mkstemp()` blocks indefinitely when
+  creating the bytecode cache (`.vszc`) in a protected directory such as
+  `C:\Program Files`. `os.access(W_OK)` cannot reliably detect this on
+  Windows (it checks the read-only flag, not ACLs).
+  **Fix**: bytecode cache now always writes to `%LOCALAPPDATA%\Plotex\cache\`
+  (Windows) or `~/.cache/plotex` (Unix), keyed by an MD5 hash of the
+  original file path. This avoids any write to protected directories.
+
+### Other improvements
+- Loader `sigPhase` signal now uses explicit `QueuedConnection` to avoid
+  calling widget methods from the worker thread (undefined behaviour in Qt 6).
+- `build_installer.bat` cleans known stale DLLs from the dist directory
+  before compiling the installer.
+
+---
+
 ## v2.0 (2026-04-07) — First public release
 
 ### External code audit (6 rounds with ChatGPT)

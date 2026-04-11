@@ -246,6 +246,40 @@ class _FullLoadWorker(qt.QThread):
                 thedoc.clearHistory()
 
 
+def _cachePath(filename):
+    """Return the path for the bytecode cache of *filename*.
+
+    Always uses a per-user cache directory:
+    ``%LOCALAPPDATA%/Plotex/cache`` (Windows) or
+    ``~/.cache/plotex`` (Unix).
+
+    Writing next to the .vsz file (``filename + 'c'``) is avoided
+    because ``tempfile.mkstemp`` blocks indefinitely on Windows when
+    the directory is protected (e.g. ``C:\\Program Files``), and
+    ``os.access(W_OK)`` cannot reliably detect this on Windows.
+    """
+    if sys.platform == 'win32':
+        base = os.environ.get(
+            'LOCALAPPDATA',
+            os.path.join(os.path.expanduser('~'), 'AppData', 'Local'))
+        cache_dir = os.path.join(base, 'Plotex', 'cache')
+    else:
+        base = os.environ.get(
+            'XDG_CACHE_HOME',
+            os.path.join(os.path.expanduser('~'), '.cache'))
+        cache_dir = os.path.join(base, 'plotex')
+
+    os.makedirs(cache_dir, exist_ok=True)
+
+    # Encode the full original path into the filename to avoid collisions
+    import hashlib
+    path_hash = hashlib.md5(
+        os.path.abspath(filename).encode('utf-8')).hexdigest()
+    return os.path.join(
+        cache_dir,
+        os.path.basename(filename) + '.' + path_hash + 'c')
+
+
 def _compileScriptThreaded(thedoc, filename, script, bridge):
     """Compile script in worker thread (read-only w.r.t. document).
 
@@ -253,10 +287,9 @@ def _compileScriptThreaded(thedoc, filename, script, bridge):
     is built on the main thread in applyToDocument().
     """
 
-    # compile script (with bytecode cache for faster reload)
     import marshal, hashlib
     script_hash = hashlib.md5(script.encode('utf-8')).hexdigest()
-    cachefile = filename + 'c'  # e.g. file.vszc
+    cachefile = _cachePath(filename)
     compiled = None
 
     # try loading cached bytecode (reject symlinks and permissive files)
@@ -301,9 +334,9 @@ def _compileScriptThreaded(thedoc, filename, script, bridge):
         # save bytecode cache (atomic write with restricted permissions)
         try:
             import tempfile
+            cache_dir = os.path.dirname(os.path.abspath(cachefile))
             fd, tmpname = tempfile.mkstemp(
-                prefix='.vszc-',
-                dir=os.path.dirname(os.path.abspath(cachefile)))
+                prefix='.vszc-', dir=cache_dir)
             try:
                 with os.fdopen(fd, 'wb') as cf:
                     cf.write(script_hash.encode('ascii'))
@@ -539,7 +572,8 @@ def loadDocument(thedoc, filename, mode='vsz',
             if callbackprogress is not None:
                 callbackprogress(-1, 0, msg)
 
-        worker.sigPhase.connect(_onPhase)
+        worker.sigPhase.connect(
+            _onPhase, type=qt.Qt.ConnectionType.QueuedConnection)
 
         # local event loop keeps UI alive while worker runs
         loop = qt.QEventLoop()

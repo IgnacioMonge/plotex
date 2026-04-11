@@ -43,6 +43,45 @@ if exist %ISCC% (
 
 :compile
 echo.
+
+:: Clean stale files from dist directory before building installer
+:: (PyInstaller --noconfirm replaces files but may leave stale DLLs
+::  from earlier builds with different exclude lists)
+echo Cleaning dist directory of known stale files...
+for %%F in (
+    _ssl.pyd libcrypto-1_1.dll libssl-1_1.dll
+    libcrypto-3.dll libcrypto-3-x64.dll libssl-3.dll libssl-3-x64.dll
+    opengl32sw.dll
+) do (
+    if exist "C:\veusz_build\dist\plotex_main\%%F" (
+        del /q "C:\veusz_build\dist\plotex_main\%%F"
+        echo   Removed stale: %%F
+    )
+)
+for %%F in (
+    qoffscreen.dll qminimal.dll qtuiotouchplugin.dll
+    qtga.dll qwbmp.dll qicns.dll
+) do (
+    if exist "C:\veusz_build\dist\plotex_main\PyQt6\Qt6\plugins\platforms\%%F" (
+        del /q "C:\veusz_build\dist\plotex_main\PyQt6\Qt6\plugins\platforms\%%F"
+        echo   Removed stale plugin: %%F
+    )
+    if exist "C:\veusz_build\dist\plotex_main\PyQt6\Qt6\plugins\generic\%%F" (
+        del /q "C:\veusz_build\dist\plotex_main\PyQt6\Qt6\plugins\generic\%%F"
+        echo   Removed stale plugin: %%F
+    )
+    if exist "C:\veusz_build\dist\plotex_main\PyQt6\Qt6\plugins\imageformats\%%F" (
+        del /q "C:\veusz_build\dist\plotex_main\PyQt6\Qt6\plugins\imageformats\%%F"
+        echo   Removed stale plugin: %%F
+    )
+)
+for %%F in (Qt6Pdf.dll) do (
+    if exist "C:\veusz_build\dist\plotex_main\PyQt6\Qt6\bin\%%F" (
+        del /q "C:\veusz_build\dist\plotex_main\PyQt6\Qt6\bin\%%F"
+        echo   Removed stale: %%F
+    )
+)
+echo.
 echo Compiling Plotex installer...
 echo.
 
@@ -62,7 +101,7 @@ if errorlevel 1 (
 echo.
 echo ========================================
 echo  Installer created successfully!
-echo  Output: C:\veusz_build\installer\Plotex-1.0-Setup.exe
+echo  Output: C:\veusz_build\installer\
 echo ========================================
 echo.
 pause
