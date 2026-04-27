@@ -47,9 +47,9 @@
         <image>https://veusz.github.io/screenshots/histogram.png</image>
     </screenshot>
   </screenshots>
-  <url type="homepage">https://veusz.github.io/</url>
-  <url type="help">https://veusz.github.io/help-support/</url>
-  <url type="bugtracker">https://github.com/veusz/veusz/issues</url>
+  <url type="homepage">https://github.com/IgnacioMonge/plotex</url>
+  <url type="help">https://github.com/IgnacioMonge/plotex#readme</url>
+  <url type="bugtracker">https://github.com/IgnacioMonge/plotex/issues</url>
   <content_rating type="oars-1.1"/>
     <releases>
         <release version="4.1" date="2025-06-13">

@@ -175,102 +175,103 @@ class Pareto(GenericPlotter):
         zeros = N.zeros(n, dtype=float)
 
         painter.save()
-        painter.setClipRect(clip)
+        try:
+            painter.setClipRect(clip)
 
-        # draw bars
-        barpen = s.BarBorder.makeQPenWHide(painter)
-        barbrush = s.BarFill.makeQBrushWHide(painter)
-        painter.setPen(barpen)
-        painter.setBrush(barbrush)
+            # draw bars
+            barpen = s.BarBorder.makeQPenWHide(painter)
+            barbrush = s.BarFill.makeQBrushWHide(painter)
+            painter.setPen(barpen)
+            painter.setBrush(barbrush)
 
-        for i in range(n):
-            if vertical:
-                x1 = xaxis.dataToPlotterCoords(widgetposn,
-                    N.array([positions[i] - bw / 2]))[0]
-                x2 = xaxis.dataToPlotterCoords(widgetposn,
-                    N.array([positions[i] + bw / 2]))[0]
-                y1 = yaxis.dataToPlotterCoords(widgetposn,
-                    N.array([zeros[i]]))[0]
-                y2 = yaxis.dataToPlotterCoords(widgetposn,
-                    N.array([vals[i]]))[0]
-            else:
-                y1 = yaxis.dataToPlotterCoords(widgetposn,
-                    N.array([positions[i] - bw / 2]))[0]
-                y2 = yaxis.dataToPlotterCoords(widgetposn,
-                    N.array([positions[i] + bw / 2]))[0]
-                x1 = xaxis.dataToPlotterCoords(widgetposn,
-                    N.array([zeros[i]]))[0]
-                x2 = xaxis.dataToPlotterCoords(widgetposn,
-                    N.array([vals[i]]))[0]
-
-            rect = qt.QRectF(
-                qt.QPointF(min(x1, x2), min(y1, y2)),
-                qt.QPointF(max(x1, x2), max(y1, y2)))
-            painter.drawRect(rect)
-
-        # draw cumulative line
-        if s.showCumulative and n > 0:
-            # scale cumulative to value axis (max val maps to 100%)
-            max_val = vals[0] if len(vals) > 0 else 1
-            total = vals.sum()
-            if total <= 0:
-                total = 1.0  # avoid division by zero
-            cum_vals = N.cumsum(vals)
-
-            if vertical:
-                cx = xaxis.dataToPlotterCoords(widgetposn, positions)
-                cy = yaxis.dataToPlotterCoords(widgetposn,
-                    cum_vals / total * N.nanmax(vals) * 1.05)
-            else:
-                cy = yaxis.dataToPlotterCoords(widgetposn, positions)
-                cx = xaxis.dataToPlotterCoords(widgetposn,
-                    cum_vals / total * N.nanmax(vals) * 1.05)
-
-            cumpen = s.CumulativeLine.makeQPenWHide(painter)
-            painter.setPen(cumpen)
-            painter.setBrush(qt.Qt.BrushStyle.NoBrush)
-
-            path = qt.QPainterPath()
-            valid = N.isfinite(cx) & N.isfinite(cy)
-            first = True
-            for j in range(n):
-                if valid[j]:
-                    if first:
-                        path.moveTo(cx[j], cy[j])
-                        first = False
-                    else:
-                        path.lineTo(cx[j], cy[j])
-            painter.drawPath(path)
-
-            # draw markers on cumulative line
-            markerbrush = s.CumulativeMarkerFill.makeQBrushWHide(painter)
-            painter.setBrush(markerbrush)
-            for j in range(n):
-                if valid[j]:
-                    painter.drawEllipse(qt.QPointF(cx[j], cy[j]), 3, 3)
-
-            # 80% threshold line
-            if s.showPercentAxis and total > 0:
-                threshold_val = 0.80 * total
-                thresh_y_data = threshold_val / total * N.nanmax(vals) * 1.05
-                dashpen = qt.QPen(qt.QColor(150, 150, 150))
-                dashpen.setStyle(qt.Qt.PenStyle.DashLine)
-                dashpen.setWidthF(1.0)
-                painter.setPen(dashpen)
+            for i in range(n):
                 if vertical:
-                    ty = yaxis.dataToPlotterCoords(widgetposn,
-                        N.array([thresh_y_data]))[0]
-                    painter.drawLine(
-                        qt.QPointF(widgetposn[0], ty),
-                        qt.QPointF(widgetposn[2], ty))
+                    x1 = xaxis.dataToPlotterCoords(widgetposn,
+                        N.array([positions[i] - bw / 2]))[0]
+                    x2 = xaxis.dataToPlotterCoords(widgetposn,
+                        N.array([positions[i] + bw / 2]))[0]
+                    y1 = yaxis.dataToPlotterCoords(widgetposn,
+                        N.array([zeros[i]]))[0]
+                    y2 = yaxis.dataToPlotterCoords(widgetposn,
+                        N.array([vals[i]]))[0]
                 else:
-                    tx = xaxis.dataToPlotterCoords(widgetposn,
-                        N.array([thresh_y_data]))[0]
-                    painter.drawLine(
-                        qt.QPointF(tx, widgetposn[1]),
-                        qt.QPointF(tx, widgetposn[3]))
+                    y1 = yaxis.dataToPlotterCoords(widgetposn,
+                        N.array([positions[i] - bw / 2]))[0]
+                    y2 = yaxis.dataToPlotterCoords(widgetposn,
+                        N.array([positions[i] + bw / 2]))[0]
+                    x1 = xaxis.dataToPlotterCoords(widgetposn,
+                        N.array([zeros[i]]))[0]
+                    x2 = xaxis.dataToPlotterCoords(widgetposn,
+                        N.array([vals[i]]))[0]
 
-        painter.restore()
+                rect = qt.QRectF(
+                    qt.QPointF(min(x1, x2), min(y1, y2)),
+                    qt.QPointF(max(x1, x2), max(y1, y2)))
+                painter.drawRect(rect)
+
+            # draw cumulative line
+            if s.showCumulative and n > 0:
+                # scale cumulative to value axis (max val maps to 100%)
+                max_val = vals[0] if len(vals) > 0 else 1
+                total = vals.sum()
+                if total <= 0:
+                    total = 1.0  # avoid division by zero
+                cum_vals = N.cumsum(vals)
+
+                if vertical:
+                    cx = xaxis.dataToPlotterCoords(widgetposn, positions)
+                    cy = yaxis.dataToPlotterCoords(widgetposn,
+                        cum_vals / total * N.nanmax(vals) * 1.05)
+                else:
+                    cy = yaxis.dataToPlotterCoords(widgetposn, positions)
+                    cx = xaxis.dataToPlotterCoords(widgetposn,
+                        cum_vals / total * N.nanmax(vals) * 1.05)
+
+                cumpen = s.CumulativeLine.makeQPenWHide(painter)
+                painter.setPen(cumpen)
+                painter.setBrush(qt.Qt.BrushStyle.NoBrush)
+
+                path = qt.QPainterPath()
+                valid = N.isfinite(cx) & N.isfinite(cy)
+                first = True
+                for j in range(n):
+                    if valid[j]:
+                        if first:
+                            path.moveTo(cx[j], cy[j])
+                            first = False
+                        else:
+                            path.lineTo(cx[j], cy[j])
+                painter.drawPath(path)
+
+                # draw markers on cumulative line
+                markerbrush = s.CumulativeMarkerFill.makeQBrushWHide(painter)
+                painter.setBrush(markerbrush)
+                for j in range(n):
+                    if valid[j]:
+                        painter.drawEllipse(qt.QPointF(cx[j], cy[j]), 3, 3)
+
+                # 80% threshold line
+                if s.showPercentAxis and total > 0:
+                    threshold_val = 0.80 * total
+                    thresh_y_data = threshold_val / total * N.nanmax(vals) * 1.05
+                    dashpen = qt.QPen(qt.QColor(150, 150, 150))
+                    dashpen.setStyle(qt.Qt.PenStyle.DashLine)
+                    dashpen.setWidthF(1.0)
+                    painter.setPen(dashpen)
+                    if vertical:
+                        ty = yaxis.dataToPlotterCoords(widgetposn,
+                            N.array([thresh_y_data]))[0]
+                        painter.drawLine(
+                            qt.QPointF(widgetposn[0], ty),
+                            qt.QPointF(widgetposn[2], ty))
+                    else:
+                        tx = xaxis.dataToPlotterCoords(widgetposn,
+                            N.array([thresh_y_data]))[0]
+                        painter.drawLine(
+                            qt.QPointF(tx, widgetposn[1]),
+                            qt.QPointF(tx, widgetposn[3]))
+        finally:
+            painter.restore()
 
 
 document.thefactory.register(Pareto)

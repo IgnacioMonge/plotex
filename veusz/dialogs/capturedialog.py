@@ -25,9 +25,11 @@ from .. import setting
 from ..dataimport import capture, simpleread
 from .veuszdialog import VeuszDialog
 
+
 def _(text, disambiguation=None, context="CaptureDialog"):
     """Translate text."""
     return qt.QCoreApplication.translate(context, text, disambiguation)
+
 
 class CaptureDialog(VeuszDialog):
     """Capture dialog.
@@ -35,7 +37,7 @@ class CaptureDialog(VeuszDialog):
     This allows the user to set the various capture options."""
 
     def __init__(self, document, mainwindow):
-        VeuszDialog.__init__(self, mainwindow, 'capture.ui')
+        VeuszDialog.__init__(self, mainwindow, "capture.ui")
         self.document = document
 
         # set values of edit controls from previous invocation (if any)
@@ -51,34 +53,37 @@ class CaptureDialog(VeuszDialog):
 
         # floating point values for interval
         self.updateIntervalsEdit.setValidator(
-            qt.QDoubleValidator(1e-2, 10000000, 2, self))
+            qt.QDoubleValidator(1e-2, 10000000, 2, self)
+        )
 
-        # add completion for filenames
+        # add completion for filenames. Parent the QFileSystemModel to
+        # the completer so it (and its background watcher) is destroyed
+        # together with the dialog — otherwise it leaks a filesystem
+        # handle on Windows on each open/close cycle.
         c = self.filenamecompleter = qt.QCompleter(self)
-        model = qt.QFileSystemModel()
+        model = qt.QFileSystemModel(c)
         c.setModel(model)
         self.filenameEdit.setCompleter(c)
 
         # get notification of change of capture method
         self.methodBG = qt.QButtonGroup(self)
-        self.methodBG.addButton( self.captureFileButton, 0 )
-        self.methodBG.addButton( self.captureInternetButton, 1 )
-        self.methodBG.addButton( self.captureProgramButton, 2 )
+        self.methodBG.addButton(self.captureFileButton, 0)
+        self.methodBG.addButton(self.captureInternetButton, 1)
+        self.methodBG.addButton(self.captureProgramButton, 2)
         self.methodBG.idClicked[int].connect(self.slotMethodChanged)
         # restore previously clicked button
-        self.methodBG.button( d.get('CaptureDialog_method', 0) ).click()
+        self.methodBG.button(d.get("CaptureDialog_method", 0)).click()
 
         # get notification of change of stop method
         self.stopBG = qt.QButtonGroup(self)
-        self.stopBG.addButton( self.clickingStopButton, 0 )
-        self.stopBG.addButton( self.numLinesStopButton, 1 )
-        self.stopBG.addButton( self.timeStopButton, 2 )
+        self.stopBG.addButton(self.clickingStopButton, 0)
+        self.stopBG.addButton(self.numLinesStopButton, 1)
+        self.stopBG.addButton(self.timeStopButton, 2)
         self.stopBG.idClicked[int].connect(self.slotStopChanged)
-        self.stopBG.button( d.get('CaptureDialog_stop', 0) ).click()
+        self.stopBG.button(d.get("CaptureDialog_stop", 0)).click()
 
         # update interval
-        self.updateIntervalsCheck.toggled.connect(
-            self.updateIntervalsEdit.setEnabled)
+        self.updateIntervalsCheck.toggled.connect(self.updateIntervalsEdit.setEnabled)
 
         # tail data
         self.tailCheck.toggled.connect(self.tailEdit.setEnabled)
@@ -100,21 +105,21 @@ class CaptureDialog(VeuszDialog):
 
         # record values for next time dialog is opened
         d = setting.settingdb
-        d['CaptureDialog_method'] = self.methodBG.checkedId()
-        d['CaptureDialog_stop'] = self.stopBG.checkedId()
+        d["CaptureDialog_method"] = self.methodBG.checkedId()
+        d["CaptureDialog_stop"] = self.stopBG.checkedId()
 
     def slotMethodChanged(self, buttonid):
         """Enable/disable correct controls in methodBG."""
         # enable correct buttons
-        fc = buttonid==0
+        fc = buttonid == 0
         self.filenameEdit.setEnabled(fc)
         self.browseButton.setEnabled(fc)
 
-        ic = buttonid==1
+        ic = buttonid == 1
         self.hostEdit.setEnabled(ic)
         self.portEdit.setEnabled(ic)
 
-        xc = buttonid==2
+        xc = buttonid == 2
         self.commandLineEdit.setEnabled(xc)
 
     def slotStopChanged(self, buttonid):
@@ -129,12 +134,12 @@ class CaptureDialog(VeuszDialog):
     def slotBrowseClicked(self):
         """Browse for a data file."""
 
-        fd = qt.QFileDialog(self, 'Browse data file or socket')
-        fd.setFileMode( qt.QFileDialog.FileMode.ExistingFile )
+        fd = qt.QFileDialog(self, "Browse data file or socket")
+        fd.setFileMode(qt.QFileDialog.FileMode.ExistingFile)
 
         # update filename if changed
         if fd.exec() == qt.QDialog.DialogCode.Accepted:
-            self.filenameEdit.replaceAndAddHistory( fd.selectedFiles()[0] )
+            self.filenameEdit.replaceAndAddHistory(fd.selectedFiles()[0])
 
     def slotCaptureClicked(self):
         """User requested capture."""
@@ -151,18 +156,18 @@ class CaptureDialog(VeuszDialog):
             stop = self.stopBG.checkedId()
             if stop == 1:
                 # number of lines to read before stopping
-                maxlines = int( self.numLinesStopEdit.text() )
+                maxlines = int(self.numLinesStopEdit.text())
             elif stop == 2:
                 # maximum time period before stopping
-                timeout = int( self.timeStopEdit.text() )
+                timeout = int(self.timeStopEdit.text())
 
             # whether to do an update periodically
             if self.updateIntervalsCheck.isChecked():
-                updateinterval = float( self.updateIntervalsEdit.text() )
+                updateinterval = float(self.updateIntervalsEdit.text())
 
             # whether to only retain N values
             if self.tailCheck.isChecked():
-                tail = int( self.tailEdit.text() )
+                tail = int(self.tailEdit.text())
 
         except ValueError:
             qt.QMessageBox.critical(self, _("Invalid number"), _("Invalid number"))
@@ -178,18 +183,17 @@ class CaptureDialog(VeuszDialog):
             elif method == 1:
                 # internet socket
                 stream = capture.SocketCaptureStream(
-                    self.hostEdit.text(),
-                    int(self.portEdit.text()) )
+                    self.hostEdit.text(), int(self.portEdit.text())
+                )
             elif method == 2:
                 # external program
-                stream = capture.CommandCaptureStream(
-                    self.commandLineEdit.text())
+                stream = capture.CommandCaptureStream(self.commandLineEdit.text())
         except EnvironmentError as e:
             # problem opening stream
             qt.QMessageBox.critical(
-                self, _("Cannot open input"),
-                _("Cannot open input:\n %s (error %i)") % (
-                    e.strerror, e.errno)
+                self,
+                _("Cannot open input"),
+                _("Cannot open input:\n %s (error %i)") % (e.strerror, e.errno),
             )
             return
 
@@ -197,18 +201,19 @@ class CaptureDialog(VeuszDialog):
         stream.timeout = timeout
         simprd.tail = tail
         cd = CapturingDialog(
-            self.document, simprd, stream, self,
-            updateinterval=updateinterval)
+            self.document, simprd, stream, self, updateinterval=updateinterval
+        )
         self.mainwindow.showDialog(cd)
 
+
 ########################################################################
+
 
 class CapturingDialog(VeuszDialog):
     """Capturing data dialog.
     Shows progress to user."""
 
-    def __init__(self, document, simprd, stream, parent,
-                 updateinterval = None):
+    def __init__(self, document, simprd, stream, parent, updateinterval=None):
         """Initialse capture dialog:
         document: document to send data to
         simprd: object to interpret data
@@ -217,7 +222,7 @@ class CapturingDialog(VeuszDialog):
         updateinterval: if set, interval of seconds to update data in doc
         """
 
-        VeuszDialog.__init__(self, parent, 'capturing.ui')
+        VeuszDialog.__init__(self, parent, "capturing.ui")
 
         self.document = document
         self.simpleread = simprd
@@ -241,17 +246,16 @@ class CapturingDialog(VeuszDialog):
         # timer for updating display
         self.displaytimer = qt.QTimer(self)
         self.displaytimer.timeout.connect(self.slotDisplayTimer)
-        self.sourceLabel.setText(
-            self.sourceLabel.text() % stream.name )
+        self.sourceLabel.setText(self.sourceLabel.text() % stream.name)
         self.txt_statusLabel = self.statusLabel.text()
-        self.slotDisplayTimer() # initialise label
+        self.slotDisplayTimer()  # initialise label
 
         # timer to update document
         self.updatetimer = qt.QTimer(self)
         self.updateoperation = None
         if updateinterval:
             self.updatetimer.timeout.connect(self.slotUpdateTimer)
-            self.updatetimer.start( int(updateinterval*1000) )
+            self.updatetimer.start(int(updateinterval * 1000))
 
         # start display and read timers
         self.displaytimer.start(1000)
@@ -263,13 +267,13 @@ class CapturingDialog(VeuszDialog):
             self.simpleread.readData(self.stream)
         except capture.CaptureFinishException as e:
             # stream tells us it's time to finish
-            self.streamCaptureFinished( str(e) )
+            self.streamCaptureFinished(str(e))
 
     def slotDisplayTimer(self):
         """Time to update information about data source."""
         self.statusLabel.setText(
-            self.txt_statusLabel %
-            (self.stream.bytesread, self.starttime.elapsed() // 1000)
+            self.txt_statusLabel
+            % (self.stream.bytesread, self.starttime.elapsed() // 1000)
         )
 
         tree = self.datasetTreeWidget
@@ -283,7 +287,7 @@ class CapturingDialog(VeuszDialog):
                 find[0].setText(1, str(length))
             else:
                 # add new item
-                tree.addTopLevelItem( qt.QTreeWidgetItem([name, str(length)]))
+                tree.addTopLevelItem(qt.QTreeWidgetItem([name, str(length)]))
 
     def slotUpdateTimer(self):
         """Called to update document while data is being captured."""
@@ -293,8 +297,7 @@ class CapturingDialog(VeuszDialog):
             self.updateoperation.undo(self.document)
 
         # create new one
-        self.updateoperation = capture.OperationDataCaptureSet(
-            self.simpleread)
+        self.updateoperation = capture.OperationDataCaptureSet(self.simpleread)
 
         # apply it (bypass history here - urgh)
         self.updateoperation.do(self.document)
@@ -321,7 +324,7 @@ class CapturingDialog(VeuszDialog):
         """Finish capturing and save the results."""
 
         # close down timers
-        self.streamCaptureFinished('')
+        self.streamCaptureFinished("")
 
         # undo any in-progress update
         if self.updateoperation:
@@ -338,12 +341,29 @@ class CapturingDialog(VeuszDialog):
         """Cancel capturing."""
 
         # close down timers
-        self.streamCaptureFinished('')
+        self.streamCaptureFinished("")
 
         # undo any in-progress update
         if self.updateoperation:
             self.updateoperation.undo(self.document)
-            self.document.setModified()
 
         # close dialog
         self.close()
+
+    def closeEvent(self, event):
+        """Ensure capture is torn down if the user closes the dialog
+        with the window-manager X (instead of Cancel/Finish).
+
+        Without this, the read/display/update timers and the underlying
+        capture stream stayed alive after the widget was hidden — leaking
+        the subprocess/socket and continuing to mutate the document in
+        the background.
+        """
+        try:
+            if getattr(self, "stream", None) is not None:
+                self.streamCaptureFinished("")
+                if self.updateoperation:
+                    self.updateoperation.undo(self.document)
+        except Exception:
+            pass
+        VeuszDialog.closeEvent(self, event)

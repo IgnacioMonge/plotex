@@ -45,6 +45,7 @@ import os.path
 import struct
 import socket
 import subprocess
+import threading
 import time
 import uuid
 import functools
@@ -54,9 +55,10 @@ import json
 # check remote process has this API version
 API_VERSION = 2
 
+
 def findOnPath(cmd):
     """Find a command on the system path, or None if does not exist."""
-    path = os.getenv('PATH', os.path.defpath)
+    path = os.getenv("PATH", os.path.defpath)
     pathparts = path.split(os.path.pathsep)
     for dirname in pathparts:
         dirname = dirname.strip('"')
@@ -65,6 +67,7 @@ def findOnPath(cmd):
             return cmdtry
     return None
 
+
 class Embedded:
     """An embedded instance of Plotex.
 
@@ -72,8 +75,18 @@ class Embedded:
     """
 
     remote = None
+    serv_socket = -1
+    # Serialise sendCommand: the request/response wire is a single byte
+    # stream, so two threads in the host program calling Plotex APIs
+    # concurrently would otherwise interleave length headers and JSON
+    # payloads, corrupting the protocol.
+    _send_lock = threading.Lock()
+    # Guard startRemote against concurrent first-init from multiple threads.
+    _start_lock = threading.Lock()
 
-    def __init__(self, name='Plotex', copyof=None, hidden=False, compatlevel=0, debug=False):
+    def __init__(
+        self, name="Plotex", copyof=None, hidden=False, compatlevel=0, debug=False
+    ):
         """Initialse the embedded Plotex window.
 
         name is the name of the window to show.
@@ -84,28 +97,44 @@ class Embedded:
         """
 
         if not Embedded.remote:
-            Embedded.startRemote(debug)
+            with Embedded._start_lock:
+                # Re-check inside the lock: another thread may have
+                # raced us through and already spawned the remote.
+                if not Embedded.remote:
+                    Embedded.startRemote(debug)
 
         if not copyof:
             retval = self.sendCommand(
-                (-1, '_NewWindow', (name,), {
-                    'hidden': hidden,
-                }) )
+                (
+                    -1,
+                    "_NewWindow",
+                    (name,),
+                    {
+                        "hidden": hidden,
+                    },
+                )
+            )
         else:
             retval = self.sendCommand(
-                (-1, '_NewWindowCopy', (name, copyof.winno), {
-                    'hidden': hidden,
-                }) )
+                (
+                    -1,
+                    "_NewWindowCopy",
+                    (name, copyof.winno),
+                    {
+                        "hidden": hidden,
+                    },
+                )
+            )
 
         self.winno, cmds = retval
 
         # add methods corresponding to Plotex commands
         for name, doc in cmds:
             func = functools.partial(self.runCommand, name)
-            func.__doc__ = doc    # set docstring
+            func.__doc__ = doc  # set docstring
             func.__name__ = name  # make name match what it calls
-            method =  types.MethodType(func, self)
-            setattr(self, name, method) # assign to self
+            method = types.MethodType(func, self)
+            setattr(self, name, method)  # assign to self
 
         # check API version is same
         try:
@@ -115,8 +144,7 @@ class Embedded:
         if remotever != API_VERSION:
             raise RuntimeError(
                 "Remote Plotex instance reports version %i of"
-                " API. This embed.py supports version %i." %
-                (remotever, API_VERSION)
+                " API. This embed.py supports version %i." % (remotever, API_VERSION)
             )
 
         # increase compatibility level (if requested)
@@ -124,9 +152,9 @@ class Embedded:
             self.SetCompatLevel(compatlevel)
 
         # define root object
-        self.Root = WidgetNode(self, 'widget', '/')
+        self.Root = WidgetNode(self, "widget", "/")
 
-    def StartSecondView(self, name = 'Plotex'):
+    def StartSecondView(self, name="Plotex"):
         """Provides a second view onto the document of this window.
 
         Returns an Embedded instance
@@ -147,7 +175,7 @@ class Embedded:
         Returns string to send to remote process
         """
 
-        if ( hasattr(socket, 'AF_UNIX') and hasattr(socket, 'socketpair') ):
+        if hasattr(socket, "AF_UNIX") and hasattr(socket, "socketpair"):
             # convenient interface
             cls.sockfamily = socket.AF_UNIX
             sock, socket2 = socket.socketpair(cls.sockfamily, socket.SOCK_STREAM)
@@ -158,8 +186,8 @@ class Embedded:
             except AttributeError:
                 pass
 
-            sendtext = 'unix %i\n' % socket2.fileno()
-            cls.socket2 = socket2    # prevent socket being destroyed
+            sendtext = "unix %i\n" % socket2.fileno()
+            cls.socket2 = socket2  # prevent socket being destroyed
             waitaccept = False
 
         else:
@@ -168,13 +196,13 @@ class Embedded:
             # * It is required where socketpair is not supported
             cls.sockfamily = socket.AF_INET
             sock = socket.socket(cls.sockfamily, socket.SOCK_STREAM)
-            sock.bind( ('localhost', 0) )
+            sock.bind(("localhost", 0))
             interface, port = sock.getsockname()
             sock.listen(1)
-            sendtext = 'internet %s %i\n' % (interface, port)
+            sendtext = "internet %s %i\n" % (interface, port)
             waitaccept = True
 
-        return (sock, sendtext.encode('ascii'), waitaccept)
+        return (sock, sendtext.encode("ascii"), waitaccept)
 
     @classmethod
     def makeRemoteProcess(cls, debug):
@@ -184,31 +212,31 @@ class Embedded:
         thisdir = os.path.dirname(os.path.abspath(__file__))
 
         # build up a list of possible command lines to start the remote veusz
-        if sys.platform == 'win32':
+        if sys.platform == "win32":
             # windows is a special case
             # we need to run embed_remote.py under pythonw.exe, not python.exe
 
             # look for the python windows interpreter on path
-            findpython = findOnPath('pythonw.exe')
+            findpython = findOnPath("pythonw.exe")
             if not findpython:
                 # if it wasn't on the path, use sys.prefix instead
-                findpython = os.path.join(sys.prefix, 'pythonw.exe')
+                findpython = os.path.join(sys.prefix, "pythonw.exe")
 
             # look for plotex/veusz executable on path
-            findexe = findOnPath('plotex.exe') or findOnPath('veusz.exe')
+            findexe = findOnPath("plotex.exe") or findOnPath("veusz.exe")
             if not findexe:
                 try:
                     # add the usual place as a guess :-(
                     findexe = os.path.join(
-                        os.environ['ProgramFiles'],
-                        'Plotex', 'plotex.exe')
+                        os.environ["ProgramFiles"], "Plotex", "plotex.exe"
+                    )
                 except KeyError:
                     pass
 
             # here is the list of commands to try
             possiblecommands = [
-                [ findpython, os.path.join(thisdir, 'veusz_main.py') ],
-                [ findexe ],
+                [findpython, os.path.join(thisdir, "veusz_main.py")],
+                [findexe],
             ]
 
         else:
@@ -217,35 +245,38 @@ class Embedded:
             # try embed_remote.py in this directory, veusz in this directory
             # or veusz on the path in order
             possiblecommands = [
-                [ executable, os.path.join(thisdir, 'veusz_main.py') ],
-                [ os.path.join(thisdir, 'veusz') ],
-                [ findOnPath('veusz') ],
+                [executable, os.path.join(thisdir, "veusz_main.py")],
+                [os.path.join(thisdir, "veusz")],
+                [findOnPath("veusz")],
             ]
 
         # look for Plotex/Veusz app for MacOS under the standard application directory
-        if sys.platform == 'darwin':
-            findbundle = findOnPath('Plotex.app') or findOnPath('Veusz.app')
+        if sys.platform == "darwin":
+            findbundle = findOnPath("Plotex.app") or findOnPath("Veusz.app")
             if findbundle:
                 appname = os.path.splitext(os.path.basename(findbundle))[0]
-                possiblecommands += [ [findbundle+'/Contents/MacOS/'+appname] ]
+                possiblecommands += [[findbundle + "/Contents/MacOS/" + appname]]
             else:
-                possiblecommands += [[
-                    '/Applications/Plotex.app/Contents/MacOS/Plotex' ]]
-                possiblecommands += [[
-                    os.path.expanduser('~/Applications/Plotex.app/Contents/MacOS/Plotex')]]
-
+                possiblecommands += [["/Applications/Plotex.app/Contents/MacOS/Plotex"]]
+                possiblecommands += [
+                    [
+                        os.path.expanduser(
+                            "~/Applications/Plotex.app/Contents/MacOS/Plotex"
+                        )
+                    ]
+                ]
 
         for cmd in possiblecommands:
             # only try to run commands that exist as error handling
             # does not work well when interfacing with OS (especially Windows)
-            if ( None not in cmd and
-                 False not in [os.path.isfile(c) for c in cmd] ):
+            if None not in cmd and False not in [os.path.isfile(c) for c in cmd]:
                 try:
                     # we don't use stdout below, but works around windows bug
                     # http://bugs.python.org/issue1124861
                     cls.remote = subprocess.Popen(
-                        cmd + ['--embed-remote'],
-                        shell=False, bufsize=0,
+                        cmd + ["--embed-remote"],
+                        shell=False,
+                        bufsize=0,
                         close_fds=False,
                         stdin=subprocess.PIPE,
                         stdout=subprocess.DEVNULL,
@@ -255,7 +286,7 @@ class Embedded:
                 except OSError:
                     pass
 
-        raise RuntimeError('Unable to find a Plotex executable on system path')
+        raise RuntimeError("Unable to find a Plotex executable on system path")
 
     @classmethod
     def startRemote(cls, debug):
@@ -266,7 +297,7 @@ class Embedded:
         stdin = cls.remote.stdin
 
         # send socket number over pipe
-        stdin.write( sendtext )
+        stdin.write(sendtext)
 
         # accept connection if necessary
         if waitaccept:
@@ -276,85 +307,133 @@ class Embedded:
         # check it comes back.  This is to check that no program has
         # secretly connected on our port, which isn't really useful
         # for AF_UNIX sockets.
-        secret = (str(uuid.uuid4()) + '\n').encode('ascii')
+        secret = (str(uuid.uuid4()) + "\n").encode("ascii")
         stdin.write(secret)
         secretback = cls.readLenFromSocket(cls.serv_socket, len(secret))
         if secret != secretback:
             raise RuntimeError("Security between client and server broken")
 
         # packet length for command bytes
-        cls.cmdlen = struct.calcsize('<I')
+        cls.cmdlen = struct.calcsize("<I")
         atexit.register(cls.exitQt)
 
     @staticmethod
     def readLenFromSocket(socket, length):
-        """Read length bytes from socket."""
-        s = b''
+        """Read length bytes from socket. Raises ConnectionError on EOF."""
+        s = b""
         while len(s) < length:
-            s += socket.recv(length-len(s))
+            chunk = socket.recv(length - len(s))
+            if not chunk:
+                raise ConnectionError(
+                    "Socket closed by peer before %d bytes received" % length
+                )
+            s += chunk
         return s
 
     @staticmethod
     def writeToSocket(socket, data):
         count = 0
         while count < len(data):
-            count += socket.send(data[count:])
+            try:
+                sent = socket.send(data[count:])
+            except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError) as e:
+                # Remote crashed/quit mid-write. Surface a recognisable
+                # error instead of letting the partial-write loop spin
+                # forever or leak a half-formed packet.
+                raise ConnectionError("Remote Plotex closed the socket: %s" % e)
+            if sent == 0:
+                raise ConnectionError("Remote Plotex closed the socket during send")
+            count += sent
 
     @classmethod
     def sendCommand(cls, cmd):
-        """Send the command to the remote process."""
+        """Send the command to the remote process.
+
+        Holds a class-level lock so concurrent callers can't interleave
+        request/response packets on the shared socket.
+        """
+
+        if cls.serv_socket == -1 or cls.serv_socket is None:
+            raise ConnectionError("Plotex embedded instance has been shut down")
 
         # Serialize command as JSON
-        outs = json.dumps(cmd).encode('utf-8')
+        outs = json.dumps(cmd).encode("utf-8")
 
-        cls.writeToSocket( cls.serv_socket, struct.pack('<I', len(outs)) )
-        cls.writeToSocket( cls.serv_socket, outs )
+        with cls._send_lock:
+            cls.writeToSocket(cls.serv_socket, struct.pack("<I", len(outs)))
+            cls.writeToSocket(cls.serv_socket, outs)
 
-        backlen = struct.unpack('<I', cls.readLenFromSocket(
-            cls.serv_socket, cls.cmdlen))[0]
-        rets = cls.readLenFromSocket( cls.serv_socket, backlen )
-        retobj = json.loads(rets.decode('utf-8'))
+            backlen = struct.unpack(
+                "<I", cls.readLenFromSocket(cls.serv_socket, cls.cmdlen)
+            )[0]
+            rets = cls.readLenFromSocket(cls.serv_socket, backlen)
+        retobj = json.loads(rets.decode("utf-8"))
 
         # Check if the response is an exception
-        if isinstance(retobj, dict) and retobj.get('__exception__'):
-            exc_type = retobj.get('type', 'RuntimeError')
-            exc_msg = retobj.get('message', 'Unknown error')
+        if isinstance(retobj, dict) and retobj.get("__exception__"):
+            exc_type = retobj.get("type", "RuntimeError")
+            exc_msg = retobj.get("message", "Unknown error")
+            remote_tb = retobj.get("traceback")
+            if remote_tb:
+                exc_msg = "%s\n\nRemote traceback:\n%s" % (exc_msg, remote_tb)
             # Map common exception types
             exc_class = {
-                'AttributeError': AttributeError,
-                'ValueError': ValueError,
-                'TypeError': TypeError,
-                'RuntimeError': RuntimeError,
-                'KeyError': KeyError,
-                'IndexError': IndexError,
-                'IOError': IOError,
-                'OSError': OSError,
-                'FileNotFoundError': FileNotFoundError,
+                "AttributeError": AttributeError,
+                "ValueError": ValueError,
+                "TypeError": TypeError,
+                "RuntimeError": RuntimeError,
+                "KeyError": KeyError,
+                "IndexError": IndexError,
+                "IOError": IOError,
+                "OSError": OSError,
+                "FileNotFoundError": FileNotFoundError,
             }.get(exc_type, RuntimeError)
             raise exc_class(exc_msg)
-        elif isinstance(retobj, dict) and 'result' in retobj:
-            return retobj['result']
+        elif isinstance(retobj, dict) and "result" in retobj:
+            return retobj["result"]
         else:
             return retobj
 
     def runCommand(self, cmd, *args, **args2):
         """Execute the given function in the Qt thread with the arguments
         given."""
-        return self.sendCommand( (self.winno, cmd, args[1:], args2) )
+        return self.sendCommand((self.winno, cmd, args[1:], args2))
 
     @classmethod
     def exitQt(cls):
-        """Exit the Qt thread."""
+        """Exit the Qt thread and reap the remote process."""
         try:
-            cls.sendCommand( (-1, '_Quit', (), {}) )
+            cls.sendCommand((-1, "_Quit", (), {}))
             cls.serv_socket.shutdown(socket.SHUT_RDWR)
             cls.serv_socket.close()
-        except socket.error:
+        except (socket.error, AttributeError, ConnectionError):
+            # AttributeError: exit before startRemote completed
+            # ConnectionError: remote already gone
             pass
-        cls.serv_socket, cls.from_pipe = -1, -1
+        cls.serv_socket = -1
+
+        # Reap the remote process. Without this it lingers as a zombie on
+        # Unix and as a pending handle on Windows when Plotex is used as
+        # an embedded library inside a longer-lived host (Jupyter, batch
+        # scripts, etc.). Bounded wait so atexit never blocks shutdown.
+        remote = cls.remote
+        if remote is not None:
+            try:
+                remote.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                try:
+                    remote.kill()
+                    remote.wait(timeout=2)
+                except Exception:
+                    pass
+            except Exception:
+                pass
+            cls.remote = None
+
 
 ############################################################################
 # Tree-based interface to Veusz widget tree below
+
 
 class Node:
     """Represents an element in the Veusz widget-settinggroup-setting tree."""
@@ -375,14 +454,17 @@ class Node:
     def __repr__(self):
         """Text description"""
         return "<%s at %s (type %s)>" % (
-            self.__class__.__name__, repr(self._path), self._type)
+            self.__class__.__name__,
+            repr(self._path),
+            self._type,
+        )
 
     def fromPath(self, path):
         """Return a new Node for the path given."""
         wtype = self._ci.NodeType(path)
-        if wtype == 'widget':
+        if wtype == "widget":
             return WidgetNode(self._ci, wtype, path)
-        elif wtype == 'setting':
+        elif wtype == "setting":
             return SettingNode(self._ci, wtype, path)
         else:
             return SettingGroupNode(self._ci, wtype, path)
@@ -399,36 +481,38 @@ class Node:
 
     def _joinPath(self, child):
         """Return new path of child."""
-        if self._path == '/':
-            return '/' + child
+        if self._path == "/":
+            return "/" + child
         else:
-            return self._path + '/' + child
+            return self._path + "/" + child
 
     def __getitem__(self, key):
         """Return a child widget, settinggroup or setting."""
 
-        if self._type != 'setting':
+        if self._type != "setting":
             try:
                 return self.fromPath(self._joinPath(key))
             except ValueError:
                 pass
 
-        raise KeyError("%s does not have key or child '%s'" % (
-            self.__class__.__name__, key))
+        raise KeyError(
+            "%s does not have key or child '%s'" % (self.__class__.__name__, key)
+        )
 
     def __getattr__(self, attr):
         """Return a child widget, settinggroup or setting."""
 
-        if self._type == 'setting':
+        if self._type == "setting":
             pass
-        elif attr[:2] != '__':
+        elif attr[:2] != "__":
             try:
                 return self.fromPath(self._joinPath(attr))
             except ValueError:
                 pass
 
-        raise AttributeError("%s does not have attribute or child '%s'" % (
-            self.__class__.__name__, attr))
+        raise AttributeError(
+            "%s does not have attribute or child '%s'" % (self.__class__.__name__, attr)
+        )
 
     # boring ways to get children of nodes
     @property
@@ -436,73 +520,80 @@ class Node:
         """Generator to get children as Nodes."""
         for c in self._ci.NodeChildren(self._path):
             yield self.fromPath(self._joinPath(c))
+
     @property
     def children_widgets(self):
         """Generator to get child widgets as Nodes."""
-        for c in self._ci.NodeChildren(self._path, types='widget'):
+        for c in self._ci.NodeChildren(self._path, types="widget"):
             yield self.fromPath(self._joinPath(c))
+
     @property
     def children_settings(self):
         """Generator to get child settings as Nodes."""
-        for c in self._ci.NodeChildren(self._path, types='setting'):
+        for c in self._ci.NodeChildren(self._path, types="setting"):
             yield self.fromPath(self._joinPath(c))
+
     @property
     def children_settinggroups(self):
         """Generator to get child settingsgroups as Nodes."""
-        for c in self._ci.NodeChildren(self._path, types='settinggroup'):
+        for c in self._ci.NodeChildren(self._path, types="settinggroup"):
             yield self.fromPath(self._joinPath(c))
 
     @property
     def childnames(self):
         """Get names of children."""
         return self._ci.NodeChildren(self._path)
+
     @property
     def childnames_widgets(self):
         """Get names of children widgets."""
-        return self._ci.NodeChildren(self._path, types='widget')
+        return self._ci.NodeChildren(self._path, types="widget")
+
     @property
     def childnames_settings(self):
         """Get names of child settings."""
-        return self._ci.NodeChildren(self._path, types='setting')
+        return self._ci.NodeChildren(self._path, types="setting")
+
     @property
     def childnames_settinggroups(self):
         """Get names of child setting groups"""
-        return self._ci.NodeChildren(self._path, types='settinggroup')
+        return self._ci.NodeChildren(self._path, types="settinggroup")
 
     @property
     def parent(self):
         """Return parent of node."""
-        if self._path == '/':
-            raise TypeError("Cannot get parent node of root node""")
-        p = self._path.split('/')[:-1]
-        if p == ['']:
-            newpath = '/'
+        if self._path == "/":
+            raise TypeError("Cannot get parent node of root node")
+        p = self._path.split("/")[:-1]
+        if p == [""]:
+            newpath = "/"
         else:
-            newpath = '/'.join(p)
+            newpath = "/".join(p)
         return self.fromPath(newpath)
 
     @property
     def name(self):
         """Get name of node."""
-        if self._path == '/':
+        if self._path == "/":
             return self._path
         else:
-            return self._path.split('/')[-1]
+            return self._path.split("/")[-1]
+
 
 class SettingNode(Node):
     """A node which is a setting."""
 
     def _getVal(self):
         """The value of a setting."""
-        if self._type == 'setting':
+        if self._type == "setting":
             return self._ci.Get(self._path)
-        raise TypeError("Cannot get value unless is a setting""")
+        raise TypeError("Cannot get value unless is a setting")
 
     def _setVal(self, val):
-        if self._type == 'setting':
+        if self._type == "setting":
             self._ci.Set(self._path, val)
         else:
-            raise TypeError("Cannot set value unless is a setting.""")
+            raise TypeError("Cannot set value unless is a setting.")
 
     val = property(_getVal, _setVal)
 
@@ -543,10 +634,12 @@ class SettingNode(Node):
         """Get the type of setting, which is a string."""
         return self._ci.SettingType(self._path)
 
+
 class SettingGroupNode(Node):
     """A node containing a group of settings."""
 
     pass
+
 
 class WidgetNode(Node):
     """A node pointing to a widget."""
@@ -570,21 +663,20 @@ class WidgetNode(Node):
                 yield w
 
     def Add(self, widgettype, *args, **args_opt):
-        """Add a widget of the type given, returning the Node instance.
-        """
+        """Add a widget of the type given, returning the Node instance."""
 
-        args_opt['widget'] = self._path
+        args_opt["widget"] = self._path
         name = self._ci.Add(widgettype, *args, **args_opt)
-        return WidgetNode( self._ci, 'widget', self._joinPath(name) )
+        return WidgetNode(self._ci, "widget", self._joinPath(name))
 
     def Rename(self, newname):
         """Renames widget to name given."""
 
-        if self._path == '/':
+        if self._path == "/":
             raise RuntimeError("Cannot rename root widget")
 
         self._ci.Rename(self._path, newname)
-        self._path = '/'.join( self._path.split('/')[:-1] + [newname] )
+        self._path = "/".join(self._path.split("/")[:-1] + [newname])
 
     def Action(self, action):
         """Applies action on widget."""
@@ -598,6 +690,5 @@ class WidgetNode(Node):
         """Clone widget, placing at newparent. Uses newname if given.
 
         Returns new node."""
-        path = self._ci.CloneWidget(
-            self._path, newparent._path, newname=newname)
-        return WidgetNode( self._ci, 'widget', path )
+        path = self._ci.CloneWidget(self._path, newparent._path, newname=newname)
+        return WidgetNode(self._ci, "widget", path)

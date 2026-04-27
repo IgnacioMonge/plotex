@@ -25,12 +25,18 @@ from .commonfn import _
 from .oned import Dataset1DBase
 from .expression import evalDatasetExpression
 
+
 class DatasetHistoGenerator:
-    def __init__(self, document, inexpr,
-                 binmanual = None, binparams = None,
-                 method = 'counts',
-                 cumulative = 'none',
-                 errors=False):
+    def __init__(
+        self,
+        document,
+        inexpr,
+        binmanual=None,
+        binparams=None,
+        method="counts",
+        cumulative="none",
+        errors=False,
+    ):
         """
         inexpr = ds expression
         binmanual = None / [1,2,3,4,5]
@@ -46,7 +52,7 @@ class DatasetHistoGenerator:
         self.inexpr = inexpr
         self.binmanual = binmanual
         if binparams is None:
-            self.binparams = (10, 'Auto', 'Auto', False)
+            self.binparams = (10, "Auto", "Auto", False)
         else:
             self.binparams = binparams
         self.method = method
@@ -76,18 +82,28 @@ class DatasetHistoGenerator:
         else:
             numbins, minval, maxval, islog = self.binparams
 
-            if minval == 'Auto' or maxval == 'Auto':
+            if minval == "Auto" or maxval == "Auto":
                 data = self.getData()
                 if data is None:
                     return N.array([])
-                if minval == 'Auto':
+                if minval == "Auto":
                     minval = N.min(data)
-                if maxval == 'Auto':
+                if maxval == "Auto":
                     maxval = N.max(data)
 
             if not islog:
+                # Guard against degenerate inputs: ``numbins<=0`` from a
+                # bad config and ``maxval==minval`` from a single-value
+                # dataset both produce a useless histogram (delta=0 ->
+                # all bins on the same edge). Return a single, sensible
+                # bin edge pair instead so downstream paths don't crash
+                # on inf/0 division or render N coincident bars.
+                if numbins <= 0:
+                    return N.array([minval, minval + 1.0])
+                if maxval == minval:
+                    return N.array([minval, minval + 1.0])
                 delta = (maxval - minval) / numbins
-                return N.arange(numbins+1)*delta + minval
+                return N.arange(numbins + 1) * delta + minval
             else:
                 if minval <= 0:
                     minval = 1e-99
@@ -95,7 +111,7 @@ class DatasetHistoGenerator:
                     maxval = 1e99
                 lmin, lmax = N.log(minval), N.log(maxval)
                 delta = (lmax - lmin) / numbins
-                return N.exp( N.arange(numbins+1)*delta + lmin )
+                return N.exp(N.arange(numbins + 1) * delta + lmin)
 
     def getBinLocations(self):
         """Return bin centre, -ve bin width, +ve bin width."""
@@ -108,10 +124,10 @@ class DatasetHistoGenerator:
         if self.binparams and self.binparams[3]:
             # log bins
             lbin = N.log(binlocs)
-            data = N.exp( 0.5*(lbin[:-1] + lbin[1:]) )
+            data = N.exp(0.5 * (lbin[:-1] + lbin[1:]))
         else:
             # otherwise linear bins
-            data = 0.5*(binlocs[:-1] + binlocs[1:])
+            data = 0.5 * (binlocs[:-1] + binlocs[1:])
 
         # error bars
         nerr = binlocs[:-1] - data
@@ -125,24 +141,24 @@ class DatasetHistoGenerator:
         hist = hist.astype(N.float64)  # integers can break plots (github#49)
 
         # calculate scaling values for error bars
-        if self.method == 'density':
-            ratio = 1. / (hist.size*(edges[1:]-edges[:-1]))
-        elif self.method == 'fractions':
-            ratio = 1. / data.size
+        if self.method == "density":
+            ratio = 1.0 / (hist.size * (edges[1:] - edges[:-1]))
+        elif self.method == "fractions":
+            ratio = 1.0 / data.size
         else:
-            ratio = 1.
+            ratio = 1.0
 
         # compute cumulative values (errors correlated)
-        if self.cumulative == 'smalltolarge':
+        if self.cumulative == "smalltolarge":
             hist = N.cumsum(hist)
-        elif self.cumulative == 'largetosmall':
+        elif self.cumulative == "largetosmall":
             hist = N.cumsum(hist[::-1])[::-1]
 
         # Gehrels 1986 ApJ 303 336
-        perr = 1. + N.sqrt(hist + 0.75)
-        nerr = N.where(hist > 0, N.sqrt(hist - 0.25), 0.)
+        perr = 1.0 + N.sqrt(hist + 0.75)
+        nerr = N.where(hist > 0, N.sqrt(hist - 0.25), 0.0)
 
-        return -nerr*ratio, perr*ratio
+        return -nerr * ratio, perr * ratio
 
     def getBinVals(self):
         """Return results for each bin."""
@@ -151,18 +167,18 @@ class DatasetHistoGenerator:
         if data is None:
             return (N.array([]), None, None)
 
-        density = self.method == 'density'
+        density = self.method == "density"
         binlocs = self.binLocations()
         hist, edges = N.histogram(data, bins=binlocs, density=density)
         hist = hist.astype(N.float64)  # integers can break plots (github#49)
 
-        if self.method == 'fractions':
-            hist = hist * (1./data.size)
+        if self.method == "fractions":
+            hist = hist * (1.0 / data.size)
 
         # if cumulative wanted
-        if self.cumulative == 'smalltolarge':
+        if self.cumulative == "smalltolarge":
             hist = N.cumsum(hist)
-        elif self.cumulative == 'largetosmall':
+        elif self.cumulative == "largetosmall":
             hist = N.cumsum(hist[::-1])[::-1]
 
         if self.errors:
@@ -175,6 +191,7 @@ class DatasetHistoGenerator:
     def generateBinDataset(self):
         self.bindataset = DatasetHistoBins(self, self.document)
         return self.bindataset
+
     def generateValueDataset(self):
         self.valuedataset = DatasetHistoValues(self, self.document)
         return self.valuedataset
@@ -183,7 +200,7 @@ class DatasetHistoGenerator:
         """Save two datasets to file."""
 
         # lookup names of datasets in document
-        bindsname = valuedsname = ''
+        bindsname = valuedsname = ""
         for name, ds in self.document.data.items():
             if ds is self.bindataset:
                 bindsname = name
@@ -193,30 +210,38 @@ class DatasetHistoGenerator:
         fileobj.write(
             "CreateHistogram(%s, %s, %s, binparams=%s, "
             "binmanual=%s, method=%s, "
-            "cumulative=%s, errors=%s)\n" % (
+            "cumulative=%s, errors=%s)\n"
+            % (
                 utils.rrepr(self.inexpr),
                 utils.rrepr(bindsname),
                 utils.rrepr(valuedsname),
-                utils.rrepr(self.binparams), utils.rrepr(self.binmanual),
-                utils.rrepr(self.method), utils.rrepr(self.cumulative),
-                utils.rrepr(self.errors))
+                utils.rrepr(self.binparams),
+                utils.rrepr(self.binmanual),
+                utils.rrepr(self.method),
+                utils.rrepr(self.cumulative),
+                utils.rrepr(self.errors),
+            )
         )
 
     def linkedInformation(self):
         """Informating about linking."""
 
         if self.binmanual is not None:
-            bins = _('manual bins')
+            bins = _("manual bins")
         else:
-            bins = _('%i bins from %s to %s') % (
-                self.binparams[0], self.binparams[1], self.binparams[2])
+            bins = _("%i bins from %s to %s") % (
+                self.binparams[0],
+                self.binparams[1],
+                self.binparams[2],
+            )
 
         return _("Histogram of '%s' with %s") % (self.inexpr, bins)
+
 
 class DatasetHistoBins(Dataset1DBase):
     """A dataset for getting the bin positions for the histogram."""
 
-    dstype = _('Histogram')
+    dstype = _("Histogram")
 
     def __init__(self, generator, document):
         Dataset1DBase.__init__(self)
@@ -248,10 +273,11 @@ class DatasetHistoBins(Dataset1DBase):
     perr = property(lambda self: self.getData()[2])
     serr = None
 
+
 class DatasetHistoValues(Dataset1DBase):
     """A dataset for getting the height of the bins in a histogram."""
 
-    dstype = _('Histogram')
+    dstype = _("Histogram")
 
     def __init__(self, generator, document):
         Dataset1DBase.__init__(self)

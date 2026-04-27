@@ -23,31 +23,38 @@
 import numpy as N
 
 from .commonfn import (
-    _, dsPreviewHelper, copyOrNone, convertNumpy,
-    convertNumpyAbs, convertNumpyNegAbs, datasetNameToDescriptorName)
+    _,
+    dsPreviewHelper,
+    copyOrNone,
+    convertNumpy,
+    convertNumpyAbs,
+    convertNumpyNegAbs,
+    datasetNameToDescriptorName,
+)
 from .base import DatasetConcreteBase, DatasetException
 
 from .. import utils
+
 
 class Dataset1DBase(DatasetConcreteBase):
     """Base for 1D datasets."""
 
     # number of dimensions the dataset holds
     dimensions = 1
-    columns = ('data', 'serr', 'nerr', 'perr')
+    columns = ("data", "serr", "nerr", "perr")
     column_descriptions = (
-        _('Data'),
-        _('Sym. errors'),
-        _('Neg. errors'),
-        _('Pos. errors')
+        _("Data"),
+        _("Sym. errors"),
+        _("Neg. errors"),
+        _("Pos. errors"),
     )
-    dstype = _('1D')
+    dstype = _("1D")
 
     # subclasses must define .data, .serr, .perr, .nerr
 
     def userSize(self):
         """Size of dataset."""
-        return str( self.data.shape[0] )
+        return str(self.data.shape[0])
 
     def userPreview(self):
         """Preview of data."""
@@ -65,14 +72,51 @@ class Dataset1DBase(DatasetConcreteBase):
         return templ % len(self.data)
 
     def invalidDataPoints(self):
-        """Return a numpy bool detailing which datapoints are invalid."""
+        """Return a numpy bool detailing which datapoints are invalid.
 
-        # use cached result if data arrays haven't changed
+        The cache key uses ``ndarray.ctypes.data`` (the buffer address)
+        and ``shape`` for each array, *plus* the dataset's document
+        changeset when a document is attached. ``id(arr)`` was used here
+        previously, which is a Python-level identifier that:
+
+        * gets recycled by CPython once the original ndarray is GC'd,
+          so an unrelated array later allocated to the same address
+          would falsely match;
+        * does not change when the underlying buffer is mutated in place
+          (e.g. ``data[5] = nan``), so an in-place edit would silently
+          return the stale invalid mask.
+
+        ``ctypes.data`` is the actual buffer address. While that can
+        also be reused after free, we additionally hold strong refs to
+        the arrays in the cache entry — so the buffer cannot be
+        deallocated while its key is live, and reuse cannot happen
+        before the cache is invalidated by a fresh assignment. The
+        document changeset, when available, gives a final consistency
+        guarantee against in-place mutations performed via the document
+        write lock.
+        """
+
+        def _key(arr):
+            if arr is None:
+                return None
+            return (
+                arr.ctypes.data,
+                arr.shape,
+                arr.dtype.str,
+                arr.strides,
+            )
+
+        doc = getattr(self, "document", None)
+        cs = getattr(doc, "changeset", None) if doc is not None else None
+
         cache_key = (
-            id(self.data), id(self.serr), id(self.perr), id(self.nerr),
-            self.data.shape[0] if self.data is not None else 0,
+            _key(self.data),
+            _key(self.serr),
+            _key(self.perr),
+            _key(self.nerr),
+            cs,
         )
-        cached = getattr(self, '_invalidcache', None)
+        cached = getattr(self, "_invalidcache", None)
         if cached is not None and cached[0] == cache_key:
             return cached[1]
 
@@ -82,17 +126,22 @@ class Dataset1DBase(DatasetConcreteBase):
                 valid = N.logical_and(valid, N.isfinite(error))
         result = N.logical_not(valid)
         result.flags.writeable = False
-        self._invalidcache = (cache_key, result)
+        # Keep strong refs to the arrays so their buffer addresses
+        # cannot be reused while this cache entry is live.
+        self._invalidcache = (
+            cache_key,
+            result,
+            (self.data, self.serr, self.perr, self.nerr),
+        )
         return result
 
     def hasErrors(self):
-        '''Whether errors on dataset'''
-        return (self.serr is not None or self.nerr is not None or
-                self.perr is not None)
+        """Whether errors on dataset"""
+        return self.serr is not None or self.nerr is not None or self.perr is not None
 
     def getPointRanges(self):
-        '''Get range of coordinates for each point in the form
-        (minima, maxima).'''
+        """Get range of coordinates for each point in the form
+        (minima, maxima)."""
 
         minvals = self.data
         maxvals = self.data
@@ -107,16 +156,13 @@ class Dataset1DBase(DatasetConcreteBase):
         if self.perr is not None:
             maxvals = maxvals + self.perr
 
-        return (
-            minvals[N.isfinite(minvals)],
-            maxvals[N.isfinite(maxvals)]
-        )
+        return (minvals[N.isfinite(minvals)], maxvals[N.isfinite(maxvals)])
 
     def getRange(self):
-        '''Get total range of coordinates. Returns None if empty.'''
+        """Get total range of coordinates. Returns None if empty."""
         minvals, maxvals = self.getPointRanges()
         if len(minvals) > 0 and len(maxvals) > 0:
-            return ( minvals.min(), maxvals.max() )
+            return (minvals.min(), maxvals.max())
         else:
             return None
 
@@ -132,13 +178,13 @@ class Dataset1DBase(DatasetConcreteBase):
 
         for v in val, pos, neg:
             if noneg:
-                v = v[v>0]
+                v = v[v > 0]
             if len(v) > 0:
                 axrange[0] = min(axrange[0], N.nanmin(v))
                 axrange[1] = max(axrange[1], N.nanmax(v))
 
     def rangeVisit(self, fn):
-        '''Call fn on data points and error values, in order to get range.'''
+        """Call fn on data points and error values, in order to get range."""
         fn(self.data)
         if self.serr is not None:
             fn(self.data - self.serr)
@@ -149,10 +195,10 @@ class Dataset1DBase(DatasetConcreteBase):
             fn(self.data + self.perr)
 
     def empty(self):
-        '''Is the data defined?'''
+        """Is the data defined?"""
         return self.data is None or len(self.data) == 0
 
-    def datasetAsText(self, fmt='%g', join='\t'):
+    def datasetAsText(self, fmt="%g", join="\t"):
         """Return data as text."""
 
         # work out which columns to write
@@ -162,13 +208,13 @@ class Dataset1DBase(DatasetConcreteBase):
                 cols.append(c)
 
         # format statement
-        format = (fmt + join) * (len(cols)-1) + fmt + '\n'
+        format = (fmt + join) * (len(cols) - 1) + fmt + "\n"
 
         # do the conversion
         lines = []
         for line in zip(*cols):
-            lines.append( format % line )
-        return ''.join(lines)
+            lines.append(format % line)
+        return "".join(lines)
 
     def returnCopy(self):
         """Return version of dataset with no linking."""
@@ -176,25 +222,25 @@ class Dataset1DBase(DatasetConcreteBase):
             data=copyOrNone(self.data),
             serr=copyOrNone(self.serr),
             perr=copyOrNone(self.perr),
-            nerr=copyOrNone(self.nerr)
+            nerr=copyOrNone(self.nerr),
         )
 
     def returnCopyWithNewData(self, **args):
         """Return dataset of same type using the column data given."""
         return Dataset(**args)
 
+
 class Dataset(Dataset1DBase):
-    '''Represents a dataset.'''
+    """Represents a dataset."""
 
     editable = True
 
-    def __init__(self, data = None, serr = None, nerr = None, perr = None,
-                 linked = None):
-        '''Initialise dataset with the sets of values given.
+    def __init__(self, data=None, serr=None, nerr=None, perr=None, linked=None):
+        """Initialise dataset with the sets of values given.
 
         The values can be given as numpy 1d arrays or lists of numbers
         linked optionally specifies a LinkedFile to link the dataset to
-        '''
+        """
 
         Dataset1DBase.__init__(self, linked=linked)
 
@@ -208,7 +254,7 @@ class Dataset(Dataset1DBase):
         s = self.data.shape
         for x in self.serr, self.nerr, self.perr:
             if x is not None and x.shape != s:
-                raise DatasetException('Lengths of error data do not match data')
+                raise DatasetException("Lengths of error data do not match data")
 
     def changeValues(self, thetype, vals):
         """Change the requested part of the dataset to vals.
@@ -218,7 +264,7 @@ class Dataset(Dataset1DBase):
         if thetype in self.columns:
             setattr(self, thetype, vals)
         else:
-            raise ValueError('thetype does not contain an allowed value')
+            raise ValueError("thetype does not contain an allowed value")
 
         # just a check...
         s = self.data.shape
@@ -229,35 +275,37 @@ class Dataset(Dataset1DBase):
         self.document._modifiedDataUnlocked(self)
 
     def saveDataDumpToText(self, fileobj, name):
-        '''Save data to file.
-        '''
+        """Save data to file."""
 
         # build up descriptor
-        descriptor = datasetNameToDescriptorName(name) + '(numeric)'
+        descriptor = datasetNameToDescriptorName(name) + "(numeric)"
         if self.serr is not None:
-            descriptor += ',+-'
+            descriptor += ",+-"
         if self.perr is not None:
-            descriptor += ',+'
+            descriptor += ",+"
         if self.nerr is not None:
-            descriptor += ',-'
+            descriptor += ",-"
 
-        fileobj.write( "ImportString(%s,'''\n" % repr(descriptor) )
-        fileobj.write( self.datasetAsText(fmt='%e', join=' ') )
-        fileobj.write( "''')\n" )
+        fileobj.write("ImportString(%s,'''\n" % repr(descriptor))
+        fileobj.write(self.datasetAsText(fmt="%e", join=" "))
+        fileobj.write("''')\n")
 
     def saveDataDumpToHDF5(self, group, name):
         """Save dataset to HDF5."""
 
         # store as a group to simplify things
         odgrp = group.create_group(utils.escapeHDFDataName(name))
-        odgrp.attrs['vsz_datatype'] = '1d'
+        odgrp.attrs["vsz_datatype"] = "1d"
 
         for key, suffix in (
-                ('data', ''), ('serr', ' (+-)'),
-                ('perr', ' (+)'), ('nerr', ' (-)')):
+            ("data", ""),
+            ("serr", " (+-)"),
+            ("perr", " (+)"),
+            ("nerr", " (-)"),
+        ):
             if getattr(self, key) is not None:
                 odgrp[key] = getattr(self, key)
-                odgrp[key].attrs['vsz_name'] = (name + suffix).encode('utf-8')
+                odgrp[key].attrs["vsz_name"] = (name + suffix).encode("utf-8")
 
     def deleteRows(self, row, numrows):
         """Delete numrows rows starting from row.
@@ -267,8 +315,8 @@ class Dataset(Dataset1DBase):
         for col in self.columns:
             coldata = getattr(self, col)
             if coldata is not None:
-                retn[col] = coldata[row:row+numrows]
-                setattr(self, col, N.delete( coldata, N.s_[row:row+numrows] ))
+                retn[col] = coldata[row : row + numrows]
+                setattr(self, col, N.delete(coldata, N.s_[row : row + numrows]))
 
         self.document._modifiedDataUnlocked(self)
         return retn
@@ -281,17 +329,18 @@ class Dataset(Dataset1DBase):
             coldata = getattr(self, col)
             data = N.zeros(numrows)
             if col in rowdata:
-                data[:len(rowdata[col])] = N.array(rowdata[col])
+                data[: len(rowdata[col])] = N.array(rowdata[col])
             if coldata is not None:
-                newdata = N.insert(coldata, [row]*numrows, data)
+                newdata = N.insert(coldata, [row] * numrows, data)
                 setattr(self, col, newdata)
 
         self.document._modifiedDataUnlocked(self)
 
+
 class DatasetRange(Dataset1DBase):
     """Dataset consisting of a range of values e.g. 1 to 10 in 10 steps."""
 
-    dstype = _('Range')
+    dstype = _("Range")
 
     def __init__(self, numsteps, data, serr=None, perr=None, nerr=None):
         """Construct dataset.
@@ -307,15 +356,15 @@ class DatasetRange(Dataset1DBase):
         self.range_nerr = nerr
         self.numsteps = numsteps
 
-        for name in ('data', 'serr', 'perr', 'nerr'):
-            val = getattr(self, 'range_%s' % name)
+        for name in ("data", "serr", "perr", "nerr"):
+            val = getattr(self, "range_%s" % name)
             if val is not None:
                 minval, maxval = val
                 if numsteps == 1:
-                    vals = N.array( [minval] )
+                    vals = N.array([minval])
                 else:
-                    delta = (maxval - minval) / (numsteps-1)
-                    vals = N.arange(numsteps)*delta + minval
+                    delta = (maxval - minval) / (numsteps - 1)
+                    vals = N.arange(numsteps) * delta + minval
             else:
                 vals = None
             setattr(self, name, vals)
@@ -330,21 +379,21 @@ class DatasetRange(Dataset1DBase):
 
     def userSize(self):
         """Size of dataset."""
-        return str( self.numsteps )
+        return str(self.numsteps)
 
     def saveDataRelationToText(self, fileobj, name):
         """Save dataset to file."""
 
         parts = [repr(name), repr(self.numsteps), repr(self.range_data)]
         if self.range_serr is not None:
-            parts.append('symerr=%s' % repr(self.range_serr))
+            parts.append("symerr=%s" % repr(self.range_serr))
         if self.range_perr is not None:
-            parts.append('poserr=%s' % repr(self.range_perr))
+            parts.append("poserr=%s" % repr(self.range_perr))
         if self.range_nerr is not None:
-            parts.append('negerr=%s' % repr(self.range_nerr))
-        parts.append('linked=True')
+            parts.append("negerr=%s" % repr(self.range_nerr))
+        parts.append("linked=True")
 
-        s = 'SetDataRange(%s)\n' % ', '.join(parts)
+        s = "SetDataRange(%s)\n" % ", ".join(parts)
         fileobj.write(s)
 
     def canUnlink(self):
@@ -352,9 +401,9 @@ class DatasetRange(Dataset1DBase):
 
     def linkedInformation(self):
         """Return information about linking."""
-        text = [_('Linked range dataset')]
+        text = [_("Linked range dataset")]
         for label, part in zip(self.column_descriptions, self.columns):
-            val = getattr(self, 'range_%s' % part)
+            val = getattr(self, "range_%s" % part)
             if val:
-                text.append('%s: %g:%g' % (label, val[0], val[1]))
-        return '\n'.join(text)
+                text.append("%s: %g:%g" % (label, val[0], val[1]))
+        return "\n".join(text)

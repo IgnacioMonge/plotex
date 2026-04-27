@@ -18,8 +18,7 @@
 #
 ##############################################################################
 
-'''An axis which can be broken in places.'''
-
+"""An axis which can be broken in places."""
 
 import numpy as N
 
@@ -31,15 +30,17 @@ from .. import utils
 from . import axis
 from . import controlgraph
 
-def _(text, disambiguation=None, context='BrokenAxis'):
-    '''Translate text.'''
+
+def _(text, disambiguation=None, context="BrokenAxis"):
+    """Translate text."""
     return qt.QCoreApplication.translate(context, text, disambiguation)
 
-class AxisBroken(axis.Axis):
-    '''An axis widget which can have gaps in it.'''
 
-    typename = 'axis-broken'
-    description = 'Axis with breaks in it'
+class AxisBroken(axis.Axis):
+    """An axis widget which can have gaps in it."""
+
+    typename = "axis-broken"
+    description = "Axis with breaks in it"
 
     def __init__(self, parent, name=None):
         """Initialise axis."""
@@ -49,20 +50,27 @@ class AxisBroken(axis.Axis):
 
     @classmethod
     def addSettings(klass, s):
-        '''Construct list of settings.'''
+        """Construct list of settings."""
         axis.Axis.addSettings(s)
 
-        s.add( setting.FloatList(
-            'breakPoints',
-            [],
-            descr = _('Pairs of values to start and stop breaks'),
-            usertext = _('Break pairs')), 4 )
-        s.add( setting.FloatList(
-            'breakPosns',
-            [],
-            descr = _('Positions (fractions) along axis where to break'),
-            usertext = _('Break positions'),
-            formatting=True) )
+        s.add(
+            setting.FloatList(
+                "breakPoints",
+                [],
+                descr=_("Pairs of values to start and stop breaks"),
+                usertext=_("Break pairs"),
+            ),
+            4,
+        )
+        s.add(
+            setting.FloatList(
+                "breakPosns",
+                [],
+                descr=_("Positions (fractions) along axis where to break"),
+                usertext=_("Break positions"),
+                formatting=True,
+            )
+        )
 
     def switchBreak(self, num, posn, otherposition=None):
         """Switch to break given (or None to disable)."""
@@ -91,7 +99,7 @@ class AxisBroken(axis.Axis):
             issingle = True
 
         # scaled to be fractional coordinates in bounds
-        if self.settings.direction == 'horizontal':
+        if self.settings.direction == "horizontal":
             svals = (vals - bounds[0]) / (bounds[2] - bounds[0])
         else:
             svals = (vals - bounds[3]) / (bounds[1] - bounds[3])
@@ -99,19 +107,15 @@ class AxisBroken(axis.Axis):
         # assign each value to its break region
         nvals = len(vals)
         out = N.full(nvals, N.nan)
-        regions = N.searchsorted(self.posstarts, svals, side='right') - 1
+        regions = N.searchsorted(self.posstarts, svals, side="right") - 1
 
         # batch-convert values per break region
         for breaki in range(self.breakvnum):
-            mask = (
-                (regions == breaki) &
-                (svals <= self.posstops[breaki])
-            )
+            mask = (regions == breaki) & (svals <= self.posstops[breaki])
             if not N.any(mask):
                 continue
             self.switchBreak(breaki, bounds)
-            out[mask] = axis.Axis.plotterToGraphCoords(
-                self, bounds, vals[mask])
+            out[mask] = axis.Axis.plotterToGraphCoords(self, bounds, vals[mask])
 
         self.switchBreak(None, bounds)
 
@@ -139,11 +143,11 @@ class AxisBroken(axis.Axis):
 
         nvals = len(vals)
         out = N.full(nvals, N.nan)
-        regions = N.searchsorted(self.breakvstarts, vals, side='right') - 1
+        regions = N.searchsorted(self.breakvstarts, vals, side="right") - 1
         b = self.currentbounds
 
         for breaki in range(self.breakvnum):
-            mask = (regions == breaki)
+            mask = regions == breaki
             if not N.any(mask):
                 continue
 
@@ -153,18 +157,15 @@ class AxisBroken(axis.Axis):
             if breaki < self.breakvnum - 1:
                 gapmask = bvals > self.breakvstops[breaki]
                 if N.any(gapmask):
-                    coord = 0.5 * (
-                        self.posstops[breaki] + self.posstarts[breaki + 1])
-                    if self.settings.direction == 'horizontal':
+                    coord = 0.5 * (self.posstops[breaki] + self.posstarts[breaki + 1])
+                    if self.settings.direction == "horizontal":
                         out[mask] = N.where(
-                            gapmask,
-                            coord * (b[2] - b[0]) + b[0],
-                            out[mask])
+                            gapmask, coord * (b[2] - b[0]) + b[0], out[mask]
+                        )
                     else:
                         out[mask] = N.where(
-                            gapmask,
-                            coord * (b[3] - b[1]) + b[1],
-                            out[mask])
+                            gapmask, coord * (b[3] - b[1]) + b[1], out[mask]
+                        )
                     # process non-gap values
                     inmask = ~gapmask
                 else:
@@ -176,8 +177,7 @@ class AxisBroken(axis.Axis):
                 self.switchBreak(breaki, self.currentbounds)
                 # build full mask for original array
                 full_indices = N.where(mask)[0][inmask]
-                out[full_indices] = axis.Axis._graphToPlotter(
-                    self, bvals[inmask])
+                out[full_indices] = axis.Axis._graphToPlotter(self, bvals[inmask])
 
         self.switchBreak(None, self.currentbounds)
 
@@ -201,40 +201,42 @@ class AxisBroken(axis.Axis):
 
             # add on more break positions if not specified
             if len(posns) < num:
-                start = 0.
+                start = 0.0
                 if len(posns) != 0:
                     start = posns[-1]
                 posns = posns + list(
-                    N.arange(1,num-len(posns)+1) *
-                    ( (1.-start) / (num-len(posns)+1) + start ))
+                    N.arange(1, num - len(posns) + 1)
+                    * ((1.0 - start) / (num - len(posns) + 1) + start)
+                )
 
             # fractional difference between starts and stops
             breakgap = 0.05
 
             # collate fractional positions for starting and stopping
-            starts = [0.]
+            starts = [0.0]
             stops = []
             for pos in posns:
-                stops.append( pos - breakgap/2. )
-                starts.append( pos + breakgap/2. )
-            stops.append(1.)
+                stops.append(pos - breakgap / 2.0)
+                starts.append(pos + breakgap / 2.0)
+            stops.append(1.0)
 
             # scale according to allowable range
             d = s.upperPosition - s.lowerPosition
-            self.posstarts = N.array(starts)*d + s.lowerPosition
-            self.posstops = N.array(stops)*d + s.lowerPosition
+            self.posstarts = N.array(starts) * d + s.lowerPosition
+            self.posstops = N.array(stops) * d + s.lowerPosition
 
         # pass lower and upper ranges if a particular range is chosen
         if self.rangeswitch is None:
             lowerupper = None
         else:
-            lowerupper = ( self.posstarts[self.rangeswitch],
-                           self.posstops[self.rangeswitch] )
+            lowerupper = (
+                self.posstarts[self.rangeswitch],
+                self.posstops[self.rangeswitch],
+            )
 
         axis.Axis.updateAxisLocation(
-            self, bounds,
-            otherposition=otherposition,
-            lowerupperposition=lowerupper)
+            self, bounds, otherposition=otherposition, lowerupperposition=lowerupper
+        )
 
     def computePlottedRange(self):
         """Given range of data, recompute stops and start values of
@@ -250,17 +252,16 @@ class AxisBroken(axis.Axis):
 
         # filter to range
         newpoints = []
-        for i in range(0, len(points)//2 * 2, 2):
-            if points[i] >= min(r) and points[i+1] <= max(r):
-                newpoints += [points[i], points[i+1]]
+        for i in range(0, len(points) // 2 * 2, 2):
+            if points[i] >= min(r) and points[i + 1] <= max(r):
+                newpoints += [points[i], points[i + 1]]
 
-        self.breakvnum = num = len(newpoints)//2 + 1
-        self.breakvlist = [self.plottedrange[0]] + newpoints + [
-            self.plottedrange[1]]
+        self.breakvnum = num = len(newpoints) // 2 + 1
+        self.breakvlist = [self.plottedrange[0]] + newpoints + [self.plottedrange[1]]
 
         # axis values for starting and stopping
-        self.breakvstarts = [ self.breakvlist[i*2] for i in range(num) ]
-        self.breakvstops = [ self.breakvlist[i*2+1] for i in range(num) ]
+        self.breakvstarts = [self.breakvlist[i * 2] for i in range(num)]
+        self.breakvstops = [self.breakvlist[i * 2 + 1] for i in range(num)]
 
         # compute ticks for each range
         self.minorticklist = []
@@ -285,9 +286,9 @@ class AxisBroken(axis.Axis):
         # swap axis to other side
         s = self.settings
         if s.otherPosition < 0.5:
-            otheredge = 1.
+            otheredge = 1.0
         else:
-            otheredge = 0.
+            otheredge = 0.0
 
         # temporarily change position of axis to other side for drawing
         self.updateAxisLocation(posn, otherposition=otheredge)
@@ -315,7 +316,7 @@ class AxisBroken(axis.Axis):
 
         # these are x and y, or y and x coordinates
         p1 = [self.posstarts[0]]
-        p2 = [0.]
+        p2 = [0.0]
 
         # mirror shape using this setting
         markdirn = -1
@@ -323,41 +324,40 @@ class AxisBroken(axis.Axis):
             markdirn = -markdirn
 
         # add shape for each break
-        for start, stop in zip( self.posstarts[1:], self.posstops[:-1] ):
-            p1 += [stop, (start+stop)*0.5, start]
-            p2 += [0, markdirn*(start-stop)*0.5, 0]
+        for start, stop in zip(self.posstarts[1:], self.posstops[:-1]):
+            p1 += [stop, (start + stop) * 0.5, start]
+            p2 += [0, markdirn * (start - stop) * 0.5, 0]
 
         # end point
         p1.append(self.posstops[-1])
-        p2.append(0.)
+        p2.append(0.0)
 
         # scale points by length of axis and add correct origin
         s = self.settings
 
-        if s.direction == 'vertical':
-            delta = posn[1]-posn[3]
+        if s.direction == "vertical":
+            delta = posn[1] - posn[3]
             minv = posn[3]
         else:
-            delta = posn[2]-posn[0]
+            delta = posn[2] - posn[0]
             minv = posn[0]
 
-        p1 = N.array(p1)*delta + minv
-        p2 = N.array(p2)*delta + self.coordPerp
+        p1 = N.array(p1) * delta + minv
+        p2 = N.array(p2) * delta + self.coordPerp
 
-        if s.direction == 'vertical':
+        if s.direction == "vertical":
             p1, p2 = p2, p1
 
         # convert to polygon and draw
         poly = qt.QPolygonF()
         utils.addNumpyToPolygonF(poly, p1, p2)
 
-        pen = s.get('Line').makeQPen(painter)
+        pen = s.get("Line").makeQPen(painter)
         pen.setCapStyle(qt.Qt.PenCapStyle.FlatCap)
         painter.setPen(pen)
         painter.drawPolyline(poly)
 
-    def drawGrid(self, parentposn, phelper, outerbounds=None,
-                 ontop=False):
+    def drawGrid(self, parentposn, phelper, outerbounds=None, ontop=False):
         """Code to draw gridlines.
 
         This is separate from the main draw routine because the grid
@@ -365,8 +365,11 @@ class AxisBroken(axis.Axis):
         """
 
         s = self.settings
-        if ( s.hide or (s.MinorGridLines.hide and s.GridLines.hide) or
-             s.GridLines.onTop != bool(ontop) ):
+        if (
+            s.hide
+            or (s.MinorGridLines.hide and s.GridLines.hide)
+            or s.GridLines.onTop != bool(ontop)
+        ):
             return
 
         # draw grid on a different layer, depending on whether on top or not
@@ -374,27 +377,26 @@ class AxisBroken(axis.Axis):
         painter = phelper.painter(self, parentposn, layer=layer)
         self.updateAxisLocation(parentposn)
 
-        with painter:
-            painter.save()
-            painter.setClipRect( qt.QRectF(
-                qt.QPointF(parentposn[0], parentposn[1]),
-                qt.QPointF(parentposn[2], parentposn[3]) ) )
+        with painter, utils.painter_state(painter):
+            painter.setClipRect(
+                qt.QRectF(
+                    qt.QPointF(parentposn[0], parentposn[1]),
+                    qt.QPointF(parentposn[2], parentposn[3]),
+                )
+            )
 
             for i in range(self.breakvnum):
                 self.switchBreak(i, parentposn)
                 if not s.MinorGridLines.hide:
                     coordminorticks = self._graphToPlotter(self.minorticklist[i])
                     self._drawGridLines(
-                        'MinorGridLines', painter, coordminorticks,
-                        parentposn)
+                        "MinorGridLines", painter, coordminorticks, parentposn
+                    )
                 if not s.GridLines.hide:
                     coordticks = self._graphToPlotter(self.majorticklist[i])
-                    self._drawGridLines(
-                        'GridLines', painter, coordticks,
-                        parentposn)
+                    self._drawGridLines("GridLines", painter, coordticks, parentposn)
 
             self.switchBreak(None, parentposn)
-            painter.restore()
 
     def _axisDraw(self, posn, parentposn, outerbounds, painter, phelper):
         """Main drawing routine of axis."""
@@ -403,7 +405,7 @@ class AxisBroken(axis.Axis):
 
         # multiplication factor if reflection on the axis is requested
         sign = 1
-        if s.direction == 'vertical':
+        if s.direction == "vertical":
             sign *= -1
         if self.coordReflected:
             sign *= -1
@@ -421,7 +423,7 @@ class AxisBroken(axis.Axis):
         for i in range(self.breakvnum):
             self.switchBreak(i, posn)
 
-            if self.plottedrange[0]==self.plottedrange[1]:
+            if self.plottedrange[0] == self.plottedrange[1]:
                 continue
 
             # plot coordinates of ticks
@@ -442,9 +444,14 @@ class AxisBroken(axis.Axis):
             suppresstext = self._suppressText(painter, parentposn, outerbounds)
             if not s.TickLabels.hide and not suppresstext:
                 self._drawTickLabels(
-                    phelper, painter, coordticks, sign,
-                    outerbounds, self.majorticklist[i],
-                    texttorender)
+                    phelper,
+                    painter,
+                    coordticks,
+                    sign,
+                    outerbounds,
+                    self.majorticklist[i],
+                    texttorender,
+                )
 
             # this is the maximum delta of any of the breaks
             max_delta = max(max_delta, self._delta_axis)
@@ -459,9 +466,21 @@ class AxisBroken(axis.Axis):
         self._drawTextWithoutOverlap(painter, texttorender)
 
         # make control item for axis
-        phelper.setControlGraph(self, [ controlgraph.ControlAxisLine(
-            self, phelper, self.settings.direction, self.coordParr1,
-            self.coordParr2, self.coordPerp, posn) ])
+        phelper.setControlGraph(
+            self,
+            [
+                controlgraph.ControlAxisLine(
+                    self,
+                    phelper,
+                    self.settings.direction,
+                    self.coordParr1,
+                    self.coordParr2,
+                    self.coordPerp,
+                    posn,
+                )
+            ],
+        )
+
 
 # allow the factory to instantiate the widget
 document.thefactory.register(AxisBroken)

@@ -35,219 +35,286 @@ from . import controlgraph
 
 ###############################################################################
 
-def _(text, disambiguation=None, context='Axis'):
+
+def _(text, disambiguation=None, context="Axis"):
     """Translate text."""
     return qt.QCoreApplication.translate(context, text, disambiguation)
 
+
 class MajorTick(setting.Line):
-    '''Major tick settings.'''
+    """Major tick settings."""
 
     def __init__(self, name, **args):
         setting.Line.__init__(self, name, **args)
-        self.add( setting.DistancePt(
-            'length',
-            '6pt',
-            descr=_('Length of major ticks'),
-            usertext= _('Length') ) )
-        self.add( setting.Int(
-            'number',
-            6,
-            descr=_('Number of major ticks to aim for'),
-            usertext= _('Number') ) )
-        self.add( setting.FloatList(
-            'manualTicks',
-            [],
-            descr = _('List of tick values overriding defaults'),
-            usertext= _('Manual ticks') ) )
+        self.add(
+            setting.DistancePt(
+                "length", "6pt", descr=_("Length of major ticks"), usertext=_("Length")
+            )
+        )
+        self.add(
+            setting.Int(
+                "number",
+                6,
+                descr=_("Number of major ticks to aim for"),
+                usertext=_("Number"),
+            )
+        )
+        self.add(
+            setting.FloatList(
+                "manualTicks",
+                [],
+                descr=_("List of tick values overriding defaults"),
+                usertext=_("Manual ticks"),
+            )
+        )
 
     def getLength(self, painter):
-        '''Return tick length in painter coordinates'''
+        """Return tick length in painter coordinates"""
 
-        return self.get('length').convert(painter)
+        return self.get("length").convert(painter)
+
 
 class MinorTick(setting.Line):
-    '''Minor tick settings.'''
+    """Minor tick settings."""
 
     def __init__(self, name, **args):
         setting.Line.__init__(self, name, **args)
-        self.add( setting.DistancePt(
-            'length',
-            '3pt',
-            descr=_('Length of minor ticks'),
-            usertext= _('Length')) )
-        self.add( setting.Int(
-            'number',
-            20,
-            descr=_('Number of minor ticks to aim for'),
-            usertext= _('Number') ) )
-        self.add( setting.FloatList(
-            'manualTicks',
-            [],
-            descr = _('List of tick values overriding defaults'),
-            usertext= _('Manual ticks') ) )
+        self.add(
+            setting.DistancePt(
+                "length", "3pt", descr=_("Length of minor ticks"), usertext=_("Length")
+            )
+        )
+        self.add(
+            setting.Int(
+                "number",
+                20,
+                descr=_("Number of minor ticks to aim for"),
+                usertext=_("Number"),
+            )
+        )
+        self.add(
+            setting.FloatList(
+                "manualTicks",
+                [],
+                descr=_("List of tick values overriding defaults"),
+                usertext=_("Manual ticks"),
+            )
+        )
 
     def getLength(self, painter):
-        '''Return tick length in painter coordinates'''
+        """Return tick length in painter coordinates"""
 
-        return self.get('length').convert(painter)
+        return self.get("length").convert(painter)
+
 
 class GridLine(setting.Line):
-    '''Grid line settings.'''
+    """Grid line settings."""
 
     def __init__(self, name, **args):
         setting.Line.__init__(self, name, **args)
 
-        self.get('color').newDefault( 'grey' )
-        self.get('hide').newDefault( True )
-        self.get('style').newDefault( 'dotted' )
-        self.add( setting.Bool(
-            'onTop', False,
-            descr=_('Put grid lines on top of graph'),
-            usertext=_('On top') ) )
+        self.get("color").newDefault("grey")
+        self.get("hide").newDefault(True)
+        self.get("style").newDefault("dotted")
+        self.add(
+            setting.Bool(
+                "onTop",
+                False,
+                descr=_("Put grid lines on top of graph"),
+                usertext=_("On top"),
+            )
+        )
+
 
 class MinorGridLine(setting.Line):
-    '''Minor tick grid line settings.'''
+    """Minor tick grid line settings."""
 
     def __init__(self, name, **args):
         setting.Line.__init__(self, name, **args)
 
-        self.get('color').newDefault( 'lightgrey' )
-        self.get('hide').newDefault( True )
-        self.get('style').newDefault( 'dotted' )
+        self.get("color").newDefault("lightgrey")
+        self.get("hide").newDefault(True)
+        self.get("style").newDefault("dotted")
+
 
 class AxisLabel(setting.Text):
     """For axis labels."""
 
     def __init__(self, name, **args):
         setting.Text.__init__(self, name, **args)
-        self.add( setting.Bool(
-            'atEdge', False,
-            descr=_('Place axis label close to edge of graph'),
-            usertext= _('At edge') ) )
-        self.add( setting.RotateInterval(
-            'rotate', '0',
-            descr='Angle by which to rotate label by',
-            usertext='Rotate') )
-        self.add( setting.DisplacementPt(
-            'offset',
-            '0pt',
-            descr=_('Additional offset of axis label from axis tick labels'),
-            usertext= _('Label offset') ) )
-        self.add( setting.Choice(
-            'position',
-            ('at-minimum', 'centre', 'at-maximum'),
-            'centre',
-            descr=_('Position of axis label'),
-            usertext = _('Position') ) )
+        self.add(
+            setting.Bool(
+                "atEdge",
+                False,
+                descr=_("Place axis label close to edge of graph"),
+                usertext=_("At edge"),
+            )
+        )
+        self.add(
+            setting.RotateInterval(
+                "rotate",
+                "0",
+                descr="Angle by which to rotate label by",
+                usertext="Rotate",
+            )
+        )
+        self.add(
+            setting.DisplacementPt(
+                "offset",
+                "0pt",
+                descr=_("Additional offset of axis label from axis tick labels"),
+                usertext=_("Label offset"),
+            )
+        )
+        self.add(
+            setting.Choice(
+                "position",
+                ("at-minimum", "centre", "at-maximum"),
+                "centre",
+                descr=_("Position of axis label"),
+                usertext=_("Position"),
+            )
+        )
+
 
 class TickLabel(setting.Text):
     """For tick labels on axes."""
 
-    formatchoices = ('Auto', '%Vg', '%Ve', '%VE', '%g', '%e', '%.2f')
+    formatchoices = ("Auto", "%Vg", "%Ve", "%VE", "%g", "%e", "%.2f")
     descriptions = (
-        _('Automatic'),
-        _('General numerical format'),
-        _('Scientific notation'),
-        _('Engineering suffix notation'),
-        _('C-style general format'),
-        _('C-style scientific notation'),
-        _('2 decimal places always shown'),
+        _("Automatic"),
+        _("General numerical format"),
+        _("Scientific notation"),
+        _("Engineering suffix notation"),
+        _("C-style general format"),
+        _("C-style scientific notation"),
+        _("2 decimal places always shown"),
     )
 
     def __init__(self, name, **args):
         setting.Text.__init__(self, name, **args)
-        self.add( setting.RotateInterval(
-            'rotate', '0',
-            descr=_('Angle by which to rotate label by'),
-            usertext= _('Rotate') ) )
-        self.add( setting.ChoiceOrMore(
-            'format',
-            TickLabel.formatchoices,
-            'Auto',
-            descr=_('Format of the tick labels'),
-            descriptions=TickLabel.descriptions,
-            usertext= _('Format') ) )
+        self.add(
+            setting.RotateInterval(
+                "rotate",
+                "0",
+                descr=_("Angle by which to rotate label by"),
+                usertext=_("Rotate"),
+            )
+        )
+        self.add(
+            setting.ChoiceOrMore(
+                "format",
+                TickLabel.formatchoices,
+                "Auto",
+                descr=_("Format of the tick labels"),
+                descriptions=TickLabel.descriptions,
+                usertext=_("Format"),
+            )
+        )
 
-        self.add( setting.Float(
-            'scale', 1.,
-            descr=_('A scale factor to apply to the values of the tick labels'),
-            usertext=_('Scale') ) )
+        self.add(
+            setting.Float(
+                "scale",
+                1.0,
+                descr=_("A scale factor to apply to the values of the tick labels"),
+                usertext=_("Scale"),
+            )
+        )
 
-        self.add( setting.DisplacementPt(
-            'offset',
-            '0pt',
-            descr = _('Additional offset of axis tick labels from axis'),
-            usertext= _('Tick offset') ) )
+        self.add(
+            setting.DisplacementPt(
+                "offset",
+                "0pt",
+                descr=_("Additional offset of axis tick labels from axis"),
+                usertext=_("Tick offset"),
+            )
+        )
+
 
 class AutoRange(setting.ChoiceOrMore):
     """Choose how to choose range of axis."""
 
     # +5% or -5%
     re_dr_plusminus = re.compile(
-        r'''
+        r"""
         ^\s*                        # start
         ([+-][0-9]+(?:\.[0-9]+)?)   # +/- number (optional decimal)
         \s*%                        # percent symbol
         \s*$                        # end
-        ''', re.VERBOSE)
+        """,
+        re.VERBOSE,
+    )
 
     # 5-10%
     re_dr_percrange = re.compile(
-        r'''
+        r"""
         ^\s*                    # start
         (-?[0-9]+(?:\.[0-9]+)?) # 1st number
         \s*-\s*                 # dash
         ([0-9]+(?:\.[0-9]+)?)   # 2nd number
         \s*%\s*$                # end
-        ''', re.VERBOSE)
+        """,
+        re.VERBOSE,
+    )
 
     # < 5%
     re_dr_lower = re.compile(
-        r'''
+        r"""
         ^\s*<\s*                # start
         ([0-9]+(?:\.[0-9]+)?)   # number
         \s*%\s*$                # end
-        ''', re.VERBOSE)
+        """,
+        re.VERBOSE,
+    )
 
     # > 95%
     re_dr_upper = re.compile(
-        r'''
+        r"""
         ^\s*>\s*                # start
         ([0-9]+(?:\.[0-9]+)?)   # number
         \s*%\s*$                # end
-        ''', re.VERBOSE)
+        """,
+        re.VERBOSE,
+    )
 
     def __init__(self, name, value, **args):
         setting.ChoiceOrMore.__init__(
             self,
-            'autoRange',
+            "autoRange",
             (
-                'exact', 'next-tick',
-                '+2%', '+5%', '+10%', '+15%',
-                '-2%', '-5%', '-10%', '-15%',
-                '20-80%', '<20%', '>80%',
+                "exact",
+                "next-tick",
+                "+2%",
+                "+5%",
+                "+10%",
+                "+15%",
+                "-2%",
+                "-5%",
+                "-10%",
+                "-15%",
+                "20-80%",
+                "<20%",
+                ">80%",
             ),
-            'next-tick',
-            descr = _(
-                'If axis range not specified, use range of '
-                'data and this setting'),
-            descriptions = (
-                _('Use exact data range'),
-                _('Round up to tick marks from data range'),
-                _('Expand 2% beyond data range'),
-                _('Expand 5% beyond data range'),
-                _('Expand 10% beyond data range'),
-                _('Expand 15% beyond data range'),
-                _('Shrink 2% inside data range'),
-                _('Shrink 5% inside data range'),
-                _('Shrink 10% inside data range'),
-                _('Shrink 15% inside data range'),
-                _('20 to 80% of the data range'),
-                _('Up to 20% of the data range'),
-                _('Above 80% of the data range'),
+            "next-tick",
+            descr=_("If axis range not specified, use range of data and this setting"),
+            descriptions=(
+                _("Use exact data range"),
+                _("Round up to tick marks from data range"),
+                _("Expand 2% beyond data range"),
+                _("Expand 5% beyond data range"),
+                _("Expand 10% beyond data range"),
+                _("Expand 15% beyond data range"),
+                _("Shrink 2% inside data range"),
+                _("Shrink 5% inside data range"),
+                _("Shrink 10% inside data range"),
+                _("Shrink 15% inside data range"),
+                _("20 to 80% of the data range"),
+                _("Up to 20% of the data range"),
+                _("Above 80% of the data range"),
             ),
-            formatting = True,
-            usertext = _('Auto range'),
+            formatting=True,
+            usertext=_("Auto range"),
         )
 
     def copy(self):
@@ -263,25 +330,25 @@ class AutoRange(setting.ChoiceOrMore):
         # +X% or -Y%
         m = self.re_dr_plusminus.match(rng)
         if m:
-            v = float(m.group(1))*0.01
+            v = float(m.group(1)) * 0.01
             return v, v
 
         # X-Y%
         m = self.re_dr_percrange.match(rng)
         if m:
-            v1 = -float(m.group(1))*0.01
-            v2 = -(1-float(m.group(2))*0.01)
+            v1 = -float(m.group(1)) * 0.01
+            v2 = -(1 - float(m.group(2)) * 0.01)
             return v1, v2
 
         # <X%
         m = self.re_dr_lower.match(rng)
         if m:
-            return 0, -(1-float(m.group(1))*0.01)
+            return 0, -(1 - float(m.group(1)) * 0.01)
 
         # >Y%
         m = self.re_dr_upper.match(rng)
         if m:
-            return -(float(m.group(1))*0.01), 0
+            return -(float(m.group(1)) * 0.01), 0
 
         # error
         doc.log(_("Invalid axis range '%s'") % rng)
@@ -295,19 +362,17 @@ class AutoRange(setting.ChoiceOrMore):
         doc: Document object
         """
         rng = self.val
-        if rng == 'exact':
+        if rng == "exact":
             pass
-        elif rng == 'next-tick':
+        elif rng == "next-tick":
             pass
         else:
             # get fractions to expand range by
-            expandfrac1, expandfrac2 = self.autoRangeToFracs(
-                rng, doc)
+            expandfrac1, expandfrac2 = self.autoRangeToFracs(rng, doc)
             origrange = list(plottedrange)
             if log:
                 # logarithmic
-                logrng = abs(
-                    N.log(plottedrange[1]) - N.log(plottedrange[0]) )
+                logrng = abs(N.log(plottedrange[1]) - N.log(plottedrange[0]))
                 if adjustmin:
                     plottedrange[0] /= N.exp(logrng * expandfrac1)
                 if adjustmax:
@@ -316,23 +381,25 @@ class AutoRange(setting.ChoiceOrMore):
                 # linear
                 rng = plottedrange[1] - plottedrange[0]
                 if adjustmin:
-                    plottedrange[0] -= rng*expandfrac1
+                    plottedrange[0] -= rng * expandfrac1
                 if adjustmax:
-                    plottedrange[1] += rng*expandfrac2
+                    plottedrange[1] += rng * expandfrac2
 
             # if order is wrong, then give error!
             if plottedrange[1] <= plottedrange[0]:
                 doc.log(_("Invalid axis range '%s'") % rng)
                 plottedrange[:] = origrange
 
+
 ###############################################################################
+
 
 class Axis(widget.Widget):
     """Manages and draws an axis."""
 
-    typename = 'axis'
+    typename = "axis"
     allowusercreation = True
-    description = 'Axis to a plot or shared in a grid'
+    description = "Axis to a plot or shared in a grid"
     isaxis = True
 
     def __init__(self, parent, name=None):
@@ -341,146 +408,206 @@ class Axis(widget.Widget):
         widget.Widget.__init__(self, parent, name=name)
         s = self.settings
 
-        if self.name == 'y' and s.direction != 'vertical':
-            s.direction = 'vertical'
-        elif self.name == 'x' and s.direction != 'horizontal':
-            s.direction = 'horizontal'
+        if self.name == "y" and s.direction != "vertical":
+            s.direction = "vertical"
+        elif self.name == "x" and s.direction != "horizontal":
+            s.direction = "horizontal"
 
         # automatic range
         self.setAutoRange(None)
 
         # document updates change set variable when things need recalculating
         self.docchangeset = -1
-        self.currentbounds = [0,0,1,1]
-        self.plottedrange = [0., 1.]
+        self.currentbounds = [0, 0, 1, 1]
+        self.plottedrange = [0.0, 1.0]
 
     @classmethod
     def addSettings(klass, s):
         """Construct list of settings."""
         widget.Widget.addSettings(s)
-        s.add( setting.Str(
-            'label', '',
-            descr=_('Axis label text'),
-            usertext=_('Label')) )
-        s.add( setting.AxisBound(
-            'min', 'Auto',
-            descr=_('Minimum value of axis'),
-            usertext=_('Min')) )
-        s.add( setting.AxisBound(
-            'max', 'Auto',
-            descr=_('Maximum value of axis'),
-            usertext=_('Max')) )
-        s.add( setting.Bool(
-            'log', False,
-            descr=_('Whether axis is logarithmic'),
-            usertext=_('Log')) )
-        s.add( AutoRange(
-            'autoRange', 'next-tick') )
-        s.add( setting.Choice(
-            'mode',
-            ('numeric', 'datetime', 'labels'),
-            'numeric',
-            descr=_('Type of ticks to show on on axis'),
-            usertext=_('Mode')) )
+        s.add(setting.Str("label", "", descr=_("Axis label text"), usertext=_("Label")))
+        s.add(
+            setting.AxisBound(
+                "min", "Auto", descr=_("Minimum value of axis"), usertext=_("Min")
+            )
+        )
+        s.add(
+            setting.AxisBound(
+                "max", "Auto", descr=_("Maximum value of axis"), usertext=_("Max")
+            )
+        )
+        s.add(
+            setting.Bool(
+                "log", False, descr=_("Whether axis is logarithmic"), usertext=_("Log")
+            )
+        )
+        s.add(AutoRange("autoRange", "next-tick"))
+        s.add(
+            setting.Choice(
+                "mode",
+                ("numeric", "datetime", "labels"),
+                "numeric",
+                descr=_("Type of ticks to show on on axis"),
+                usertext=_("Mode"),
+            )
+        )
 
-        s.add( setting.SettingBackwardCompat(
-            'autoExtend', 'autoRange', True,
-            translatefn = lambda x: ('exact', 'next-tick')[x],
-            formatting=True ) )
+        s.add(
+            setting.SettingBackwardCompat(
+                "autoExtend",
+                "autoRange",
+                True,
+                translatefn=lambda x: ("exact", "next-tick")[x],
+                formatting=True,
+            )
+        )
 
         # this setting no longer used
-        s.add( setting.Bool(
-            'autoExtendZero', True,
-            descr=_('Extend axis to zero if close (UNUSED)'),
-            usertext=_('Zero extend'),
-            hidden=True,
-            formatting=True) )
+        s.add(
+            setting.Bool(
+                "autoExtendZero",
+                True,
+                descr=_("Extend axis to zero if close (UNUSED)"),
+                usertext=_("Zero extend"),
+                hidden=True,
+                formatting=True,
+            )
+        )
 
-        s.add( setting.Bool(
-            'autoMirror', True,
-            descr=_('Place axis on opposite side of graph if none'),
-            usertext=_('Auto mirror'),
-            formatting=True) )
-        s.add( setting.Bool(
-            'reflect', False,
-            descr=_('Place axis text and ticks on other side of axis'),
-            usertext=_('Reflect'),
-            formatting=True) )
-        s.add( setting.Bool(
-            'outerticks', False,
-            descr=_('Place ticks on outside of graph'),
-            usertext=_('Outer ticks'),
-            formatting=True) )
+        s.add(
+            setting.Bool(
+                "autoMirror",
+                True,
+                descr=_("Place axis on opposite side of graph if none"),
+                usertext=_("Auto mirror"),
+                formatting=True,
+            )
+        )
+        s.add(
+            setting.Bool(
+                "reflect",
+                False,
+                descr=_("Place axis text and ticks on other side of axis"),
+                usertext=_("Reflect"),
+                formatting=True,
+            )
+        )
+        s.add(
+            setting.Bool(
+                "outerticks",
+                False,
+                descr=_("Place ticks on outside of graph"),
+                usertext=_("Outer ticks"),
+                formatting=True,
+            )
+        )
 
-        s.add( setting.Float(
-            'datascale', 1.,
-            descr=_('Scale data plotted by this factor'),
-            usertext=_('Scale')) )
+        s.add(
+            setting.Float(
+                "datascale",
+                1.0,
+                descr=_("Scale data plotted by this factor"),
+                usertext=_("Scale"),
+            )
+        )
 
-        s.add( setting.Choice(
-            'direction',
-            ['horizontal', 'vertical'],
-            'horizontal',
-            descr=_('Direction of axis'),
-            usertext=_('Direction')) )
-        s.add( setting.Float(
-            'lowerPosition', 0.,
-            descr=_('Fractional position of lower end of axis on graph'),
-            usertext=_('Min position')) )
-        s.add( setting.Float(
-            'upperPosition', 1.,
-            descr=_('Fractional position of upper end of axis on graph'),
-            usertext=_('Max position')) )
-        s.add( setting.Float(
-            'otherPosition', 0.,
-            descr=_('Fractional position of axis in its perpendicular direction'),
-            usertext=_('Axis position')) )
+        s.add(
+            setting.Choice(
+                "direction",
+                ["horizontal", "vertical"],
+                "horizontal",
+                descr=_("Direction of axis"),
+                usertext=_("Direction"),
+            )
+        )
+        s.add(
+            setting.Float(
+                "lowerPosition",
+                0.0,
+                descr=_("Fractional position of lower end of axis on graph"),
+                usertext=_("Min position"),
+            )
+        )
+        s.add(
+            setting.Float(
+                "upperPosition",
+                1.0,
+                descr=_("Fractional position of upper end of axis on graph"),
+                usertext=_("Max position"),
+            )
+        )
+        s.add(
+            setting.Float(
+                "otherPosition",
+                0.0,
+                descr=_("Fractional position of axis in its perpendicular direction"),
+                usertext=_("Axis position"),
+            )
+        )
 
-        s.add( setting.WidgetPath(
-            'match', '',
-            descr=_('Match the scale of this axis to the axis specified'),
-            usertext=_('Match'),
-            allowedwidgets=[Axis] ))
+        s.add(
+            setting.WidgetPath(
+                "match",
+                "",
+                descr=_("Match the scale of this axis to the axis specified"),
+                usertext=_("Match"),
+                allowedwidgets=[Axis],
+            )
+        )
 
-        s.add( setting.Line(
-            'Line',
-            descr=_('Axis line settings'),
-            usertext=_('Axis line')),
-            pixmap='settings_axisline' )
-        s.add( AxisLabel(
-            'Label',
-            descr=_('Axis label settings'),
-            usertext=_('Axis label')),
-            pixmap='settings_axislabel' )
-        s.add( TickLabel(
-            'TickLabels',
-            descr=_('Tick label settings'),
-            usertext=_('Tick labels')),
-            pixmap='settings_axisticklabels' )
-        s.add( MajorTick(
-            'MajorTicks',
-            descr=_('Major tick line settings'),
-            usertext=_('Major ticks')),
-            pixmap='settings_axismajorticks' )
-        s.add( MinorTick(
-            'MinorTicks',
-            descr=_('Minor tick line settings'),
-            usertext=_('Minor ticks')),
-            pixmap='settings_axisminorticks' )
-        s.add( GridLine(
-            'GridLines',
-            descr=_('Grid line settings'),
-            usertext=_('Grid lines')),
-            pixmap='settings_axisgridlines' )
-        s.add( MinorGridLine(
-            'MinorGridLines',
-            descr=_('Minor grid line settings'),
-            usertext=_('Grid lines for minor ticks')),
-            pixmap='settings_axisminorgridlines' )
+        s.add(
+            setting.Line(
+                "Line", descr=_("Axis line settings"), usertext=_("Axis line")
+            ),
+            pixmap="settings_axisline",
+        )
+        s.add(
+            AxisLabel(
+                "Label", descr=_("Axis label settings"), usertext=_("Axis label")
+            ),
+            pixmap="settings_axislabel",
+        )
+        s.add(
+            TickLabel(
+                "TickLabels", descr=_("Tick label settings"), usertext=_("Tick labels")
+            ),
+            pixmap="settings_axisticklabels",
+        )
+        s.add(
+            MajorTick(
+                "MajorTicks",
+                descr=_("Major tick line settings"),
+                usertext=_("Major ticks"),
+            ),
+            pixmap="settings_axismajorticks",
+        )
+        s.add(
+            MinorTick(
+                "MinorTicks",
+                descr=_("Minor tick line settings"),
+                usertext=_("Minor ticks"),
+            ),
+            pixmap="settings_axisminorticks",
+        )
+        s.add(
+            GridLine(
+                "GridLines", descr=_("Grid line settings"), usertext=_("Grid lines")
+            ),
+            pixmap="settings_axisgridlines",
+        )
+        s.add(
+            MinorGridLine(
+                "MinorGridLines",
+                descr=_("Minor grid line settings"),
+                usertext=_("Grid lines for minor ticks"),
+            ),
+            pixmap="settings_axisminorgridlines",
+        )
 
     @classmethod
     def allowedParentTypes(klass):
         from . import graph, grid
+
         return (graph.Graph, grid.Grid)
 
     @property
@@ -488,8 +615,10 @@ class Axis(widget.Widget):
         """User friendly description."""
         s = self.settings
         return "range %s to %s%s" % (
-            str(s.min), str(s.max),
-            ['',' (log)'][self.plottedLog()])
+            str(s.min),
+            str(s.max),
+            ["", " (log)"][self.plottedLog()],
+        )
 
     def isLinked(self):
         """Whether is an axis linked to another."""
@@ -504,18 +633,18 @@ class Axis(widget.Widget):
 
         if autorange:
             scale = self.settings.datascale
-            self.autorange = ar = [x*scale for x in autorange]
+            self.autorange = ar = [x * scale for x in autorange]
             if self.settings.log:
                 ar[0] = max(1e-99, ar[0])
         else:
             if self.settings.log:
-                self.autorange = [1e-2, 1.]
+                self.autorange = [1e-2, 1.0]
             else:
-                self.autorange = [0., 1.]
+                self.autorange = [0.0, 1.0]
 
     def usesAutoRange(self):
         """Return whether any of the bounds are automatically determined."""
-        return self.settings.min == 'Auto' or self.settings.max == 'Auto'
+        return self.settings.min == "Auto" or self.settings.max == "Auto"
 
     def computePlottedRange(self, force=False, overriderange=None):
         """Convert the range requested into a plotted range."""
@@ -531,17 +660,16 @@ class Axis(widget.Widget):
 
         # match the scale of this axis to another
         matched = False
-        if s.match != '':
+        if s.match != "":
             # locate widget we're matching
             # this is ensured to be an Axis
             try:
-                widget = s.get('match').getReferredWidget()
+                widget = s.get("match").getReferredWidget()
             except utils.InvalidType:
                 widget = None
 
             # this looks valid + sanity checks
-            if (widget is not None and widget != self and
-                widget.settings.match == ''):
+            if widget is not None and widget != self and widget.settings.match == "":
                 # update if out of date
                 if widget.docchangeset != self.document.changeset:
                     widget.computePlottedRange()
@@ -551,18 +679,21 @@ class Axis(widget.Widget):
 
         # automatic lookup of minimum
         if not matched and overriderange is None:
-            if s.min == 'Auto':
+            if s.min == "Auto":
                 self.plottedrange[0] = self.autorange[0]
-            if s.max == 'Auto':
+            if s.max == "Auto":
                 self.plottedrange[1] = self.autorange[1]
 
         # yuck, but sometimes it's true
         # tweak range to make sure things don't blow up further down the
         # line
-        if ( abs(self.plottedrange[0] - self.plottedrange[1]) <
-             ( abs(self.plottedrange[0]) + abs(self.plottedrange[1]) )*1e-12 ):
-            self.plottedrange[1] = (
-                self.plottedrange[0] + max(1., self.plottedrange[0]*0.1) )
+        if (
+            abs(self.plottedrange[0] - self.plottedrange[1])
+            < (abs(self.plottedrange[0]) + abs(self.plottedrange[1])) * 1e-12
+        ):
+            self.plottedrange[1] = self.plottedrange[0] + max(
+                1.0, self.plottedrange[0] * 0.1
+            )
 
         # handle axis values round the wrong way
         invertaxis = self.plottedrange[0] > self.plottedrange[1]
@@ -576,10 +707,11 @@ class Axis(widget.Widget):
             if self.plottedrange[1] < 1e-99:
                 self.plottedrange[1] = 1e-99
             if self.plottedrange[0] == self.plottedrange[1]:
-                self.plottedrange[1] = self.plottedrange[0]*2
+                self.plottedrange[1] = self.plottedrange[0] * 2
 
-        s.get('autoRange').adjustPlottedRange(
-            self.plottedrange, s.min=='Auto', s.max=='Auto', s.log, self.document)
+        s.get("autoRange").adjustPlottedRange(
+            self.plottedrange, s.min == "Auto", s.max == "Auto", s.log, self.document
+        )
 
         self.computeTicks()
 
@@ -592,8 +724,7 @@ class Axis(widget.Widget):
     def plottedLog(self):
         """Plotted in log?
         This is overridden if the mode is incorrect."""
-        return (self.settings.log and
-                self.settings.mode in ('numeric', 'labels'))
+        return self.settings.log and self.settings.mode in ("numeric", "labels")
 
     def isLinear(self):
         """Is this a linear axis?"""
@@ -607,21 +738,24 @@ class Axis(widget.Widget):
 
         s = self.settings
 
-        if s.mode in ('numeric', 'labels'):
+        if s.mode in ("numeric", "labels"):
             tickclass = axisticks.AxisTicks
         else:
             tickclass = axisticks.DateTicks
 
-        nexttick = s.autoRange == 'next-tick'
-        extendmin = nexttick and s.min == 'Auto' and allowauto
-        extendmax = nexttick and s.max == 'Auto' and allowauto
+        nexttick = s.autoRange == "next-tick"
+        extendmin = nexttick and s.min == "Auto" and allowauto
+        extendmax = nexttick and s.max == "Auto" and allowauto
 
         # create object to compute ticks
         axs = tickclass(
-            self.plottedrange[0], self.plottedrange[1],
-            s.MajorTicks.number, s.MinorTicks.number,
-            extendmin = extendmin, extendmax = extendmax,
-            logaxis = self.plottedLog()
+            self.plottedrange[0],
+            self.plottedrange[1],
+            s.MajorTicks.number,
+            s.MinorTicks.number,
+            extendmin=extendmin,
+            extendmax=extendmax,
+            logaxis=self.plottedLog(),
         )
 
         axs.getTicks()
@@ -651,8 +785,7 @@ class Axis(widget.Widget):
         self.computePlottedRange()
         return (self.plottedrange[0], self.plottedrange[1])
 
-    def updateAxisLocation(self, bounds, otherposition=None,
-                           lowerupperposition=None):
+    def updateAxisLocation(self, bounds, otherposition=None, lowerupperposition=None):
         """Recalculate coordinates on plotter of axis.
 
         otherposition: override otherPosition setting
@@ -661,9 +794,8 @@ class Axis(widget.Widget):
         """
 
         # skip recalculation if parameters unchanged
-        cachekey = (bounds, otherposition, lowerupperposition,
-                    self.document.changeset)
-        if hasattr(self, '_axisLocCache') and self._axisLocCache == cachekey:
+        cachekey = (bounds, otherposition, lowerupperposition, self.document.changeset)
+        if hasattr(self, "_axisLocCache") and self._axisLocCache == cachekey:
             return
         self._axisLocCache = cachekey
 
@@ -680,21 +812,21 @@ class Axis(widget.Widget):
         dx = x2 - x1
         dy = y2 - y1
 
-        if s.direction == 'horizontal': # horizontal
-            self.coordParr1 = x1 + dx*p1
-            self.coordParr2 = x1 + dx*p2
+        if s.direction == "horizontal":  # horizontal
+            self.coordParr1 = x1 + dx * p1
+            self.coordParr2 = x1 + dx * p2
 
             # other axis coordinates
-            self.coordPerp  = y2 - dy*otherposition
+            self.coordPerp = y2 - dy * otherposition
             self.coordPerp1 = y1
             self.coordPerp2 = y2
 
-        else: # vertical
-            self.coordParr1 = y2 - dy*p1
-            self.coordParr2 = y2 - dy*p2
+        else:  # vertical
+            self.coordParr1 = y2 - dy * p1
+            self.coordParr2 = y2 - dy * p2
 
             # other axis coordinates
-            self.coordPerp  = x1 + dx*otherposition
+            self.coordPerp = x1 + dx * otherposition
             self.coordPerp1 = x1
             self.coordPerp2 = x2
 
@@ -726,12 +858,12 @@ class Axis(widget.Widget):
         else:
             fracposns = self.linearConvertToPlotter(vals)
 
-        return self.coordParr1 + fracposns*(self.coordParr2-self.coordParr1)
+        return self.coordParr1 + fracposns * (self.coordParr2 - self.coordParr1)
 
     def dataToPlotterCoords(self, posn, data):
         """Convert data values to plotter coordinates, scaling if necessary."""
         self.updateAxisLocation(posn)
-        return self._graphToPlotter(data*self.settings.datascale)
+        return self._graphToPlotter(data * self.settings.datascale)
 
     def plotterToGraphCoords(self, bounds, vals):
         """Convert plotter coordinates on this axis to graph coordinates.
@@ -741,12 +873,11 @@ class Axis(widget.Widget):
         returns a numpy of floats
         """
 
-        self.updateAxisLocation( bounds )
+        self.updateAxisLocation(bounds)
 
         # work out fractional positions of the plotter coords
-        frac = (
-            (vals.astype(N.float64) - self.coordParr1) /
-            (self.coordParr2 - self.coordParr1)
+        frac = (vals.astype(N.float64) - self.coordParr1) / (
+            self.coordParr2 - self.coordParr1
         )
 
         # convert from fractional to graph
@@ -758,42 +889,31 @@ class Axis(widget.Widget):
     def plotterToDataCoords(self, bounds, vals):
         """Convert plotter coordinates to data, removing scaling."""
         try:
-            scale = 1./self.settings.datascale
+            scale = 1.0 / self.settings.datascale
         except ZeroDivisionError:
-            scale = 0.
+            scale = 0.0
         return scale * self.plotterToGraphCoords(bounds, vals)
 
     def linearConvertToPlotter(self, v):
-        """Convert graph coordinates to fractional plotter units for linear scale.
-        """
-        return (
-            (v - self.plottedrange[0]) /
-            (self.plottedrange[1] - self.plottedrange[0])
+        """Convert graph coordinates to fractional plotter units for linear scale."""
+        return (v - self.plottedrange[0]) / (
+            self.plottedrange[1] - self.plottedrange[0]
         )
 
     def linearConvertFromPlotter(self, v):
-        """Convert from (fractional) plotter coords to graph coords.
-        """
-        return (
-            self.plottedrange[0] + v *
-            (self.plottedrange[1]-self.plottedrange[0])
-        )
+        """Convert from (fractional) plotter coords to graph coords."""
+        return self.plottedrange[0] + v * (self.plottedrange[1] - self.plottedrange[0])
 
     def logConvertToPlotter(self, v):
-        """Convert graph coordinates to fractional plotter units for log10 scale.
-        """
+        """Convert graph coordinates to fractional plotter units for log10 scale."""
 
         log1 = N.log(self.plottedrange[0])
         log2 = N.log(self.plottedrange[1])
-        return (N.log(N.clip(v, 1e-99, 1e99)) - log1)/(log2 - log1)
+        return (N.log(N.clip(v, 1e-99, 1e99)) - log1) / (log2 - log1)
 
     def logConvertFromPlotter(self, v):
-        """Convert from fraction plotter coords to graph coords with log scale.
-        """
-        return (
-            self.plottedrange[0] *
-            ( self.plottedrange[1]/self.plottedrange[0] )**v
-        )
+        """Convert from fraction plotter coords to graph coords with log scale."""
+        return self.plottedrange[0] * (self.plottedrange[1] / self.plottedrange[0]) ** v
 
     def againstWhichEdge(self):
         """Returns edge this axis is against, if any.
@@ -806,7 +926,7 @@ class Axis(widget.Widget):
         if op > 1e-3 and op < 0.999:
             return None
         else:
-            if s.direction == 'vertical':
+            if s.direction == "vertical":
                 if op <= 1e-3:
                     return 0
                 else:
@@ -819,14 +939,14 @@ class Axis(widget.Widget):
 
     def swapline(self, painter, a1, b1, a2, b2):
         """Draw line, but swap x & y coordinates if vertical axis."""
-        if self.settings.direction == 'horizontal':
+        if self.settings.direction == "horizontal":
             painter.drawLine(qt.QPointF(a1, b1), qt.QPointF(a2, b2))
         else:
             painter.drawLine(qt.QPointF(b1, a1), qt.QPointF(b2, a2))
 
     def swaplines(self, painter, a1, b1, a2, b2):
         """Multiline version of swapline where a1, b1, a2, b2 are arrays."""
-        if self.settings.direction == 'horizontal':
+        if self.settings.direction == "horizontal":
             a = (a1, b1, a2, b2)
         else:
             a = (b1, a1, b2, a2)
@@ -834,18 +954,18 @@ class Axis(widget.Widget):
 
     def _drawGridLines(self, subset, painter, coordticks, parentposn):
         """Draw grid lines on the plot."""
-        painter.setPen( self.settings.get(subset).makeQPen(painter) )
+        painter.setPen(self.settings.get(subset).makeQPen(painter))
 
         # drop points which overlap with graph box (if used)
-        if self.parent.typename == 'graph':
+        if self.parent.typename == "graph":
             if not self.parent.settings.Border.hide:
-                if self.settings.direction == 'horizontal':
+                if self.settings.direction == "horizontal":
                     lo, hi = parentposn[0], parentposn[2]
                 else:
                     lo, hi = parentposn[1], parentposn[3]
                 coordticks = coordticks[
-                    (N.abs(coordticks - lo) > 1e-3) &
-                    (N.abs(coordticks - hi) > 1e-3)]
+                    (N.abs(coordticks - lo) > 1e-3) & (N.abs(coordticks - hi) > 1e-3)
+                ]
 
         n = len(coordticks)
         perp1 = N.full(n, self.coordPerp1)
@@ -855,26 +975,24 @@ class Axis(widget.Widget):
     def _drawAxisLine(self, painter, posn):
         """Draw the line of the axis."""
 
-        pen = self.settings.get('Line').makeQPen(painter)
+        pen = self.settings.get("Line").makeQPen(painter)
         pen.setCapStyle(qt.Qt.PenCapStyle.SquareCap)
         painter.setPen(pen)
         self.swapline(
-            painter,
-            self.coordParr1, self.coordPerp,
-            self.coordParr2, self.coordPerp
+            painter, self.coordParr1, self.coordPerp, self.coordParr2, self.coordPerp
         )
 
     def _drawMinorTicks(self, painter, coordminorticks):
         """Draw minor ticks on plot."""
 
         s = self.settings
-        mt = s.get('MinorTicks')
+        mt = s.get("MinorTicks")
         pen = mt.makeQPen(painter)
         pen.setCapStyle(qt.Qt.PenCapStyle.SquareCap)
         painter.setPen(pen)
         delta = mt.getLength(painter)
 
-        if s.direction == 'vertical':
+        if s.direction == "vertical":
             delta *= -1
         if self.coordReflected:
             delta *= -1
@@ -882,24 +1000,20 @@ class Axis(widget.Widget):
             delta *= -1
 
         y = N.full(len(coordminorticks), self.coordPerp)
-        self.swaplines(
-            painter,
-            coordminorticks, y,
-            coordminorticks, y-delta
-        )
+        self.swaplines(painter, coordminorticks, y, coordminorticks, y - delta)
 
     def _drawMajorTicks(self, painter, tickcoords):
         """Draw major ticks on the plot."""
 
         s = self.settings
-        mt = s.get('MajorTicks')
+        mt = s.get("MajorTicks")
         pen = mt.makeQPen(painter)
         pen.setCapStyle(qt.Qt.PenCapStyle.SquareCap)
         painter.setPen(pen)
         startdelta = mt.getLength(painter)
         delta = startdelta
 
-        if s.direction == 'vertical':
+        if s.direction == "vertical":
             delta *= -1
         if self.coordReflected:
             delta *= -1
@@ -907,11 +1021,7 @@ class Axis(widget.Widget):
             delta *= -1
 
         y = N.full(len(tickcoords), self.coordPerp)
-        self.swaplines(
-            painter,
-            tickcoords, y,
-            tickcoords, y-delta
-        )
+        self.swaplines(painter, tickcoords, y, tickcoords, y - delta)
 
         # account for ticks if they are in the direction of the label
         if s.outerticks and not self.coordReflected:
@@ -939,8 +1049,9 @@ class Axis(widget.Widget):
                     if N.isfinite(coord) and (minval <= coord <= maxval):
                         yield pcoord, lab
 
-    def _drawTickLabels(self, phelper, painter, coordticks, sign, outerbounds,
-                        tickvals, texttorender):
+    def _drawTickLabels(
+        self, phelper, painter, coordticks, sign, outerbounds, tickvals, texttorender
+    ):
         """Draw tick labels on the plot.
 
         texttorender is a list which contains text for the axis to render
@@ -948,8 +1059,8 @@ class Axis(widget.Widget):
         """
 
         s = self.settings
-        vertical = s.direction == 'vertical'
-        font = s.get('TickLabels').makeQFont(painter)
+        vertical = s.direction == "vertical"
+        font = s.get("TickLabels").makeQFont(painter)
         painter.setFont(font)
         fm = utils.FontMetrics(font, painter.device())
         tl_spacing = fm.leading() + fm.descent()
@@ -957,7 +1068,7 @@ class Axis(widget.Widget):
         # work out font alignment
         angle = int(s.TickLabels.rotate)
         if not self.coordReflected and angle != 0:
-            angle = 360-angle
+            angle = 360 - angle
 
         if vertical:
             # limit tick labels to be directly below/besides axis
@@ -969,31 +1080,32 @@ class Axis(widget.Widget):
             ax, ay = -ax, -ay
 
         # get information about text scales
-        tl = s.get('TickLabels')
+        tl = s.get("TickLabels")
         scale = tl.scale
         pen = tl.makeQPen(painter)
 
         # an extra offset if required
-        self._delta_axis += tl.get('offset').convert(painter)
+        self._delta_axis += tl.get("offset").convert(painter)
 
         def generateTickLabels():
             """Return plotter position of labels and label text."""
             # get format for labels
             format = s.TickLabels.format
-            if format.lower() == 'auto':
+            if format.lower() == "auto":
                 format = self.autoformat
 
             # generate positions and labels
             for posn, tickval in zip(coordticks, tickvals):
                 text = utils.formatNumber(
-                    tickval*scale, format, locale=self.document.locale)
+                    tickval * scale, format, locale=self.document.locale
+                )
                 yield posn, text
 
         # position of label perpendicular to axis
-        perpposn = self.coordPerp + sign*(self._delta_axis+tl_spacing)
+        perpposn = self.coordPerp + sign * (self._delta_axis + tl_spacing)
 
         # use generator function to get labels and positions
-        if s.mode == 'labels':
+        if s.mode == "labels":
             ticklabels = self.generateLabelLabels(phelper)
         else:
             ticklabels = generateTickLabels()
@@ -1001,7 +1113,6 @@ class Axis(widget.Widget):
         # iterate over each label
         maxdim = 0
         for parlposn, text in ticklabels:
-
             # x and y round other way if vertical
             if vertical:
                 x, y = perpposn, parlposn
@@ -1009,23 +1120,30 @@ class Axis(widget.Widget):
                 x, y = parlposn, perpposn
 
             r = utils.Renderer(
-                painter, font, x, y, text, alignhorz=ax,
-                alignvert=ay, angle=angle,
-                doc=self.document)
+                painter,
+                font,
+                x,
+                y,
+                text,
+                alignhorz=ax,
+                alignvert=ay,
+                angle=angle,
+                doc=self.document,
+            )
 
             if outerbounds is not None:
                 # make sure ticks are within plot
                 if vertical:
                     r.ensureInBox(
-                        miny=outerbounds[1], maxy=outerbounds[3],
-                        extraspace=True)
+                        miny=outerbounds[1], maxy=outerbounds[3], extraspace=True
+                    )
                 else:
                     r.ensureInBox(
-                        minx=outerbounds[0], maxx=outerbounds[2],
-                        extraspace=True)
+                        minx=outerbounds[0], maxx=outerbounds[2], extraspace=True
+                    )
 
             bnd = r.getBounds()
-            texttorender.append( (r, pen) )
+            texttorender.append((r, pen))
 
             # keep track of maximum extent of label perpendicular to axis
             if vertical:
@@ -1034,7 +1152,7 @@ class Axis(widget.Widget):
                 maxdim = max(maxdim, bnd[3] - bnd[1])
 
         # keep track of where we are
-        self._delta_axis += 2*tl_spacing + maxdim
+        self._delta_axis += 2 * tl_spacing + maxdim
 
     def _drawAxisLabel(self, painter, sign, outerbounds, texttorender):
         """Draw an axis label on the plot.
@@ -1045,28 +1163,24 @@ class Axis(widget.Widget):
 
         s = self.settings
         sl = s.Label
-        label = s.get('Label')
+        label = s.get("Label")
         font = label.makeQFont(painter)
         painter.setFont(font)
         fm = utils.FontMetrics(font, painter.device())
         al_spacing = fm.leading() + fm.descent()
 
         # an extra offset if required
-        self._delta_axis += label.get('offset').convert(painter)
+        self._delta_axis += label.get("offset").convert(painter)
 
         text = s.label
         # avoid adding blank text to plot
         if not text:
             return
 
-        horz = s.direction == 'horizontal'
+        horz = s.direction == "horizontal"
 
         align1 = 1
-        align2 = {
-            'centre': 0,
-            'at-minimum': -1,
-            'at-maximum': 1
-        }[sl.position]
+        align2 = {"centre": 0, "at-minimum": -1, "at-maximum": 1}[sl.position]
 
         if horz:
             ax, ay = align2, align1
@@ -1084,21 +1198,21 @@ class Axis(widget.Widget):
         angle = int(sl.rotate)
         if horz:
             if not reflected:
-                angle = 360-angle
+                angle = 360 - angle
         else:
-            angle = angle+270
+            angle = angle + 270
             if reflected:
-                angle = 360-angle
+                angle = 360 - angle
         angle = angle % 360
 
-        if sl.position == 'centre':
-            x = 0.5*(self.coordParr1 + self.coordParr2)
-        elif sl.position == 'at-minimum':
+        if sl.position == "centre":
+            x = 0.5 * (self.coordParr1 + self.coordParr2)
+        elif sl.position == "at-minimum":
             x = self.coordParr1
         else:
             x = self.coordParr2
 
-        y = self.coordPerp + sign*(self._delta_axis+al_spacing)
+        y = self.coordPerp + sign * (self._delta_axis + al_spacing)
         if not horz:
             x, y = y, x
 
@@ -1112,7 +1226,7 @@ class Axis(widget.Widget):
                 else:
                     x = outerbounds[0]
                     ax = -ax
-            elif abs(s.otherPosition-1.) < 1e-4 and reflected:
+            elif abs(s.otherPosition - 1.0) < 1e-4 and reflected:
                 if horz:
                     y = outerbounds[1]
                     ay = -ay
@@ -1121,19 +1235,28 @@ class Axis(widget.Widget):
                     ax = -ax
 
         r = utils.Renderer(
-            painter, font, x, y, text,
-            ax, ay, angle,
+            painter,
+            font,
+            x,
+            y,
+            text,
+            ax,
+            ay,
+            angle,
             usefullheight=True,
-            doc=self.document)
+            doc=self.document,
+        )
 
         # make sure text is in plot rectangle
         if outerbounds is not None:
             r.ensureInBox(
-                minx=outerbounds[0], maxx=outerbounds[2],
-                miny=outerbounds[1], maxy=outerbounds[3]
+                minx=outerbounds[0],
+                maxx=outerbounds[2],
+                miny=outerbounds[1],
+                maxy=outerbounds[3],
             )
 
-        texttorender.insert(0, (r, s.get('Label').makeQPen(painter)) )
+        texttorender.insert(0, (r, s.get("Label").makeQPen(painter)))
 
     def chooseName(self):
         """Get default name for axis. Make x and y axes, then axisN."""
@@ -1142,7 +1265,7 @@ class Axis(widget.Widget):
             widgets = set(self.parent.childnames)
         except AttributeError:
             widgets = set()
-        for name in ('x', 'y'):
+        for name in ("x", "y"):
             if name not in widgets:
                 return name
         return widget.Widget.chooseName(self)
@@ -1159,26 +1282,27 @@ class Axis(widget.Widget):
 
         s = self.settings
         height = utils.FontMetrics(
-            s.get('Label').makeQFont(painter),
-            painter.device()).height()
+            s.get("Label").makeQFont(painter), painter.device()
+        ).height()
         otherposition = s.otherPosition
 
-        if s.direction == 'vertical':
-            if ( ( otherposition < 0.01 and
-                   abs(parentposn[0]-outerbounds[0]) < height) or
-                 ( otherposition > 0.99 and
-                   abs(parentposn[2]-outerbounds[2]) < height) ):
+        if s.direction == "vertical":
+            if (
+                otherposition < 0.01 and abs(parentposn[0] - outerbounds[0]) < height
+            ) or (
+                otherposition > 0.99 and abs(parentposn[2] - outerbounds[2]) < height
+            ):
                 return True
         else:
-            if ( ( otherposition < 0.01 and
-                   abs(parentposn[3]-outerbounds[3]) < height) or
-                 ( otherposition > 0.99 and
-                   abs(parentposn[1]-outerbounds[1]) < height) ):
+            if (
+                otherposition < 0.01 and abs(parentposn[3] - outerbounds[3]) < height
+            ) or (
+                otherposition > 0.99 and abs(parentposn[1] - outerbounds[1]) < height
+            ):
                 return True
         return False
 
-    def drawGrid(self, parentposn, phelper, outerbounds=None,
-                 ontop=False):
+    def drawGrid(self, parentposn, phelper, outerbounds=None, ontop=False):
         """Code to draw gridlines.
 
         This is separate from the main draw routine because the grid
@@ -1186,8 +1310,11 @@ class Axis(widget.Widget):
         """
 
         s = self.settings
-        if ( s.hide or (s.MinorGridLines.hide and s.GridLines.hide) or
-             s.GridLines.onTop != bool(ontop) ):
+        if (
+            s.hide
+            or (s.MinorGridLines.hide and s.GridLines.hide)
+            or s.GridLines.onTop != bool(ontop)
+        ):
             return
 
         # draw grid on a different layer, depending on whether on top or not
@@ -1195,15 +1322,17 @@ class Axis(widget.Widget):
         painter = phelper.painter(self, parentposn, layer=layer)
         self.updateAxisLocation(parentposn)
 
-        with painter:
-            painter.save()
-            painter.setClipRect( qt.QRectF(
-                qt.QPointF(parentposn[0], parentposn[1]),
-                qt.QPointF(parentposn[2], parentposn[3]) ) )
+        with painter, utils.painter_state(painter):
+            painter.setClipRect(
+                qt.QRectF(
+                    qt.QPointF(parentposn[0], parentposn[1]),
+                    qt.QPointF(parentposn[2], parentposn[3]),
+                )
+            )
 
             # reuse cached tick coordinates if available
-            cache_key = getattr(self, '_axisLocCache', None)
-            cached = getattr(self, '_tickCoordCache', None)
+            cache_key = getattr(self, "_axisLocCache", None)
+            cached = getattr(self, "_tickCoordCache", None)
             if cached is not None and cached[0] == cache_key:
                 coordminorticks, coordticks = cached[2], cached[1]
             else:
@@ -1213,14 +1342,10 @@ class Axis(widget.Widget):
 
             if not s.MinorGridLines.hide:
                 self._drawGridLines(
-                    'MinorGridLines', painter, coordminorticks,
-                    parentposn)
+                    "MinorGridLines", painter, coordminorticks, parentposn
+                )
             if not s.GridLines.hide:
-                self._drawGridLines(
-                    'GridLines', painter, coordticks,
-                    parentposn)
-
-            painter.restore()
+                self._drawGridLines("GridLines", painter, coordticks, parentposn)
 
     def _drawAutoMirrorTicks(self, posn, painter):
         s = self.settings
@@ -1228,9 +1353,9 @@ class Axis(widget.Widget):
         coordminorticks = self._graphToPlotter(self.minortickscalc)
 
         if s.otherPosition < 0.5:
-            otheredge = 1.
+            otheredge = 1.0
         else:
-            otheredge = 0.
+            otheredge = 0.0
 
         # temporarily change position of axis to other side for drawing
         self.updateAxisLocation(posn, otherposition=otheredge)
@@ -1257,14 +1382,11 @@ class Axis(widget.Widget):
 
         painter = phelper.painter(self, parentposn, layer=-1)
         self.updateAxisLocation(parentposn)
-        with painter:
-            painter.save()
+        with painter, utils.painter_state(painter):
             self._drawAutoMirrorTicks(parentposn, painter)
-            painter.restore()
 
     def draw(self, parentposn, phelper, outerbounds=None):
-        """Plot the axis on the painter.
-        """
+        """Plot the axis on the painter."""
 
         self.updateAxisLocation(parentposn)
 
@@ -1277,8 +1399,7 @@ class Axis(widget.Widget):
         axisbounds = outerbounds if outerbounds else parentposn
         painter = phelper.painter(self, axisbounds)
         with painter:
-            self._axisDraw(
-                parentposn, parentposn, outerbounds, painter, phelper)
+            self._axisDraw(parentposn, parentposn, outerbounds, painter, phelper)
 
     def _drawTextWithoutOverlap(self, painter, texttorender):
         """All the text is drawn at the end so that we can check it
@@ -1287,7 +1408,7 @@ class Axis(widget.Widget):
         texttorender is a list of (Renderer, QPen) tuples.
         In labels mode, category labels are always drawn.
         """
-        if self.settings.mode == 'labels':
+        if self.settings.mode == "labels":
             # category labels: always draw all of them
             for r, pen in texttorender:
                 painter.setPen(pen)
@@ -1311,15 +1432,24 @@ class Axis(widget.Widget):
         s = self.settings
 
         # make control item for axis
-        phelper.setControlGraph(self, [
-            controlgraph.ControlAxisLine(
-                self, phelper, s.direction, self.coordParr1,
-                self.coordParr2, self.coordPerp, posn)
-        ])
+        phelper.setControlGraph(
+            self,
+            [
+                controlgraph.ControlAxisLine(
+                    self,
+                    phelper,
+                    s.direction,
+                    self.coordParr1,
+                    self.coordParr2,
+                    self.coordPerp,
+                    posn,
+                )
+            ],
+        )
 
         # get tick vals (cached by axis location)
-        cache_key = getattr(self, '_axisLocCache', None)
-        cached = getattr(self, '_tickCoordCache', None)
+        cache_key = getattr(self, "_axisLocCache", None)
+        cached = getattr(self, "_tickCoordCache", None)
         if cached is not None and cached[0] == cache_key:
             coordticks, coordminorticks = cached[1], cached[2]
         else:
@@ -1331,7 +1461,7 @@ class Axis(widget.Widget):
 
         # multiplication factor if reflection on the axis is requested
         sign = 1
-        if s.direction == 'vertical':
+        if s.direction == "vertical":
             sign *= -1
         if self.coordReflected:
             sign *= -1
@@ -1355,8 +1485,14 @@ class Axis(widget.Widget):
         suppresstext = self._suppressText(painter, parentposn, outerbounds)
         if not s.TickLabels.hide and not suppresstext:
             self._drawTickLabels(
-                phelper, painter, coordticks, sign,
-                outerbounds, self.majortickscalc, texttorender)
+                phelper,
+                painter,
+                coordticks,
+                sign,
+                outerbounds,
+                self.majortickscalc,
+                texttorender,
+            )
 
         # draw an axis label
         if not s.Label.hide and not suppresstext:
@@ -1372,34 +1508,31 @@ class Axis(widget.Widget):
 
         if cgi.done_reset():
             c1, c2, c1delt, c2delt = self.plotterToGraphCoords(
-                cgi.maxposn, N.array([
-                    cgi.minzoom, cgi.maxzoom,
-                    cgi.minzoom+1, cgi.maxzoom-1
-                ]))
+                cgi.maxposn,
+                N.array([cgi.minzoom, cgi.maxzoom, cgi.minzoom + 1, cgi.maxzoom - 1]),
+            )
             reset = cgi.reset
             if c1 > c2:
                 reset = 1 - reset
 
             ops = []
             if reset == 0:
-                ops.append( document.OperationSettingSet(
-                    s.get('min'), 'Auto') )
+                ops.append(document.OperationSettingSet(s.get("min"), "Auto"))
             elif reset == 1:
-                ops.append( document.OperationSettingSet(
-                    s.get('max'), 'Auto') )
+                ops.append(document.OperationSettingSet(s.get("max"), "Auto"))
 
             self.document.applyOperation(
-                document.OperationMultiple(ops, descr=_('reset axis')))
+                document.OperationMultiple(ops, descr=_("reset axis"))
+            )
 
         elif cgi.zoomed():
             # zoom axis scale
             # we convert a neighbouring pixel to see how we should
             # round the text
             c1, c2, c1delt, c2delt = self.plotterToGraphCoords(
-                cgi.maxposn, N.array([
-                    cgi.minzoom, cgi.maxzoom,
-                    cgi.minzoom+1, cgi.maxzoom-1
-                ]))
+                cgi.maxposn,
+                N.array([cgi.minzoom, cgi.maxzoom, cgi.minzoom + 1, cgi.maxzoom - 1]),
+            )
             if c1 > c2:
                 c1, c2 = c2, c1
                 c1delt, c2delt = c2delt, c1delt
@@ -1408,24 +1541,25 @@ class Axis(widget.Widget):
             round2 = utils.round2delt(c2, c2delt)
 
             ops = []
-            if ( (s.min == 'Auto' or not N.allclose(c1, s.min, rtol=1e-8))
-                 and N.isfinite(round1) ):
-                ops.append( document.OperationSettingSet(
-                    s.get('min'), round1) )
-            if ( (s.max == 'Auto' or not N.allclose(c2, s.max, rtol=1e-8))
-                 and N.isfinite(round2) ):
-                ops.append( document.OperationSettingSet(
-                    s.get('max'), round2) )
+            if (s.min == "Auto" or not N.allclose(c1, s.min, rtol=1e-8)) and N.isfinite(
+                round1
+            ):
+                ops.append(document.OperationSettingSet(s.get("min"), round1))
+            if (s.max == "Auto" or not N.allclose(c2, s.max, rtol=1e-8)) and N.isfinite(
+                round2
+            ):
+                ops.append(document.OperationSettingSet(s.get("max"), round2))
 
             self.document.applyOperation(
-                document.OperationMultiple(ops, descr=_('zoom axis')))
+                document.OperationMultiple(ops, descr=_("zoom axis"))
+            )
 
         elif cgi.moved():
             # move axis
             # convert positions to fractions
-            pt1, pt2, ppt1, ppt2 = (
-                (3, 1, 0, 2), (0, 2, 3, 1)
-            )[s.direction == 'horizontal']
+            pt1, pt2, ppt1, ppt2 = ((3, 1, 0, 2), (0, 2, 3, 1))[
+                s.direction == "horizontal"
+            ]
             minfrac = abs((cgi.minpos - p[pt1]) / (p[pt2] - p[pt1]))
             maxfrac = abs((cgi.maxpos - p[pt1]) / (p[pt2] - p[pt1]))
             axisfrac = abs((cgi.axispos - p[ppt1]) / (p[ppt2] - p[ppt1]))
@@ -1437,16 +1571,27 @@ class Axis(widget.Widget):
             # update doc
             ops = []
             if s.lowerPosition != minfrac:
-                ops.append( document.OperationSettingSet(
-                    s.get('lowerPosition'), round(minfrac, 3)) )
+                ops.append(
+                    document.OperationSettingSet(
+                        s.get("lowerPosition"), round(minfrac, 3)
+                    )
+                )
             if s.upperPosition != maxfrac:
-                ops.append( document.OperationSettingSet(
-                    s.get('upperPosition'), round(maxfrac, 3)) )
+                ops.append(
+                    document.OperationSettingSet(
+                        s.get("upperPosition"), round(maxfrac, 3)
+                    )
+                )
             if s.otherPosition != axisfrac:
-                ops.append( document.OperationSettingSet(
-                    s.get('otherPosition'), round(axisfrac, 3)) )
+                ops.append(
+                    document.OperationSettingSet(
+                        s.get("otherPosition"), round(axisfrac, 3)
+                    )
+                )
             self.document.applyOperation(
-                document.OperationMultiple(ops, descr=_('adjust axis')))
+                document.OperationMultiple(ops, descr=_("adjust axis"))
+            )
+
 
 # allow the factory to instantiate an axis
 document.thefactory.register(Axis)

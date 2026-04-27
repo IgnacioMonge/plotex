@@ -2,7 +2,11 @@
 ; Compile with: "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" plotex_installer.iss
 
 #define MyAppName "Plotex"
-#define MyAppVersion "1.5.1"
+; Read version from the top-level VERSION file to keep app and installer in sync
+#define VerFile FileOpen("..\VERSION")
+#define MyAppVersion Trim(FileRead(VerFile))
+#expr FileClose(VerFile)
+#undef VerFile
 #define MyAppPublisher "M. Ignacio Monge García"
 #define MyAppURL "https://github.com/IgnacioMonge/plotex"
 #define MyAppExeName "plotex.exe"
@@ -65,3 +69,9 @@ Root: HKA; Subkey: "Software\Classes\PlotexHDF5Document\shell\open\command"; Val
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+
+[UninstallDelete]
+; Remove the per-user bytecode cache and HMAC key created at runtime
+; (see veusz/document/loader.py). Without this an uninstall leaves a
+; few MB orphaned in %LOCALAPPDATA%\Plotex.
+Type: filesandordirs; Name: "{localappdata}\Plotex"

@@ -49,11 +49,14 @@ except ImportError:
 
 # scipy.stats loaded lazily on first use
 _sp_stats_cache = None
+
+
 def _get_sp_stats():
     global _sp_stats_cache
     if _sp_stats_cache is None:
         try:
             from scipy import stats
+
             # verify it actually works
             stats.t.ppf(0.975, 10)
             _sp_stats_cache = stats
@@ -61,40 +64,42 @@ def _get_sp_stats():
             _sp_stats_cache = False
     return _sp_stats_cache if _sp_stats_cache is not False else None
 
+
 # Check whether iminuit version is old (1.x)
 if minuit is not None:
-    isiminuit1 = minuit.__version__[0:1] == '1'
+    isiminuit1 = minuit.__version__[0:1] == "1"
 
-def _(text, disambiguation=None, context='Fit'):
+
+def _(text, disambiguation=None, context="Fit"):
     """Translate text."""
     return qt.QCoreApplication.translate(context, text, disambiguation)
 
+
 # ── Minuit fitting ───────────────────────────────────────────────
 
-def minuitFit(evalfunc, params, names, values, xvals, yvals, yserr,
-              log=None):
+
+def minuitFit(evalfunc, params, names, values, xvals, yvals, yserr, log=None):
     """Do fitting with minuit (if installed)."""
 
     if log is None:
         log = sys.stdout
 
     def chi2(params):
-        c = ((evalfunc(params, xvals) - yvals)**2 / yserr**2).sum()
+        c = ((evalfunc(params, xvals) - yvals) ** 2 / yserr**2).sum()
         if chi2.runningFit:
             chi2.iters += 1
             p = [chi2.iters, c] + params.tolist()
-            s = ("%5i " + "%8g " * (len(params)+1)) % tuple(p)
+            s = ("%5i " + "%8g " * (len(params) + 1)) % tuple(p)
             print(s, file=log)
         return c
 
     def fn(*vals):
         return chi2(N.array(vals))
 
-    print(_('Fitting via Minuit:'), file=log)
+    print(_("Fitting via Minuit:"), file=log)
     initial_values = [values[n] for n in names]
     if isiminuit1:
-        m = minuit.Minuit(fn, *initial_values,
-                          forced_parameters=names, errordef=1.0)
+        m = minuit.Minuit(fn, *initial_values, forced_parameters=names, errordef=1.0)
     else:
         m = minuit.Minuit(fn, *initial_values, name=names)
     m.errordef = 1.0
@@ -112,7 +117,7 @@ def minuitFit(evalfunc, params, names, values, xvals, yvals, yserr,
         have_err = True
     except Exception as e:
         print(e, file=log)
-        if str(e).startswith('Discovered a new minimum'):
+        if str(e).startswith("Discovered a new minimum"):
             raise
 
     retchi2 = m.fval
@@ -121,24 +126,42 @@ def minuitFit(evalfunc, params, names, values, xvals, yvals, yserr,
 
     if have_err:
         if isiminuit1:
-            results = ["    %s = %g \u00b1 %g (+%g / %g)" % (
-                n, m.values[n], m.errors[n], m.merrors[(n, 1.0)],
-                m.merrors[(n, -1.0)]) for n in names]
+            results = [
+                "    %s = %g \u00b1 %g (+%g / %g)"
+                % (
+                    n,
+                    m.values[n],
+                    m.errors[n],
+                    m.merrors[(n, 1.0)],
+                    m.merrors[(n, -1.0)],
+                )
+                for n in names
+            ]
         else:
-            results = ["    %s = %g \u00b1 %g (+%g / %g)" % (
-                n, m.values[n], m.errors[n], m.merrors[n].upper,
-                m.merrors[n].lower) for n in names]
-        print(_('Fit results:\n') + "\n".join(results), file=log)
+            results = [
+                "    %s = %g \u00b1 %g (+%g / %g)"
+                % (n, m.values[n], m.errors[n], m.merrors[n].upper, m.merrors[n].lower)
+                for n in names
+            ]
+        print(_("Fit results:\n") + "\n".join(results), file=log)
     elif have_symerr:
-        print(_('Fit results:\n') + "\n".join([
-            "    %s = %g \u00b1 %g" % (n, m.values[n], m.errors[n])
-            for n in names]), file=log)
+        print(
+            _("Fit results:\n")
+            + "\n".join(
+                ["    %s = %g \u00b1 %g" % (n, m.values[n], m.errors[n]) for n in names]
+            ),
+            file=log,
+        )
     else:
-        print(_('Fit results:\n') + "\n".join([
-            '    %s = %g' % (n, m.values[n]) for n in names]), file=log)
+        print(
+            _("Fit results:\n")
+            + "\n".join(["    %s = %g" % (n, m.values[n]) for n in names]),
+            file=log,
+        )
 
-    print("chi^2 = %g, dof = %i, reduced-chi^2 = %g" % (
-        retchi2, dof, redchi2), file=log)
+    print(
+        "chi^2 = %g, dof = %i, reduced-chi^2 = %g" % (retchi2, dof, redchi2), file=log
+    )
 
     vals = {name: m.values[name] for name in names}
 
@@ -159,26 +182,36 @@ def minuitFit(evalfunc, params, names, values, xvals, yvals, yserr,
 
     return vals, retchi2, dof, param_errors, cov
 
+
 # ── Fit Widget ───────────────────────────────────────────────────
+
 
 class Fit(FunctionPlotter):
     """A plotter to fit a function to data."""
 
-    typename = 'fit'
+    typename = "fit"
     allowusercreation = True
-    description = _('Fit a function to data')
+    description = _("Fit a function to data")
 
     def __init__(self, parent, name=None):
         FunctionPlotter.__init__(self, parent, name=name)
 
-        self.addAction(widget.Action(
-            'fit', self.actionFitDialog,
-            descr=_('Open fit dialog'),
-            usertext=_('Fit…')))
-        self.addAction(widget.Action(
-            'fitquick', self.actionFit,
-            descr=_('Fit with current parameters (no dialog)'),
-            usertext=_('Quick fit')))
+        self.addAction(
+            widget.Action(
+                "fit",
+                self.actionFitDialog,
+                descr=_("Open fit dialog"),
+                usertext=_("Fit…"),
+            )
+        )
+        self.addAction(
+            widget.Action(
+                "fitquick",
+                self.actionFit,
+                descr=_("Fit with current parameters (no dialog)"),
+                usertext=_("Quick fit"),
+            )
+        )
 
         # runtime cache (not persisted)
         self._path_cache = {}
@@ -191,129 +224,198 @@ class Fit(FunctionPlotter):
         """Construct list of settings."""
         FunctionPlotter.addSettings(s)
 
-        s.add(setting.DatasetExtended(
-            'xData', 'x',
-            descr=_('X data to fit'),
-            usertext=_('X data')), 0)
-        s.add(setting.DatasetExtended(
-            'yData', 'y',
-            descr=_('Y data to fit'),
-            usertext=_('Y data')), 1)
-        s.add(setting.FloatDict(
-            'values', {'a': 0.0, 'b': 1.0},
-            descr=_('Variables and fit values'),
-            usertext=_('Parameters')), 3)
-        s.add(setting.Choice(
-            'defErrType', ['absolute', 'relative'], 'absolute',
-            descr=_('Default error type'),
-            usertext=_('Def. error type')))
-        s.add(setting.Float(
-            'defErr', 0.05,
-            descr='Default absolute/relative error value for data',
-            usertext=_('Default error')))
-        s.add(setting.FloatOrAuto(
-            'fitMin', 'Auto',
-            descr=_('Minimum value at which to fit function'),
-            usertext=_('Min. fit range')))
-        s.add(setting.FloatOrAuto(
-            'fitMax', 'Auto',
-            descr=_('Maximum value at which to fit function'),
-            usertext=_('Max. fit range')))
-        s.add(setting.Bool(
-            'fitRange', False,
-            descr=_('Fit only the data between the min/max of the axis'),
-            usertext=_('Fit only range')), 4)
-        s.add(setting.WidgetChoice(
-            'outLabel', '',
-            descr=_('Write best fit parameters to this text label'),
-            widgettypes=('label',),
-            usertext=_('Output label')), 5)
-        s.add(setting.Str(
-            'outExpr', '',
-            descr=_('Output best fitting expression'),
-            usertext=_('Output expression')),
-            6, readonly=True)
-        s.add(setting.Float(
-            'chi2', -1,
-            descr='Output chi^2 from fitting',
-            usertext=_('Fit chi2')),
-            7, readonly=True)
-        s.add(setting.Int(
-            'dof', -1,
-            descr=_('Output degrees of freedom'),
-            usertext=_('Fit d.o.f.')),
-            8, readonly=True)
-        s.add(setting.Float(
-            'redchi2', -1,
-            descr=_('Output reduced chi-squared'),
-            usertext=_('Fit red. chi2')),
-            9, readonly=True)
-        s.add(setting.FloatDict(
-            'paramErrors', {},
-            descr=_('Parameter standard errors'),
-            usertext=_('Param errors')),
-            10, readonly=True)
+        s.add(
+            setting.DatasetExtended(
+                "xData", "x", descr=_("X data to fit"), usertext=_("X data")
+            ),
+            0,
+        )
+        s.add(
+            setting.DatasetExtended(
+                "yData", "y", descr=_("Y data to fit"), usertext=_("Y data")
+            ),
+            1,
+        )
+        s.add(
+            setting.FloatDict(
+                "values",
+                {"a": 0.0, "b": 1.0},
+                descr=_("Variables and fit values"),
+                usertext=_("Parameters"),
+            ),
+            3,
+        )
+        s.add(
+            setting.Choice(
+                "defErrType",
+                ["absolute", "relative"],
+                "absolute",
+                descr=_("Default error type"),
+                usertext=_("Def. error type"),
+            )
+        )
+        s.add(
+            setting.Float(
+                "defErr",
+                0.05,
+                descr="Default absolute/relative error value for data",
+                usertext=_("Default error"),
+            )
+        )
+        s.add(
+            setting.FloatOrAuto(
+                "fitMin",
+                "Auto",
+                descr=_("Minimum value at which to fit function"),
+                usertext=_("Min. fit range"),
+            )
+        )
+        s.add(
+            setting.FloatOrAuto(
+                "fitMax",
+                "Auto",
+                descr=_("Maximum value at which to fit function"),
+                usertext=_("Max. fit range"),
+            )
+        )
+        s.add(
+            setting.Bool(
+                "fitRange",
+                False,
+                descr=_("Fit only the data between the min/max of the axis"),
+                usertext=_("Fit only range"),
+            ),
+            4,
+        )
+        s.add(
+            setting.WidgetChoice(
+                "outLabel",
+                "",
+                descr=_("Write best fit parameters to this text label"),
+                widgettypes=("label",),
+                usertext=_("Output label"),
+            ),
+            5,
+        )
+        s.add(
+            setting.Str(
+                "outExpr",
+                "",
+                descr=_("Output best fitting expression"),
+                usertext=_("Output expression"),
+            ),
+            6,
+            readonly=True,
+        )
+        s.add(
+            setting.Float(
+                "chi2", -1, descr="Output chi^2 from fitting", usertext=_("Fit chi2")
+            ),
+            7,
+            readonly=True,
+        )
+        s.add(
+            setting.Int(
+                "dof",
+                -1,
+                descr=_("Output degrees of freedom"),
+                usertext=_("Fit d.o.f."),
+            ),
+            8,
+            readonly=True,
+        )
+        s.add(
+            setting.Float(
+                "redchi2",
+                -1,
+                descr=_("Output reduced chi-squared"),
+                usertext=_("Fit red. chi2"),
+            ),
+            9,
+            readonly=True,
+        )
+        s.add(
+            setting.FloatDict(
+                "paramErrors",
+                {},
+                descr=_("Parameter standard errors"),
+                usertext=_("Param errors"),
+            ),
+            10,
+            readonly=True,
+        )
 
         # persisted band data (saved in .vsz file)
         for name, default, descr in (
-            ('bandXData', [], 'Band X evaluation points'),
-            ('bandConfUpper', [], 'Confidence band upper Y'),
-            ('bandConfLower', [], 'Confidence band lower Y'),
-            ('bandPredUpper', [], 'Prediction band upper Y'),
-            ('bandPredLower', [], 'Prediction band lower Y'),
+            ("bandXData", [], "Band X evaluation points"),
+            ("bandConfUpper", [], "Confidence band upper Y"),
+            ("bandConfLower", [], "Confidence band lower Y"),
+            ("bandPredUpper", [], "Prediction band upper Y"),
+            ("bandPredLower", [], "Prediction band lower Y"),
         ):
-            setn = setting.FloatList(name, default, descr=descr,
-                                     usertext=descr)
+            setn = setting.FloatList(name, default, descr=descr, usertext=descr)
             setn.hidden = True
             s.add(setn)
-        for name, default, descr in (
-            ('bandResidVar', 0.0, 'Residual variance'),
-        ):
+        for name, default, descr in (("bandResidVar", 0.0, "Residual variance"),):
             if isinstance(default, float):
-                setn = setting.Float(name, default, descr=descr,
-                                     usertext=descr)
+                setn = setting.Float(name, default, descr=descr, usertext=descr)
             else:
-                setn = setting.Str(name, default, descr=descr,
-                                   usertext=descr)
+                setn = setting.Str(name, default, descr=descr, usertext=descr)
             setn.hidden = True
             s.add(setn)
 
         # band display settings
-        s.add(setting.Bool(
-            'verbose', False,
-            descr=_('Show fitting details in console'),
-            usertext=_('Verbose output')))
-        s.add(setting.Bool(
-            'showConfBand', False,
-            descr=_('Show confidence band around fitted curve'),
-            usertext=_('Confidence band'),
-            formatting=True))
-        s.add(setting.Float(
-            'confLevel', 95.0,
-            descr=_('Confidence level (%) for bands'),
-            usertext=_('Confidence %'),
-            formatting=True))
-        s.add(setting.Bool(
-            'showPredBand', False,
-            descr=_('Show prediction band (where data points fall)'),
-            usertext=_('Prediction band'),
-            formatting=True))
+        s.add(
+            setting.Bool(
+                "verbose",
+                False,
+                descr=_("Show fitting details in console"),
+                usertext=_("Verbose output"),
+            )
+        )
+        s.add(
+            setting.Bool(
+                "showConfBand",
+                False,
+                descr=_("Show confidence band around fitted curve"),
+                usertext=_("Confidence band"),
+                formatting=True,
+            )
+        )
+        s.add(
+            setting.Float(
+                "confLevel",
+                95.0,
+                descr=_("Confidence level (%) for bands"),
+                usertext=_("Confidence %"),
+                formatting=True,
+            )
+        )
+        s.add(
+            setting.Bool(
+                "showPredBand",
+                False,
+                descr=_("Show prediction band (where data points fall)"),
+                usertext=_("Prediction band"),
+                formatting=True,
+            )
+        )
 
-        f = s.get('function')
-        f.newDefault('a + b*x')
+        f = s.get("function")
+        f.newDefault("a + b*x")
 
         # ensure fit line color is auto (cycles through theme)
-        s.get('color').newDefault('auto')
-        f.descr = _('Function to fit')
+        s.get("color").newDefault("auto")
+        f.descr = _("Function to fit")
 
     # ── Helpers ──────────────────────────────────────────────
 
     def affectsAxisRange(self):
         s = self.settings
-        return ((s.xAxis, 'sx'), (s.yAxis, 'sy'))
+        return ((s.xAxis, "sx"), (s.yAxis, "sy"))
 
     def getRange(self, axis, depname, axrange):
-        dataname = {'sx': 'xData', 'sy': 'yData'}[depname]
+        dataname = {"sx": "xData", "sy": "yData"}[depname]
         data = self.settings.get(dataname).getData(self.document)
         if data:
             drange = data.getRange()
@@ -330,21 +432,22 @@ class Fit(FunctionPlotter):
         """Find X and Y data, checking sibling scatter plots if needed."""
         s = self.settings
         d = self.document
-        if s.variable == 'x':
-            xdata = s.get('xData').getData(d)
-            ydata = s.get('yData').getData(d)
+        if s.variable == "x":
+            xdata = s.get("xData").getData(d)
+            ydata = s.get("yData").getData(d)
         else:
-            xdata = s.get('yData').getData(d)
-            ydata = s.get('xData').getData(d)
+            xdata = s.get("yData").getData(d)
+            ydata = s.get("xData").getData(d)
 
         if xdata is None or ydata is None:
             from . import point
+
             for sib in self.iterSiblings(point.PointPlotter):
                 ss = sib.settings
                 if xdata is None:
-                    xdata = ss.get('xData').getData(d)
+                    xdata = ss.get("xData").getData(d)
                 if ydata is None:
-                    ydata = ss.get('yData').getData(d)
+                    ydata = ss.get("yData").getData(d)
                 if xdata is not None and ydata is not None:
                     return xdata, ydata, sib.name
         return xdata, ydata, None
@@ -353,33 +456,40 @@ class Fit(FunctionPlotter):
 
     def updateOutputLabel(self, ops, vals, chi2, dof):
         s = self.settings
-        labelwidget = s.get('outLabel').findWidget()
+        labelwidget = s.get("outLabel").findWidget()
         if labelwidget is not None:
             loc = self.document.locale
             txt = []
             for l, v in sorted(vals.items()):
-                val = utils.formatNumber(v, '%.4Vg', locale=loc)
-                txt.append('%s = %s' % (l, val))
-            redchi2_label = chi2/dof if dof > 0 else N.nan
-            txt.append(r'\chi^{2}_{\nu} = %s/%i = %s' % (
-                utils.formatNumber(chi2, '%.4Vg', locale=loc),
-                dof,
-                utils.formatNumber(redchi2_label, '%.4Vg', locale=loc)))
-            text = r'\\'.join(txt)
-            ops.append(document.OperationSettingSet(
-                labelwidget.settings.get('label'), text))
+                val = utils.formatNumber(v, "%.4Vg", locale=loc)
+                txt.append("%s = %s" % (l, val))
+            redchi2_label = chi2 / dof if dof > 0 else N.nan
+            txt.append(
+                r"\chi^{2}_{\nu} = %s/%i = %s"
+                % (
+                    utils.formatNumber(chi2, "%.4Vg", locale=loc),
+                    dof,
+                    utils.formatNumber(redchi2_label, "%.4Vg", locale=loc),
+                )
+            )
+            text = r"\\".join(txt)
+            ops.append(
+                document.OperationSettingSet(labelwidget.settings.get("label"), text)
+            )
 
     # ── Action: Fit dialog ─────────────────────────────────────
 
     def actionFitDialog(self):
         """Open the fit dialog."""
         from ..dialogs.fitdialog import FitDialog
+
         # find a parent QWidget for the dialog
         parent = None
         try:
             from .. import qtall as qt
+
             for w in qt.QApplication.topLevelWidgets():
-                if hasattr(w, '_tabs'):
+                if hasattr(w, "_tabs"):
                     parent = w
                     break
         except Exception:
@@ -393,8 +503,7 @@ class Fit(FunctionPlotter):
         """Fit the data and compute confidence/prediction bands."""
 
         s = self.settings
-        compiled = self.document.evaluate.compileCheckedExpression(
-            s.function)
+        compiled = self.document.evaluate.compileCheckedExpression(s.function)
         if compiled is None:
             return
 
@@ -406,7 +515,8 @@ class Fit(FunctionPlotter):
         xdata, ydata, sib_name = self._findData()
         if xdata is None or ydata is None:
             sys.stderr.write(
-                _('No data to fit. Assign datasets or add scatter plot.\n'))
+                _("No data to fit. Assign datasets or add scatter plot.\n")
+            )
             return
 
         verbose = s.verbose
@@ -431,7 +541,7 @@ class Fit(FunctionPlotter):
                 yserr = N.sqrt(0.5 * (perr**2 + nerr**2))
             else:
                 err = s.defErr
-                if s.defErrType == 'absolute':
+                if s.defErrType == "absolute":
                     yserr = err + yvals * 0
                 else:
                     yserr = yvals * err
@@ -440,13 +550,13 @@ class Fit(FunctionPlotter):
         # range filtering
         mask = None
         if s.fitRange:
-            if s.variable == 'x':
+            if s.variable == "x":
                 axlist = self.parent.getAxes((s.xAxis,))
                 ax = axlist[0] if axlist and axlist[0] is not None else None
                 if ax is None:
                     sys.stderr.write(
-                        _('Fit: axis "%s" not found, ignoring fitRange\n')
-                        % s.xAxis)
+                        _('Fit: axis "%s" not found, ignoring fitRange\n') % s.xAxis
+                    )
                 else:
                     drange = ax.getPlottedRange()
                     mask = (xvals >= drange[0]) & (xvals <= drange[1])
@@ -455,8 +565,8 @@ class Fit(FunctionPlotter):
                 ax = axlist[0] if axlist and axlist[0] is not None else None
                 if ax is None:
                     sys.stderr.write(
-                        _('Fit: axis "%s" not found, ignoring fitRange\n')
-                        % s.yAxis)
+                        _('Fit: axis "%s" not found, ignoring fitRange\n') % s.yAxis
+                    )
                 else:
                     drange = ax.getPlottedRange()
                     mask = (yvals >= drange[0]) & (yvals <= drange[1])
@@ -469,50 +579,49 @@ class Fit(FunctionPlotter):
             evalenv[s.variable] = xv
             evalenv.update(zip(paramnames, params))
             try:
-                return eval(compiled, evalenv) + xv * 0.
+                return eval(compiled, evalenv) + xv * 0.0
             except Exception as e:
                 self.document.log(str(e))
                 return N.nan
 
         # min/max filtering
-        if s.fitMin != 'Auto':
-            mask = (xvals >= s.fitMin) if s.variable == 'x' else (
-                yvals >= s.fitMin)
+        if s.fitMin != "Auto":
+            mask = (xvals >= s.fitMin) if s.variable == "x" else (yvals >= s.fitMin)
             xvals, yvals, yserr = xvals[mask], yvals[mask], yserr[mask]
-        if s.fitMax != 'Auto':
-            mask = (xvals <= s.fitMax) if s.variable == 'x' else (
-                yvals <= s.fitMax)
+        if s.fitMax != "Auto":
+            mask = (xvals <= s.fitMax) if s.variable == "x" else (yvals <= s.fitMax)
             xvals, yvals, yserr = xvals[mask], yvals[mask], yserr[mask]
 
         # error checks
         if len(xvals) == 0:
-            sys.stderr.write(_('No data values. Not fitting.\n'))
+            sys.stderr.write(_("No data values. Not fitting.\n"))
             return
         if len(params) > len(xvals):
-            sys.stderr.write(_('No degrees of freedom. Not fitting.\n'))
+            sys.stderr.write(_("No degrees of freedom. Not fitting.\n"))
             return
 
         # finite values only
         finite = N.isfinite(xvals) & N.isfinite(yvals) & N.isfinite(yserr)
         xvals, yvals, yserr = xvals[finite], yvals[finite], yserr[finite]
         if len(xvals) == 0:
-            sys.stderr.write(_('No finite data. Not fitting.\n'))
+            sys.stderr.write(_("No finite data. Not fitting.\n"))
             return
 
         # ── Do the fit ───────────────────────────────────────
         import io
+
         _fitlog = sys.stdout if verbose else io.StringIO()
 
         param_errors = {}
         cov = None
         if minuit is not None:
             vals, chi2, dof, param_errors, cov = minuitFit(
-                evalfunc, params, paramnames, s.values,
-                xvals, yvals, yserr, log=_fitlog)
+                evalfunc, params, paramnames, s.values, xvals, yvals, yserr, log=_fitlog
+            )
         else:
             retn, chi2, dof, lm_errors, cov = utils.fitLM(
-                evalfunc, params, xvals, yvals, yserr,
-                log=_fitlog)
+                evalfunc, params, xvals, yvals, yserr, log=_fitlog
+            )
             vals = {n: float(v) for n, v in zip(paramnames, retn)}
             for i, n in enumerate(paramnames):
                 if i < len(lm_errors) and lm_errors[i] > 0:
@@ -520,19 +629,24 @@ class Fit(FunctionPlotter):
 
         # check for NaN
         if math.isnan(chi2):
-            print(_('Fit failed (chi² is NaN). Check data/function.'))
+            print(_("Fit failed (chi² is NaN). Check data/function."))
             return
 
-        # residual variance (in Y units, for prediction band)
+        # residual variance (in Y units, for prediction band).
+        # ``max(dof, 1)`` historically prevented a div-by-zero, but it
+        # also masked the over-fitted case (dof <= 0) by silently
+        # returning the raw residual sum-of-squares, which then got fed
+        # into prediction bands as if it were a valid σ². When dof is
+        # not positive there is no statistically meaningful prediction
+        # band: emit ``nan`` so downstream code can detect and skip it.
         fitted_vals = N.array([vals[p] for p in paramnames])
         yfit = evalfunc(fitted_vals, xvals)
         residuals = yvals - yfit
-        resid_var = float(N.sum(residuals**2) / max(dof, 1))
+        resid_var = float(N.sum(residuals**2) / dof) if dof > 0 else float("nan")
 
         # fingerprint
         # filter NaN from errors
-        clean_errors = {k: v for k, v in param_errors.items()
-                        if not math.isnan(v)}
+        clean_errors = {k: v for k, v in param_errors.items() if not math.isnan(v)}
 
         # ── Compute bands ────────────────────────────────────
         band_x = []
@@ -547,7 +661,7 @@ class Fit(FunctionPlotter):
             # covariance matrix
             if cov is None:
                 pe = N.array([clean_errors.get(p, 0) for p in paramnames])
-                cov = N.diag(pe ** 2)
+                cov = N.diag(pe**2)
 
             # scale by reduced chi-squared
             redchi2_val = chi2 / max(dof, 1)
@@ -565,12 +679,14 @@ class Fit(FunctionPlotter):
                 p = 1.0 - alpha / 2.0
                 # Abramowitz & Stegun rational approximation
                 t = math.sqrt(-2.0 * math.log(1.0 - p))
-                t_crit = t - (2.515517 + 0.802853*t + 0.010328*t*t) / (
-                    1.0 + 1.432788*t + 0.189269*t*t + 0.001308*t*t*t)
+                t_crit = t - (2.515517 + 0.802853 * t + 0.010328 * t * t) / (
+                    1.0 + 1.432788 * t + 0.189269 * t * t + 0.001308 * t * t * t
+                )
 
             # evaluation grid
             axis_obj = self.parent.getAxes(
-                (s.xAxis,) if s.variable == 'x' else (s.yAxis,))
+                (s.xAxis,) if s.variable == "x" else (s.yAxis,)
+            )
             if axis_obj and axis_obj[0] is not None:
                 axrange = axis_obj[0].getPlottedRange()
             else:
@@ -584,9 +700,7 @@ class Fit(FunctionPlotter):
             pv = N.array([vals[p] for p in paramnames])
 
             # fast path for a + b*x
-            if (nparams == 2 and
-                    func_str in ('a + b*x', 'b*x + a',
-                                 'a+b*x', 'b*x+a')):
+            if nparams == 2 and func_str in ("a + b*x", "b*x + a", "a+b*x", "b*x+a"):
                 jac = N.column_stack([N.ones(npts), xeval])
                 y_center = pv[0] + pv[1] * xeval
             else:
@@ -599,7 +713,7 @@ class Fit(FunctionPlotter):
                     p_up[i] += h
                     jac[:, i] = (evalfunc(p_up, xeval) - y_center) / h
 
-            conf_var = N.einsum('ni,ij,nj->n', jac, cov_scaled, jac)
+            conf_var = N.einsum("ni,ij,nj->n", jac, cov_scaled, jac)
             conf_var = N.maximum(conf_var, 0)
             conf_width = t_crit * N.sqrt(conf_var)
             pred_width = t_crit * N.sqrt(conf_var + resid_var)
@@ -612,37 +726,25 @@ class Fit(FunctionPlotter):
 
         # ── Save everything via Operations ───────────────────
         ops = []
-        ops.append(document.OperationSettingSet(s.get('values'), vals))
-        ops.append(document.OperationSettingSet(
-            s.get('chi2'), float(chi2)))
-        ops.append(document.OperationSettingSet(
-            s.get('dof'), int(dof)))
+        ops.append(document.OperationSettingSet(s.get("values"), vals))
+        ops.append(document.OperationSettingSet(s.get("chi2"), float(chi2)))
+        ops.append(document.OperationSettingSet(s.get("dof"), int(dof)))
         rdchi2 = float(chi2 / dof) if dof > 0 else -1.0
-        ops.append(document.OperationSettingSet(
-            s.get('redchi2'), rdchi2))
-        ops.append(document.OperationSettingSet(
-            s.get('paramErrors'), clean_errors))
-        ops.append(document.OperationSettingSet(
-            s.get('bandResidVar'), resid_var))
-        ops.append(document.OperationSettingSet(
-            s.get('bandXData'), band_x))
-        ops.append(document.OperationSettingSet(
-            s.get('bandConfUpper'), conf_upper))
-        ops.append(document.OperationSettingSet(
-            s.get('bandConfLower'), conf_lower))
-        ops.append(document.OperationSettingSet(
-            s.get('bandPredUpper'), pred_upper))
-        ops.append(document.OperationSettingSet(
-            s.get('bandPredLower'), pred_lower))
+        ops.append(document.OperationSettingSet(s.get("redchi2"), rdchi2))
+        ops.append(document.OperationSettingSet(s.get("paramErrors"), clean_errors))
+        ops.append(document.OperationSettingSet(s.get("bandResidVar"), resid_var))
+        ops.append(document.OperationSettingSet(s.get("bandXData"), band_x))
+        ops.append(document.OperationSettingSet(s.get("bandConfUpper"), conf_upper))
+        ops.append(document.OperationSettingSet(s.get("bandConfLower"), conf_lower))
+        ops.append(document.OperationSettingSet(s.get("bandPredUpper"), pred_upper))
+        ops.append(document.OperationSettingSet(s.get("bandPredLower"), pred_lower))
 
         expr = self.generateOutputExpr(vals)
-        ops.append(document.OperationSettingSet(
-            s.get('outExpr'), expr))
+        ops.append(document.OperationSettingSet(s.get("outExpr"), expr))
 
         self.updateOutputLabel(ops, vals, chi2, dof)
 
-        d.applyOperation(
-            document.OperationMultiple(ops, descr=_('fit')))
+        d.applyOperation(document.OperationMultiple(ops, descr=_("fit")))
 
         # clear runtime cache
         self._path_cache = {}
@@ -652,15 +754,15 @@ class Fit(FunctionPlotter):
     def generateOutputExpr(self, vals):
         paramvals = dict(vals)
         s = self.settings
-        if s.variable == 'x':
-            paramvals['x'] = s.xData
+        if s.variable == "x":
+            paramvals["x"] = s.xData
         else:
-            paramvals['y'] = s.yData
-        parts = re.split('([^A-Za-z0-9.])', s.function)
+            paramvals["y"] = s.yData
+        parts = re.split("([^A-Za-z0-9.])", s.function)
         for i, p in enumerate(parts):
             if p in paramvals:
                 parts[i] = str(paramvals[p])
-        return ''.join(parts)
+        return "".join(parts)
 
     # ── Drawing (render thread — read-only) ──────────────────
 
@@ -672,20 +774,35 @@ class Fit(FunctionPlotter):
         # draw bands from saved data
         has_bands = bool(s.bandXData)
         if has_bands and s.showPredBand:
-            self._drawSavedBand(painter, axes, posn, cliprect,
-                                s.bandXData, s.bandPredUpper,
-                                s.bandPredLower, prediction=True)
+            self._drawSavedBand(
+                painter,
+                axes,
+                posn,
+                cliprect,
+                s.bandXData,
+                s.bandPredUpper,
+                s.bandPredLower,
+                prediction=True,
+            )
         if has_bands and s.showConfBand:
-            self._drawSavedBand(painter, axes, posn, cliprect,
-                                s.bandXData, s.bandConfUpper,
-                                s.bandConfLower, prediction=False)
+            self._drawSavedBand(
+                painter,
+                axes,
+                posn,
+                cliprect,
+                s.bandXData,
+                s.bandConfUpper,
+                s.bandConfLower,
+                prediction=False,
+            )
 
         # draw the curve if fit has been done (chi2 > 0 or bands exist)
         if s.chi2 > 0 or has_bands:
             FunctionPlotter.dataDraw(self, painter, axes, posn, cliprect)
 
-    def _drawSavedBand(self, painter, axes, posn, cliprect,
-                       xdata, upper, lower, prediction=False):
+    def _drawSavedBand(
+        self, painter, axes, posn, cliprect, xdata, upper, lower, prediction=False
+    ):
         """Draw a band from saved data arrays. Read-only, no computation."""
 
         if not xdata or not upper or not lower:
@@ -696,20 +813,17 @@ class Fit(FunctionPlotter):
         s = self.settings
 
         # cache key for QPainterPath
-        cache_key = (
-            id(xdata), prediction,
-            tuple(round(posn[i], 1) for i in range(4)))
-        band_key = 'pred' if prediction else 'conf'
+        cache_key = (id(xdata), prediction, tuple(round(posn[i], 1) for i in range(4)))
+        band_key = "pred" if prediction else "conf"
 
-        if (self._path_cache_key == cache_key and
-                band_key in self._path_cache):
+        if self._path_cache_key == cache_key and band_key in self._path_cache:
             path = self._path_cache[band_key]
         else:
             xarr = N.array(xdata)
             y_up = N.array(upper)
             y_lo = N.array(lower)
 
-            if s.variable == 'x':
+            if s.variable == "x":
                 xplt = axes[0].dataToPlotterCoords(posn, xarr)
                 yplt_up = axes[1].dataToPlotterCoords(posn, y_up)
                 yplt_lo = axes[1].dataToPlotterCoords(posn, y_lo)
@@ -731,9 +845,12 @@ class Fit(FunctionPlotter):
             if isinstance(cliprect, qt.QRectF):
                 clip_path.addRect(cliprect)
             else:
-                clip_path.addRect(qt.QRectF(
-                    qt.QPointF(cliprect[0], cliprect[1]),
-                    qt.QPointF(cliprect[2], cliprect[3])))
+                clip_path.addRect(
+                    qt.QRectF(
+                        qt.QPointF(cliprect[0], cliprect[1]),
+                        qt.QPointF(cliprect[2], cliprect[3]),
+                    )
+                )
             path = path.intersected(clip_path)
 
             if self._path_cache_key != cache_key:
@@ -752,6 +869,7 @@ class Fit(FunctionPlotter):
         painter.setPen(qt.Qt.PenStyle.NoPen)
         painter.setBrush(qt.QBrush(bandcolor))
         painter.drawPath(path)
+
 
 # allow the factory to instantiate an x,y plotter
 document.thefactory.register(Fit)

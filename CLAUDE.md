@@ -16,5 +16,10 @@
 - Build exe: `python -m PyInstaller support/veusz_windows_pyinst.spec --distpath C:/veusz_build/dist --workpath C:/veusz_build/work --noconfirm`
 - Deploy: `powershell -Command "Copy-Item -Path 'C:\veusz_build\dist\plotex_main\*' -Destination 'C:\Users\ignac\Desktop\veusz\' -Recurse -Force"`
 
+## Context Scaffold
+- At the start of every session, read `.mex/AGENTS.md` and `.mex/ROUTER.md` before any task
+- Follow the routing table in ROUTER.md to load relevant context files for the current task
+- Follow the behavioural contract (CONTEXT → BUILD → VERIFY → DEBUG → GROW)
+
 ## Language
 - Communicate in Spanish with the user

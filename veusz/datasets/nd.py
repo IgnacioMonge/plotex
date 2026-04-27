@@ -27,21 +27,22 @@ from .. import utils
 from .commonfn import _, dsPreviewHelper
 from .base import DatasetConcreteBase
 
+
 class DatasetNDBase(DatasetConcreteBase):
     """N-dimensional datasets."""
 
     dimensions = -1
-    dstype = _('nD')
+    dstype = _("nD")
     editable = False
 
     def userSize(self):
-        return '×'.join(str(x) for x in self.data.shape)
+        return "×".join(str(x) for x in self.data.shape)
 
     def userPreview(self):
         return dsPreviewHelper(N.ravel(self.data))
 
     def description(self):
-        return _('ND (%s), numeric') % self.userSize()
+        return _("ND (%s), numeric") % self.userSize()
 
     def returnCopy(self):
         return DatasetND(data=self.data)
@@ -53,11 +54,12 @@ class DatasetNDBase(DatasetConcreteBase):
         """Is the data defined?"""
         return len(self.data) == 0
 
-    def datasetAsText(self, fmt='%g', join='\t'):
+    def datasetAsText(self, fmt="%g", join="\t"):
         """Dataset as text for copy, paste, etc."""
+
         def fmtrecurse(arr):
             if arr.ndim == 0:
-                return fmt % arr + '\n'
+                return fmt % arr + "\n"
             elif arr.ndim == 1:
                 out = [fmt % v for v in arr]
                 return join.join(out)
@@ -65,10 +67,11 @@ class DatasetNDBase(DatasetConcreteBase):
                 out = []
                 for v in arr:
                     out.append(fmtrecurse(v))
-                out.append('')
-                return '\n'.join(out)
+                out.append("")
+                return "\n".join(out)
 
         return fmtrecurse(self.data)
+
 
 class DatasetND(DatasetNDBase):
     def __init__(self, data=None):
@@ -77,7 +80,10 @@ class DatasetND(DatasetNDBase):
         DatasetNDBase.__init__(self)
 
         if isinstance(data, N.ndarray):
-            self.data = data.astype(N.float64)
+            # ``copy=False`` skips the allocate-and-copy when the input
+            # is already float64 — common in the import pipeline where
+            # several wrappers re-wrap the same buffer.
+            self.data = data.astype(N.float64, copy=False)
         elif isinstance(data, (list, tuple)):
             self.data = N.array(data, dtype=N.float64)
         else:
@@ -90,9 +96,9 @@ class DatasetND(DatasetNDBase):
         if self.data.shape[0] == 1:
             # unfortunately it's hard to decode a single dimension
             # here so we record this unambiguously
-            shape = ' '.join((str(d) for d in self.data.shape))
+            shape = " ".join((str(d) for d in self.data.shape))
             fileobj.write("shape %s\n" % shape)
-        fileobj.write(self.datasetAsText(fmt='%e', join=' '))
+        fileobj.write(self.datasetAsText(fmt="%e", join=" "))
         fileobj.write("''')\n")
 
     def saveDataDumpToHDF5(self, group, name):
@@ -100,5 +106,5 @@ class DatasetND(DatasetNDBase):
 
         escname = utils.escapeHDFDataName(name)
         group[escname] = self.data
-        group[escname].attrs['vsz_datatype'] = 'nd'
-        group[escname].attrs['vsz_name'] = name.encode('utf-8')
+        group[escname].attrs["vsz_datatype"] = "nd"
+        group[escname].attrs["vsz_name"] = name.encode("utf-8")

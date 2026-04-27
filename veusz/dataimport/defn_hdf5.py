@@ -49,10 +49,15 @@ def bconv(s):
     """Hack for h5py byte problem with python3.
     https://github.com/h5py/h5py/issues/379
 
-    Byte string attributes are not converted to normal strings."""
+    Byte string attributes are not converted to normal strings.
+    Fall back to latin-1 on non-utf8 to avoid data corruption from
+    'replace' (which substitutes U+FFFD silently)."""
 
     if isinstance(s, bytes):
-        return s.decode('utf-8', 'replace')
+        try:
+            return s.decode('utf-8')
+        except UnicodeDecodeError:
+            return s.decode('latin-1')
     return s
 
 def auto_deref_attr(attr, attrs, grp):

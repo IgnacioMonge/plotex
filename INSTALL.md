@@ -1,24 +1,39 @@
-# Veusz Installation
+# Plotex Installation
+
+Plotex is a fork of Veusz 4.2 by Jeremy Sanders. Sections below that
+mention upstream Veusz packages (Linux distros, PPA, flatpak,
+conda-forge) describe **Veusz**, not Plotex — they are kept for
+reference because the build/runtime requirements are the same.
 
 ## Installation methods
 
-1. Provided binaries for x86-64 Linux, x86-64 Windows and x86-64/ARM MacOS - please go
-   to the [download page](https://veusz.github.io/download/). See also
-   below for further information.
+1. **Plotex Windows binary** — see the
+   [Releases](https://github.com/IgnacioMonge/plotex/releases) page on
+   the fork repo. Linux/macOS native builds for Plotex are not yet
+   provided; build from source for now.
 
-2. Packages for your Linux distribution, provided by the
+2. **Upstream Veusz binaries** for x86-64 Linux, x86-64 Windows and
+   x86-64/ARM MacOS are still available from the upstream
+   [download page](https://veusz.github.io/download/) — they ship the
+   stock Veusz UI, not Plotex.
+
+3. Packages for your Linux distribution, provided by the
    distribution. These are often older than the current version.
 
-3. [PPA](https://launchpad.net/~jeremysanders/+archive/ubuntu/ppa) for
-   Ubuntu distribution, which we try to keep up to date.
+4. [PPA](https://launchpad.net/~jeremysanders/+archive/ubuntu/ppa) for
+   Ubuntu distribution (upstream Veusz, not Plotex).
 
-4. [flatpak](https://flathub.org/apps/details/io.github.veusz.Veusz) runs on many linux distributions.
+5. [flatpak](https://flathub.org/apps/details/io.github.veusz.Veusz)
+   runs upstream Veusz on many linux distributions.
 
-5. Anaconda conda-forge [package](https://anaconda.org/conda-forge/veusz).
+6. Anaconda conda-forge [package](https://anaconda.org/conda-forge/veusz)
+   (upstream Veusz).
 
-6. Source build, download from the [download
-   page](https://veusz.github.io/download/) and see below for build
-   instructions.
+7. Source build of Plotex: clone
+   [https://github.com/IgnacioMonge/plotex](https://github.com/IgnacioMonge/plotex)
+   and follow the build instructions below. Source build of upstream
+   Veusz: download from the [Veusz download
+   page](https://veusz.github.io/download/).
 
 ## Provided binaries
 

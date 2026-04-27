@@ -168,8 +168,9 @@ class BracketConnector(widget.Widget):
                     posns = child.getPosns()
                     if posns is not None and len(posns) > 0:
                         all_posns.extend(posns.tolist())
-                except Exception:
-                    pass
+                except (AttributeError, TypeError, ValueError):
+                    # sibling has a partial/invalid state; skip it
+                    continue
 
         if not all_posns:
             return None
@@ -202,8 +203,8 @@ class BracketConnector(widget.Widget):
                     ymin = min(ymin, r[0])
                 if N.isfinite(r[1]):
                     ymax = max(ymax, r[1])
-            except Exception:
-                pass
+            except (AttributeError, TypeError, ValueError):
+                continue
 
         if not N.isfinite(ymin) or not N.isfinite(ymax):
             return None, None

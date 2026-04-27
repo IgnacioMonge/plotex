@@ -26,16 +26,31 @@ from .safe_eval import compileChecked, SafeEvalException
 from .fitlm import fitLM
 
 from .utilfuncs import *
-from .points import getPointPainterPath, MarkerCodes, plotMarkers, \
-    plotMarker, ArrowCodes, plotLineArrow
+from .points import (
+    getPointPainterPath,
+    MarkerCodes,
+    plotMarkers,
+    plotMarker,
+    ArrowCodes,
+    plotLineArrow,
+)
 from .action import *
 from .dates import *
 from .formatting import *
 from .colormap import *
 from .extbrushfilling import *
 from .feedback import feedback, FeedbackCheckThread, disableFeedback
+from .painter import painter_state, safe_singleShot
 
-from ..helpers.qtloops import addNumpyToPolygonF, plotPathsToPainter, \
-    plotLinesToPainter, plotClippedPolyline, polygonClip, \
-    plotClippedPolygon, plotBoxesToPainter, addNumpyPolygonToPath, \
-    RotatedRectangle, RectangleOverlapTester
+from ..helpers.qtloops import (
+    addNumpyToPolygonF,
+    plotPathsToPainter,
+    plotLinesToPainter,
+    plotClippedPolyline,
+    polygonClip,
+    plotClippedPolygon,
+    plotBoxesToPainter,
+    addNumpyPolygonToPath,
+    RotatedRectangle,
+    RectangleOverlapTester,
+)

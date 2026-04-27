@@ -38,85 +38,102 @@ import numpy as N
 
 from .. import qtall as qt
 
-DEG2RAD = math.pi/180
-RAD2DEG = 180/math.pi
+DEG2RAD = math.pi / 180
+RAD2DEG = 180 / math.pi
+
 
 class IgnoreException(Exception):
     """A special exception class to be ignored by the exception handler."""
 
+
 class InvalidType(Exception):
     """Exception used when invalid values are used in settings."""
+
 
 def _getVeuszDirectory():
     """Get resource and examples directories for Veusz."""
 
-    if hasattr(sys, 'frozen'):
+    if hasattr(sys, "frozen"):
         # pyinstaller or similar things
         exedir = os.path.dirname(os.path.abspath(sys.executable))
         resdir = exedir
         for place in (
-                os.path.join(exedir, '..', 'Resources'),
-                os.path.join(exedir, '_internal'),
-            ):
-            if os.path.isfile(os.path.join(place, 'VERSION')):
+            os.path.join(exedir, "..", "Resources"),
+            os.path.join(exedir, "_internal"),
+        ):
+            if os.path.isfile(os.path.join(place, "VERSION")):
                 resdir = place
 
     else:
         # standard installation
-        resdir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+        resdir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
-        if os.path.exists( os.path.join(resdir, 'resources') ):
+        if os.path.exists(os.path.join(resdir, "resources")):
             # override data directory with symlink
-            resdir = os.path.realpath( os.path.join(resdir, 'resources') )
-        elif not os.path.exists(os.path.join(resdir, 'VERSION')):
+            resdir = os.path.realpath(os.path.join(resdir, "resources"))
+        elif not os.path.exists(os.path.join(resdir, "VERSION")):
             # running from the current direction
-            resdir = os.path.join(resdir, '..')
+            resdir = os.path.join(resdir, "..")
 
     # override with VEUSZ_RESOURCE_DIR environment variable if necessary
-    resdir = os.environ.get('VEUSZ_RESOURCE_DIR', resdir)
+    resdir = os.environ.get("VEUSZ_RESOURCE_DIR", resdir)
 
     # now get example directory (which may be a symlink)
-    examplesdir = os.path.realpath( os.path.join(resdir, 'examples') )
+    examplesdir = os.path.realpath(os.path.join(resdir, "examples"))
 
     return resdir, examplesdir
+
 
 # get resource and example directories
 resourceDirectory, exampleDirectory = _getVeuszDirectory()
 
+
 def getLicense():
     """Return license text."""
     try:
-        with open(os.path.join(resourceDirectory, 'COPYING')) as f:
+        with open(os.path.join(resourceDirectory, "COPYING")) as f:
             text = f.read()
     except EnvironmentError:
         text = (
-            'Could not open the license file.\n'
-            'See license at http://www.gnu.org/licenses/gpl-2.0.html'
+            "Could not open the license file.\n"
+            "See license at http://www.gnu.org/licenses/gpl-2.0.html"
         )
     return text
 
-id_re = re.compile('^[A-Za-z_][A-Za-z0-9_]*$')
+
+id_re = re.compile("^[A-Za-z_][A-Za-z0-9_]*$")
+
+
 def validPythonIdentifier(name):
     """Is this a valid python identifier?"""
     return id_re.match(name) is not None
+
 
 def validateDatasetName(name):
     """Validate dataset name is okay.
     Dataset names can contain anything except back ticks!
     """
-    return len(name.strip()) > 0 and name.find('`') == -1
+    return len(name.strip()) > 0 and name.find("`") == -1
+
 
 def validateWidgetName(name):
     """Validate widget name is okay.
     Widget names are valid if no surrounding whitespace and do not contain /
     """
-    return ( len(name) > 0 and name.strip() == name and name.find('/') == -1
-             and name != '.' and name != '..' )
+    return (
+        len(name) > 0
+        and name.strip() == name
+        and name.find("/") == -1
+        and name != "."
+        and name != ".."
+    )
+
 
 def cleanDatasetName(name):
     """Make string into a valid dataset name."""
     # replace backticks and get rid of whitespace at ends
-    return name.replace('`', '_').strip()
+    return name.replace("`", "_").strip()
+
 
 def relpath(filename, dirname):
     """Make filename a relative filename relative to dirname."""
@@ -135,24 +152,29 @@ def relpath(filename, dirname):
 
     # remove equal bits at start
     common = 0
-    while common < len(fileparts) and common < len(dirparts) and fileparts[common] == dirparts[common]:
+    while (
+        common < len(fileparts)
+        and common < len(dirparts)
+        and fileparts[common] == dirparts[common]
+    ):
         common += 1
     fileparts = fileparts[common:]
     dirparts = dirparts[common:]
 
     # add on right number of .. to get back up
-    fileparts = [os.path.pardir]*len([d for d in dirparts if d]) + fileparts
+    fileparts = [os.path.pardir] * len([d for d in dirparts if d]) + fileparts
 
     # join parts back together
     return os.path.sep.join(fileparts)
+
 
 def extendedColorFromQColor(col):
     """Make an extended color #RRGGBBAA or #RRGGBB string."""
     if col.alpha() == 255:
         return str(col.name())
     else:
-        return '#%02x%02x%02x%02x' % (
-            col.red(), col.green(), col.blue(), col.alpha())
+        return "#%02x%02x%02x%02x" % (col.red(), col.green(), col.blue(), col.alpha())
+
 
 def pixmapAsHtml(pix):
     """Get QPixmap as html image text."""
@@ -160,8 +182,9 @@ def pixmapAsHtml(pix):
     buf = qt.QBuffer(ba)
     buf.open(qt.QIODevice.OpenModeFlag.WriteOnly)
     pix.toImage().save(buf, "PNG")
-    b64 = bytes(buf.data().toBase64()).decode('ascii')
+    b64 = bytes(buf.data().toBase64()).decode("ascii")
     return '<img src="data:image/png;base64,%s">' % b64
+
 
 def pythonise(text):
     """Turn an expression of the form 'A b c d' into 'A(b,c,d)'.
@@ -171,16 +194,15 @@ def pythonise(text):
     and backslashes.
     """
 
-    out = ''
-    insingle = False    # in a single quote section
-    indouble = False    # in a double quote section
+    out = ""
+    insingle = False  # in a single quote section
+    indouble = False  # in a double quote section
     firstnonws = False  # have we reached first non WS char
-    firstpart = True    # have we appended the first part of the expr
+    firstpart = True  # have we appended the first part of the expr
     lastbslash = False  # was the last character a back-slash
 
     # iterate over characters
     for c in text:
-
         # keep leading WS
         if c in string.whitespace and not firstnonws:
             out += c
@@ -189,47 +211,47 @@ def pythonise(text):
 
         # this character isn't escaped
         if not lastbslash:
-
             # quoted section
             if c == "'":
                 insingle = not insingle
             elif c == '"':
                 indouble = not indouble
 
-            elif c == '\\':
+            elif c == "\\":
                 lastbslash = True
                 continue
 
             # spacing between parts
-            if c == ' ' and not insingle and not indouble:
+            if c == " " and not insingle and not indouble:
                 if firstpart:
-                    out += '('
+                    out += "("
                     firstpart = False
                 else:
-                    out += ','
+                    out += ","
             else:
                 out += c
         else:
-            out += '\\' + c
+            out += "\\" + c
             lastbslash = False
 
     # we're still in the first part
     if firstpart:
-        out += '('
+        out += "("
 
     # we can add a right bracket
     if not insingle and not indouble:
-        out += ')'
+        out += ")"
 
     return out
+
 
 def validLinePoints(x, y):
     """Take x and y points and split into sets of points which
     don't have invalid points.
     This is a generator.
     """
-    xvalid = N.logical_not( N.isfinite(x) ).nonzero()[0]
-    yvalid = N.logical_not( N.isfinite(y) ).nonzero()[0]
+    xvalid = N.logical_not(N.isfinite(x)).nonzero()[0]
+    yvalid = N.logical_not(N.isfinite(y)).nonzero()[0]
     invalid = N.concatenate((xvalid, yvalid))
     invalid.sort()
     last = 0
@@ -237,8 +259,9 @@ def validLinePoints(x, y):
         if valid > last:
             yield x[last:valid], y[last:valid]
         last = valid + 1
-    if last < x.shape[0]-1:
+    if last < x.shape[0] - 1:
         yield x[last:], y[last:]
+
 
 class NonBlockingReaderThread(threading.Thread):
     """A class to read blocking file objects and return the result.
@@ -263,7 +286,7 @@ class NonBlockingReaderThread(threading.Thread):
         threading.Thread.__init__(self)
         self.fileobject = fileobject
         self.lock = threading.Lock()
-        self.data = ''
+        self.data = ""
         self.done = False
         self.exiteof = exiteof
 
@@ -276,7 +299,7 @@ class NonBlockingReaderThread(threading.Thread):
         self.lock.acquire()
         data = self.data
         done = self.done
-        self.data = ''
+        self.data = ""
         self.lock.release()
         if isinstance(data, Exception):
             # if the reader errored somewhere
@@ -311,49 +334,142 @@ class NonBlockingReaderThread(threading.Thread):
                 self.data += data
                 self.lock.release()
 
+
 # standard python encodings
 encodings = [
-    'ascii', 'big5hkscs', 'big5', 'charmap', 'cp037', 'cp424',
-    'cp437', 'cp500', 'cp737', 'cp775', 'cp850', 'cp852', 'cp855',
-    'cp856', 'cp857', 'cp860', 'cp861', 'cp862', 'cp863', 'cp864',
-    'cp865', 'cp866', 'cp869', 'cp874', 'cp875', 'cp932', 'cp949',
-    'cp950', 'cp1006', 'cp1026', 'cp1140','cp1250', 'cp1251', 'cp1252',
-    'cp1253', 'cp1254', 'cp1255', 'cp1256', 'cp1257', 'cp1258',
-    'euc_jis_2004', 'euc_jisx0213', 'euc_jp', 'euc_kr', 'gb18030', 'gb2312',
-    'gbk', 'hp_roman8', 'hz', 'iso2022_jp_1', 'iso2022_jp_2004',
-    'iso2022_jp_2', 'iso2022_jp_3', 'iso2022_jp_ext', 'iso2022_jp',
-    'iso2022_kr', 'iso8859_10', 'iso8859_11', 'iso8859_13', 'iso8859_14',
-    'iso8859_15', 'iso8859_16', 'iso8859_1', 'iso8859_2', 'iso8859_3',
-    'iso8859_4', 'iso8859_5', 'iso8859_6', 'iso8859_7', 'iso8859_8',
-    'iso8859_9', 'johab', 'koi8_r', 'koi8_u', 'latin_1', 'mac_arabic',
-    'mac_centeuro', 'mac_croatian', 'mac_cyrillic', 'mac_farsi', 'mac_greek',
-    'mac_iceland', 'mac_latin2', 'mac_romanian', 'mac_roman', 'mac_turkish',
-    'ptcp154', 'shift_jis_2004', 'shift_jis', 'shift_jisx0213',
-    'tis_620','utf_16_be', 'utf_16_le', 'utf_16',
-    'utf_32_be', 'utf_32_le', 'utf_32', 'utf_7', 'utf_8', 'utf_8_sig'
+    "ascii",
+    "big5hkscs",
+    "big5",
+    "charmap",
+    "cp037",
+    "cp424",
+    "cp437",
+    "cp500",
+    "cp737",
+    "cp775",
+    "cp850",
+    "cp852",
+    "cp855",
+    "cp856",
+    "cp857",
+    "cp860",
+    "cp861",
+    "cp862",
+    "cp863",
+    "cp864",
+    "cp865",
+    "cp866",
+    "cp869",
+    "cp874",
+    "cp875",
+    "cp932",
+    "cp949",
+    "cp950",
+    "cp1006",
+    "cp1026",
+    "cp1140",
+    "cp1250",
+    "cp1251",
+    "cp1252",
+    "cp1253",
+    "cp1254",
+    "cp1255",
+    "cp1256",
+    "cp1257",
+    "cp1258",
+    "euc_jis_2004",
+    "euc_jisx0213",
+    "euc_jp",
+    "euc_kr",
+    "gb18030",
+    "gb2312",
+    "gbk",
+    "hp_roman8",
+    "hz",
+    "iso2022_jp_1",
+    "iso2022_jp_2004",
+    "iso2022_jp_2",
+    "iso2022_jp_3",
+    "iso2022_jp_ext",
+    "iso2022_jp",
+    "iso2022_kr",
+    "iso8859_10",
+    "iso8859_11",
+    "iso8859_13",
+    "iso8859_14",
+    "iso8859_15",
+    "iso8859_16",
+    "iso8859_1",
+    "iso8859_2",
+    "iso8859_3",
+    "iso8859_4",
+    "iso8859_5",
+    "iso8859_6",
+    "iso8859_7",
+    "iso8859_8",
+    "iso8859_9",
+    "johab",
+    "koi8_r",
+    "koi8_u",
+    "latin_1",
+    "mac_arabic",
+    "mac_centeuro",
+    "mac_croatian",
+    "mac_cyrillic",
+    "mac_farsi",
+    "mac_greek",
+    "mac_iceland",
+    "mac_latin2",
+    "mac_romanian",
+    "mac_roman",
+    "mac_turkish",
+    "ptcp154",
+    "shift_jis_2004",
+    "shift_jis",
+    "shift_jisx0213",
+    "tis_620",
+    "utf_16_be",
+    "utf_16_le",
+    "utf_16",
+    "utf_32_be",
+    "utf_32_le",
+    "utf_32",
+    "utf_7",
+    "utf_8",
+    "utf_8_sig",
 ]
 
-def openEncoding(filename, encoding, mode='r'):
+
+def openEncoding(filename, encoding, mode="r", errors="replace"):
     """Convenience function for opening file with encoding given.
 
     If filename == '{clipboard}', then load the data from the clipboard
     instead.
+
+    ``errors`` defaults to ``'replace'`` to preserve historical behaviour
+    (importers tolerate stray bad bytes), but callers that need to
+    detect or refuse corruption can pass ``errors='strict'``. The old
+    hard-coded ``'replace'`` silently substituted U+FFFD for invalid
+    sequences in every file open through this helper, masking real
+    encoding mismatches.
     """
 
     # Windows programs sometimes use a BOM at the start of files,
     # causing problems reading a file. We force the below encoding to
     # skip the BOM.
-    if encoding.lower() in ('utf_8', 'utf-8'):
-        encoding = 'utf_8_sig'
+    if encoding.lower() in ("utf_8", "utf-8"):
+        encoding = "utf_8_sig"
 
-    if filename == '{clipboard}':
+    if filename == "{clipboard}":
         text = qt.QApplication.clipboard().text()
         return io.StringIO(text)
     else:
-        return io.open(filename, mode, encoding=encoding, errors='replace')
+        return io.open(filename, mode, encoding=encoding, errors=errors)
+
 
 # The following two classes are adapted from the Python documentation
 # they are modified to turn off encoding errors
+
 
 class _UTF8Recoder:
     """
@@ -361,35 +477,44 @@ class _UTF8Recoder:
 
     Needed for python2
     """
+
     def __init__(self, f, encoding):
-        self.reader = codecs.getreader(encoding)(f, errors='ignore')
+        self.reader = codecs.getreader(encoding)(f, errors="ignore")
+
     def __iter__(self):
         return self
+
     def next(self):
         line = self.reader.next()
         return line.encode("utf-8")
+
 
 class _UTF8Decoder:
     """
     Python2 iterator than decodes lists of utf-8 encoded strings
     """
+
     def __init__(self, iterator):
         self.iterator = iterator
+
     def __iter__(self):
         return self
+
     def next(self):
         line = self.iterator.next()
         return [str(x, "utf-8") for x in line]
 
-def get_unicode_csv_reader(filename, dialect=csv.excel,
-                           encoding='utf-8', **kwds):
+
+def get_unicode_csv_reader(filename, dialect=csv.excel, encoding="utf-8", **kwds):
     """Return an iterator to iterate over CSV file with encoding given."""
 
     f = openEncoding(filename, encoding)
     reader = csv.reader(f, dialect=dialect, **kwds)
     return reader
 
+
 # End python doc classes
+
 
 def populateCombo(combo, items):
     """Populate the combo with the list of items given.
@@ -415,15 +540,16 @@ def populateCombo(combo, items):
 
     # remove any extra items
     while combo.count() > len(items):
-        combo.removeItem( combo.count()-1 )
+        combo.removeItem(combo.count() - 1)
 
     # get index for current value
     index = combo.findText(currenttext)
     combo.setCurrentIndex(index)
 
+
 def positionFloatingPopup(popup, widget):
     """Position a popped up window (popup) to side and below widget given."""
-    pos = widget.parentWidget().mapToGlobal( widget.pos() )
+    pos = widget.parentWidget().mapToGlobal(widget.pos())
     size = widget.screen().geometry()
 
     # recalculates out position so that size is correct below
@@ -438,8 +564,9 @@ def positionFloatingPopup(popup, widget):
         y = pos.y() - popup.height() - 1
 
     # is there room to the left for us?
-    if ( (pos.x() + widget.width() + popup.width() < size.width()) or
-         (pos.x() + widget.width() < size.width()/2) ):
+    if (pos.x() + widget.width() + popup.width() < size.width()) or (
+        pos.x() + widget.width() < size.width() / 2
+    ):
         # put left justified with widget
         x = pos.x() + widget.width()
     else:
@@ -448,6 +575,7 @@ def positionFloatingPopup(popup, widget):
 
     popup.move(x, y)
     popup.setFocus()
+
 
 # based on http://stackoverflow.com/questions/10607841/algorithm-for-topological-sorting-if-cycles-exist
 def topological_sort(dependency_pairs):
@@ -458,8 +586,8 @@ def topological_sort(dependency_pairs):
     for ordered and cyclic items
     """
 
-    num_heads = defaultdict(int)   # num arrows pointing in
-    tails = defaultdict(list)      # list of arrows going out
+    num_heads = defaultdict(int)  # num arrows pointing in
+    tails = defaultdict(list)  # list of arrows going out
     for h, t in dependency_pairs:
         num_heads[t] += 1
         tails[h].append(t)
@@ -476,9 +604,11 @@ def topological_sort(dependency_pairs):
     cyclic = [n for n, heads in num_heads.items() if heads]
     return ordered, cyclic
 
+
 def isiternostr(i):
     """Is this iterator, but not a string?"""
-    return hasattr(i, '__iter__') and not isinstance(i, str)
+    return hasattr(i, "__iter__") and not isinstance(i, str)
+
 
 def nextfloat(fin):
     """Return (approximately) next float value (for f>0)."""
@@ -489,6 +619,7 @@ def nextfloat(fin):
         if fin != fout:
             return fout
         d *= 2
+
 
 def round2delt(fin1, fin2):
     """Take two float values. Return value rounded to number
@@ -501,38 +632,39 @@ def round2delt(fin1, fin2):
     f1 = nextfloat(abs(fin1))
     f2 = nextfloat(abs(fin2))
 
-    maxlog = int( max(N.log10(f1), N.log10(f2)) + 1 )
+    maxlog = int(max(N.log10(f1), N.log10(f2)) + 1)
     # note: out2 unused, but useful for debugging
     if maxlog < 0:
-        out1 = out2 = '0.' + '0'*(-1-maxlog)
+        out1 = out2 = "0." + "0" * (-1 - maxlog)
     else:
-        out1 = out2 = ''
+        out1 = out2 = ""
 
-    for i in range(maxlog,-200,-1):
+    for i in range(maxlog, -200, -1):
         p = 10**i
-        d1, d2 = int(f1/p), int(f2/p)
-        f1 -= int(d1)*p
-        f2 -= int(d2)*p
+        d1, d2 = int(f1 / p), int(f2 / p)
+        f1 -= int(d1) * p
+        f2 -= int(d2) * p
 
-        c1 = chr(d1 + 48) # 48 == '0'
+        c1 = chr(d1 + 48)  # 48 == '0'
         c2 = chr(d2 + 48)
         out1 += c1
         out2 += c2
 
-        if c1 != c2 and p < abs(fin1): # at least 1 sig fig
+        if c1 != c2 and p < abs(fin1):  # at least 1 sig fig
             if i > 0:
                 # add missing zeros
-                out1 += '0'*i
-                out2 += '0'*i
+                out1 += "0" * i
+                out2 += "0" * i
             break
 
         if i == 0:
-            out1 += '.'
-            out2 += '.'
+            out1 += "."
+            out2 += "."
 
     # convert back to float for output
     fout = float(out1)
     return fout if fin1 > 0 else -fout
+
 
 def checkOrder(inv):
     """Check order of inv
@@ -549,12 +681,14 @@ def checkOrder(inv):
         return -1
     return 0
 
+
 def checkAscending(v):
     """Check list of values is finite and ascending."""
     v = N.array(v)
-    if not N.all( N.isfinite(v) ):
+    if not N.all(N.isfinite(v)):
         return False
-    return N.all( (v[1:] - v[:-1]) > 0 )
+    return N.all((v[1:] - v[:-1]) > 0)
+
 
 def rrepr(val):
     """Reproducible repr.
@@ -563,8 +697,7 @@ def rrepr(val):
     set entries."""
 
     if isinstance(val, dict):
-        l = [ "%s: %s" % (rrepr(k), rrepr(val[k]))
-              for k in sorted(val) ]
+        l = ["%s: %s" % (rrepr(k), rrepr(val[k])) for k in sorted(val)]
         return "{%s}" % ", ".join(l)
     elif isinstance(val, set):
         l = [rrepr(v) for v in sorted(val)]
@@ -575,31 +708,36 @@ def rrepr(val):
     else:
         return repr(val)
 
+
 def escapeHDFDataName(name):
     """Return escaped dataset name for saving in HDF5 files.
     This is because names cannot include / characters in HDF5
     """
-    name = name.replace('`', '`BT')
-    name = name.replace('/', '`SL')
-    return name.encode('utf-8')
+    name = name.replace("`", "`BT")
+    name = name.replace("/", "`SL")
+    return name.encode("utf-8")
+
 
 def unescapeHDFDataName(name):
     """Return original name after being escaped."""
-    name = name.replace('`SL', '/')
-    name = name.replace('`BT', '`')
+    name = name.replace("`SL", "/")
+    name = name.replace("`BT", "`")
     return name
+
 
 def allNotNone(*items):
     """Are all the items not None."""
     return not any((x is None for x in items))
 
+
 def anyNone(*items):
     """Are any items None."""
     return any((x is None for x in items))
 
+
 def findOnPath(cmd):
     """Find a command on the system path, or None if does not exist."""
-    path = os.getenv('PATH', os.path.defpath)
+    path = os.getenv("PATH", os.path.defpath)
     pathparts = path.split(os.path.pathsep)
     for dirname in pathparts:
         dirname = dirname.strip('"')
@@ -608,12 +746,14 @@ def findOnPath(cmd):
             return cmdtry
     return None
 
+
 def listIndex(inlist, item):
     """Return index of item in list or -1 if not available."""
     try:
         return inlist.index(item)
     except ValueError:
         return -1
+
 
 class Struct:
     """Simple structure-like class."""
@@ -622,12 +762,12 @@ class Struct:
         self.__dict__.update(args)
 
     def __repr__(self):
-        return '<%s>' % str(
-            ', '.join(
-                '%s:%s' % (k, repr(getattr(self, k)))
-                for k in sorted(self.__dict__)
+        return "<%s>" % str(
+            ", ".join(
+                "%s:%s" % (k, repr(getattr(self, k))) for k in sorted(self.__dict__)
             )
         )
+
 
 class SvgWidgetFixedAspect(qt.QWidget):
     """Draw an SVG file with the aspect ratio fixed to the original."""
@@ -651,16 +791,17 @@ class SvgWidgetFixedAspect(qt.QWidget):
         ratio_y = h / self.defheight
         if ratio_x < ratio_y:
             outw = w
-            outh = w*self.defheight//self.defwidth
+            outh = w * self.defheight // self.defwidth
             left = 0
-            top = (h-outh)//2
+            top = (h - outh) // 2
         else:
-            outw = h*self.defwidth//self.defheight
+            outw = h * self.defwidth // self.defheight
             outh = h
-            left = (w-outw)//2
+            left = (w - outw) // 2
             top = 0
 
         self.renderer.render(painter, qt.QRectF(left, top, outw, outh))
+
 
 class OverrideCursor:
     """A context manager to handle changing the mouse cursor temporarily."""
@@ -673,6 +814,7 @@ class OverrideCursor:
 
     def __exit__(self, typ, value, traceback):
         qt.QApplication.restoreOverrideCursor()
+
 
 class DisabledIconEngine(qt.QIconEngine):
     """Icon engine which draws icons in a disabled state."""
@@ -688,13 +830,19 @@ class DisabledIconEngine(qt.QIconEngine):
         return GreyIconEngine(self.icon)
 
     def iconName(self):
-        return ''
+        return ""
 
     def key(self):
         return str(id(self))
 
     def paint(self, painter, rect, mode, state):
-        self.icon.paint(painter, rect, qt.Qt.AlignmentFlag.AlignCenter, qt.QIcon.Mode.Disabled, state)
+        self.icon.paint(
+            painter,
+            rect,
+            qt.Qt.AlignmentFlag.AlignCenter,
+            qt.QIcon.Mode.Disabled,
+            state,
+        )
 
     def pixmap(self, size, mode, state):
         return self.icon.pixmap(size, qt.QIcon.Mode.Disabled, state)
@@ -707,36 +855,37 @@ def dumpPalette(pal):
     cr = qt.QPalette.ColorRole
     lines = []
     for role in (
-            cr.Window,
-            cr.WindowText,
-            cr.Base,
-            cr.AlternateBase,
-            cr.ToolTipBase,
-            cr.ToolTipText,
-            cr.ToolTipText,
-            cr.PlaceholderText,
-            cr.Text,
-            cr.Button,
-            cr.ButtonText,
-            cr.BrightText,
-            cr.Light,
-            cr.Midlight,
-            cr.Dark,
-            cr.Mid,
-            cr.Shadow,
-            cr.Highlight,
-            cr.HighlightedText,
-            cr.Link,
-            cr.LinkVisited,
-            ):
+        cr.Window,
+        cr.WindowText,
+        cr.Base,
+        cr.AlternateBase,
+        cr.ToolTipBase,
+        cr.ToolTipText,
+        cr.ToolTipText,
+        cr.PlaceholderText,
+        cr.Text,
+        cr.Button,
+        cr.ButtonText,
+        cr.BrightText,
+        cr.Light,
+        cr.Midlight,
+        cr.Dark,
+        cr.Mid,
+        cr.Shadow,
+        cr.Highlight,
+        cr.HighlightedText,
+        cr.Link,
+        cr.LinkVisited,
+    ):
         v = []
         for group in cg.Disabled, cg.Active, cg.Inactive:
-            v.append( pal.color(group, role).name() )
+            v.append(pal.color(group, role).name())
 
         lines.append(f'  ({role.value:2}, "{v[0]}", "{v[1]}", "{v[2]}"),\n')
 
-    out = '[\n' + ''.join(lines) + ']\n'
+    out = "[\n" + "".join(lines) + "]\n"
     return out
+
 
 def getPalette(name):
     """Get a dumped palette."""
@@ -744,23 +893,23 @@ def getPalette(name):
     # these are dumped using the dumpPalette function above
     palettes = {
         # dumped from KDE on plasma version 5.27.12
-        'breeze-light': [
+        "breeze-light": [
             (10, "#fcfcfc", "#eff0f1", "#eff0f1"),
-            ( 0, "#7e7e7e", "#232629", "#232629"),
-            ( 9, "#fcfcfc", "#ffffff", "#ffffff"),
+            (0, "#7e7e7e", "#232629", "#232629"),
+            (9, "#fcfcfc", "#ffffff", "#ffffff"),
             (16, "#f7f7f7", "#f7f7f7", "#f7f7f7"),
             (18, "#f7f7f7", "#f7f7f7", "#f7f7f7"),
             (19, "#232629", "#232629", "#232629"),
             (19, "#232629", "#232629", "#232629"),
             (20, "#000000", "#000000", "#000000"),
-            ( 6, "#7e7e7e", "#232629", "#232629"),
-            ( 1, "#fcfcfc", "#fcfcfc", "#fcfcfc"),
-            ( 8, "#7e7e7e", "#232629", "#232629"),
-            ( 7, "#ffffff", "#ffffff", "#ffffff"),
-            ( 2, "#ffffff", "#ffffff", "#ffffff"),
-            ( 3, "#ffffff", "#ffffff", "#ffffff"),
-            ( 4, "#7e7e7e", "#7e7e7e", "#7e7e7e"),
-            ( 5, "#a8a8a8", "#a8a8a8", "#a8a8a8"),
+            (6, "#7e7e7e", "#232629", "#232629"),
+            (1, "#fcfcfc", "#fcfcfc", "#fcfcfc"),
+            (8, "#7e7e7e", "#232629", "#232629"),
+            (7, "#ffffff", "#ffffff", "#ffffff"),
+            (2, "#ffffff", "#ffffff", "#ffffff"),
+            (3, "#ffffff", "#ffffff", "#ffffff"),
+            (4, "#7e7e7e", "#7e7e7e", "#7e7e7e"),
+            (5, "#a8a8a8", "#a8a8a8", "#a8a8a8"),
             (11, "#b1b1b1", "#767676", "#767676"),
             (12, "#a8a8a8", "#3daee9", "#3daee9"),
             (13, "#ffffff", "#ffffff", "#ffffff"),
@@ -768,22 +917,22 @@ def getPalette(name):
             (15, "#9b59b6", "#9b59b6", "#9b59b6"),
         ],
         # Nord Light
-        'nord-light': [
+        "nord-light": [
             (10, "#eceff4", "#e5e9f0", "#e5e9f0"),
-            ( 0, "#7b88a1", "#2e3440", "#2e3440"),
-            ( 9, "#eceff4", "#eceff4", "#eceff4"),
+            (0, "#7b88a1", "#2e3440", "#2e3440"),
+            (9, "#eceff4", "#eceff4", "#eceff4"),
             (16, "#d8dee9", "#d8dee9", "#d8dee9"),
             (18, "#e5e9f0", "#e5e9f0", "#e5e9f0"),
             (19, "#2e3440", "#2e3440", "#2e3440"),
             (20, "#000000", "#000000", "#000000"),
-            ( 6, "#7b88a1", "#2e3440", "#2e3440"),
-            ( 1, "#eceff4", "#eceff4", "#eceff4"),
-            ( 8, "#7b88a1", "#2e3440", "#2e3440"),
-            ( 7, "#eceff4", "#eceff4", "#eceff4"),
-            ( 2, "#ffffff", "#ffffff", "#ffffff"),
-            ( 3, "#e5e9f0", "#e5e9f0", "#e5e9f0"),
-            ( 4, "#7b88a1", "#7b88a1", "#7b88a1"),
-            ( 5, "#9ba5b5", "#9ba5b5", "#9ba5b5"),
+            (6, "#7b88a1", "#2e3440", "#2e3440"),
+            (1, "#eceff4", "#eceff4", "#eceff4"),
+            (8, "#7b88a1", "#2e3440", "#2e3440"),
+            (7, "#eceff4", "#eceff4", "#eceff4"),
+            (2, "#ffffff", "#ffffff", "#ffffff"),
+            (3, "#e5e9f0", "#e5e9f0", "#e5e9f0"),
+            (4, "#7b88a1", "#7b88a1", "#7b88a1"),
+            (5, "#9ba5b5", "#9ba5b5", "#9ba5b5"),
             (11, "#b0b8c8", "#6c7a96", "#6c7a96"),
             (12, "#9ba5b5", "#5e81ac", "#5e81ac"),
             (13, "#eceff4", "#eceff4", "#eceff4"),
@@ -791,22 +940,22 @@ def getPalette(name):
             (15, "#b48ead", "#b48ead", "#b48ead"),
         ],
         # Nord Dark
-        'nord-dark': [
+        "nord-dark": [
             (10, "#2e3440", "#2e3440", "#2e3440"),
-            ( 0, "#616e88", "#d8dee9", "#d8dee9"),
-            ( 9, "#2e3440", "#232831", "#232831"),
+            (0, "#616e88", "#d8dee9", "#d8dee9"),
+            (9, "#2e3440", "#232831", "#232831"),
             (16, "#242933", "#242933", "#242933"),
             (18, "#3b4252", "#3b4252", "#3b4252"),
             (19, "#d8dee9", "#d8dee9", "#d8dee9"),
             (20, "#eceff4", "#eceff4", "#eceff4"),
-            ( 6, "#616e88", "#d8dee9", "#d8dee9"),
-            ( 1, "#2e3440", "#2e3440", "#2e3440"),
-            ( 8, "#616e88", "#d8dee9", "#d8dee9"),
-            ( 7, "#3b4252", "#3b4252", "#3b4252"),
-            ( 2, "#242933", "#242933", "#242933"),
-            ( 3, "#2e3440", "#2e3440", "#2e3440"),
-            ( 4, "#616e88", "#616e88", "#616e88"),
-            ( 5, "#434c5e", "#434c5e", "#434c5e"),
+            (6, "#616e88", "#d8dee9", "#d8dee9"),
+            (1, "#2e3440", "#2e3440", "#2e3440"),
+            (8, "#616e88", "#d8dee9", "#d8dee9"),
+            (7, "#3b4252", "#3b4252", "#3b4252"),
+            (2, "#242933", "#242933", "#242933"),
+            (3, "#2e3440", "#2e3440", "#2e3440"),
+            (4, "#616e88", "#616e88", "#616e88"),
+            (5, "#434c5e", "#434c5e", "#434c5e"),
             (11, "#1d2028", "#1d2028", "#1d2028"),
             (12, "#434c5e", "#5e81ac", "#5e81ac"),
             (13, "#3b4252", "#d8dee9", "#d8dee9"),
@@ -814,22 +963,22 @@ def getPalette(name):
             (15, "#b48ead", "#b48ead", "#b48ead"),
         ],
         # Solarized Light
-        'solarized-light': [
+        "solarized-light": [
             (10, "#fdf6e3", "#eee8d5", "#eee8d5"),
-            ( 0, "#93a1a1", "#657b83", "#657b83"),
-            ( 9, "#fdf6e3", "#fdf6e3", "#fdf6e3"),
+            (0, "#93a1a1", "#657b83", "#657b83"),
+            (9, "#fdf6e3", "#fdf6e3", "#fdf6e3"),
             (16, "#eee8d5", "#eee8d5", "#eee8d5"),
             (18, "#eee8d5", "#eee8d5", "#eee8d5"),
             (19, "#586e75", "#586e75", "#586e75"),
             (20, "#002b36", "#002b36", "#002b36"),
-            ( 6, "#93a1a1", "#657b83", "#657b83"),
-            ( 1, "#fdf6e3", "#fdf6e3", "#fdf6e3"),
-            ( 8, "#93a1a1", "#657b83", "#657b83"),
-            ( 7, "#fdf6e3", "#fdf6e3", "#fdf6e3"),
-            ( 2, "#ffffff", "#ffffff", "#ffffff"),
-            ( 3, "#eee8d5", "#eee8d5", "#eee8d5"),
-            ( 4, "#93a1a1", "#93a1a1", "#93a1a1"),
-            ( 5, "#b0bfc0", "#b0bfc0", "#b0bfc0"),
+            (6, "#93a1a1", "#657b83", "#657b83"),
+            (1, "#fdf6e3", "#fdf6e3", "#fdf6e3"),
+            (8, "#93a1a1", "#657b83", "#657b83"),
+            (7, "#fdf6e3", "#fdf6e3", "#fdf6e3"),
+            (2, "#ffffff", "#ffffff", "#ffffff"),
+            (3, "#eee8d5", "#eee8d5", "#eee8d5"),
+            (4, "#93a1a1", "#93a1a1", "#93a1a1"),
+            (5, "#b0bfc0", "#b0bfc0", "#b0bfc0"),
             (11, "#c0ccc0", "#839496", "#839496"),
             (12, "#b0bfc0", "#268bd2", "#268bd2"),
             (13, "#fdf6e3", "#fdf6e3", "#fdf6e3"),
@@ -837,22 +986,22 @@ def getPalette(name):
             (15, "#d33682", "#d33682", "#d33682"),
         ],
         # Solarized Dark
-        'solarized-dark': [
+        "solarized-dark": [
             (10, "#002b36", "#002b36", "#002b36"),
-            ( 0, "#586e75", "#839496", "#839496"),
-            ( 9, "#002b36", "#00212b", "#00212b"),
+            (0, "#586e75", "#839496", "#839496"),
+            (9, "#002b36", "#00212b", "#00212b"),
             (16, "#073642", "#073642", "#073642"),
             (18, "#073642", "#073642", "#073642"),
             (19, "#93a1a1", "#93a1a1", "#93a1a1"),
             (20, "#fdf6e3", "#fdf6e3", "#fdf6e3"),
-            ( 6, "#586e75", "#839496", "#839496"),
-            ( 1, "#002b36", "#002b36", "#002b36"),
-            ( 8, "#586e75", "#839496", "#839496"),
-            ( 7, "#073642", "#073642", "#073642"),
-            ( 2, "#00212b", "#00212b", "#00212b"),
-            ( 3, "#002b36", "#002b36", "#002b36"),
-            ( 4, "#586e75", "#586e75", "#586e75"),
-            ( 5, "#073642", "#073642", "#073642"),
+            (6, "#586e75", "#839496", "#839496"),
+            (1, "#002b36", "#002b36", "#002b36"),
+            (8, "#586e75", "#839496", "#839496"),
+            (7, "#073642", "#073642", "#073642"),
+            (2, "#00212b", "#00212b", "#00212b"),
+            (3, "#002b36", "#002b36", "#002b36"),
+            (4, "#586e75", "#586e75", "#586e75"),
+            (5, "#073642", "#073642", "#073642"),
             (11, "#001920", "#001920", "#001920"),
             (12, "#073642", "#268bd2", "#268bd2"),
             (13, "#073642", "#839496", "#839496"),
@@ -860,23 +1009,23 @@ def getPalette(name):
             (15, "#d33682", "#d33682", "#d33682"),
         ],
         # dumped from KDE on plasma version 5.27.12
-        'breeze-dark': [
+        "breeze-dark": [
             (10, "#31363b", "#2a2e32", "#2a2e32"),
-            ( 0, "#626c76", "#fcfcfc", "#fcfcfc"),
-            ( 9, "#31363b", "#1b1e20", "#1b1e20"),
+            (0, "#626c76", "#fcfcfc", "#fcfcfc"),
+            (9, "#31363b", "#1b1e20", "#1b1e20"),
             (16, "#232629", "#232629", "#232629"),
             (18, "#31363b", "#31363b", "#31363b"),
             (19, "#fcfcfc", "#fcfcfc", "#fcfcfc"),
             (19, "#fcfcfc", "#fcfcfc", "#fcfcfc"),
             (20, "#f0f0f0", "#f0f0f0", "#f0f0f0"),
-            ( 6, "#626c76", "#fcfcfc", "#fcfcfc"),
-            ( 1, "#31363b", "#31363b", "#31363b"),
-            ( 8, "#626c76", "#fcfcfc", "#fcfcfc"),
-            ( 7, "#ffffff", "#4b4b4b", "#4b4b4b"),
-            ( 2, "#181b1d", "#181b1d", "#181b1d"),
-            ( 3, "#25292c", "#25292c", "#25292c"),
-            ( 4, "#626c76", "#626c76", "#626c76"),
-            ( 5, "#41484e", "#41484e", "#41484e"),
+            (6, "#626c76", "#fcfcfc", "#fcfcfc"),
+            (1, "#31363b", "#31363b", "#31363b"),
+            (8, "#626c76", "#fcfcfc", "#fcfcfc"),
+            (7, "#ffffff", "#4b4b4b", "#4b4b4b"),
+            (2, "#181b1d", "#181b1d", "#181b1d"),
+            (3, "#25292c", "#25292c", "#25292c"),
+            (4, "#626c76", "#626c76", "#626c76"),
+            (5, "#41484e", "#41484e", "#41484e"),
             (11, "#252525", "#191919", "#191919"),
             (12, "#41484e", "#3daee9", "#3daee9"),
             (13, "#25292c", "#fcfcfc", "#fcfcfc"),
@@ -884,23 +1033,23 @@ def getPalette(name):
             (15, "#9b59b6", "#9b59b6", "#9b59b6"),
         ],
         # Dracula - https://draculatheme.com
-        'dracula': [
+        "dracula": [
             (10, "#282a36", "#282a36", "#282a36"),
-            ( 0, "#6272a4", "#f8f8f2", "#f8f8f2"),
-            ( 9, "#282a36", "#21222c", "#21222c"),
+            (0, "#6272a4", "#f8f8f2", "#f8f8f2"),
+            (9, "#282a36", "#21222c", "#21222c"),
             (16, "#44475a", "#44475a", "#44475a"),
             (18, "#44475a", "#44475a", "#44475a"),
             (19, "#f8f8f2", "#f8f8f2", "#f8f8f2"),
             (19, "#f8f8f2", "#f8f8f2", "#f8f8f2"),
             (20, "#6272a4", "#6272a4", "#6272a4"),
-            ( 6, "#6272a4", "#f8f8f2", "#f8f8f2"),
-            ( 1, "#282a36", "#282a36", "#282a36"),
-            ( 8, "#6272a4", "#f8f8f2", "#f8f8f2"),
-            ( 7, "#44475a", "#44475a", "#44475a"),
-            ( 2, "#21222c", "#21222c", "#21222c"),
-            ( 3, "#343746", "#343746", "#343746"),
-            ( 4, "#6272a4", "#6272a4", "#6272a4"),
-            ( 5, "#44475a", "#44475a", "#44475a"),
+            (6, "#6272a4", "#f8f8f2", "#f8f8f2"),
+            (1, "#282a36", "#282a36", "#282a36"),
+            (8, "#6272a4", "#f8f8f2", "#f8f8f2"),
+            (7, "#44475a", "#44475a", "#44475a"),
+            (2, "#21222c", "#21222c", "#21222c"),
+            (3, "#343746", "#343746", "#343746"),
+            (4, "#6272a4", "#6272a4", "#6272a4"),
+            (5, "#44475a", "#44475a", "#44475a"),
             (11, "#191a21", "#191a21", "#191a21"),
             (12, "#44475a", "#6272a4", "#6272a4"),
             (13, "#21222c", "#f8f8f2", "#f8f8f2"),
@@ -908,23 +1057,23 @@ def getPalette(name):
             (15, "#ff79c6", "#ff79c6", "#ff79c6"),
         ],
         # One Dark - Atom editor theme
-        'one-dark': [
+        "one-dark": [
             (10, "#282c34", "#282c34", "#282c34"),
-            ( 0, "#5c6370", "#abb2bf", "#abb2bf"),
-            ( 9, "#282c34", "#21252b", "#21252b"),
+            (0, "#5c6370", "#abb2bf", "#abb2bf"),
+            (9, "#282c34", "#21252b", "#21252b"),
             (16, "#3e4452", "#3e4452", "#3e4452"),
             (18, "#3e4452", "#3e4452", "#3e4452"),
             (19, "#abb2bf", "#abb2bf", "#abb2bf"),
             (19, "#abb2bf", "#abb2bf", "#abb2bf"),
             (20, "#5c6370", "#5c6370", "#5c6370"),
-            ( 6, "#5c6370", "#abb2bf", "#abb2bf"),
-            ( 1, "#282c34", "#282c34", "#282c34"),
-            ( 8, "#5c6370", "#abb2bf", "#abb2bf"),
-            ( 7, "#3e4452", "#3e4452", "#3e4452"),
-            ( 2, "#21252b", "#21252b", "#21252b"),
-            ( 3, "#2c313a", "#2c313a", "#2c313a"),
-            ( 4, "#5c6370", "#5c6370", "#5c6370"),
-            ( 5, "#3e4452", "#3e4452", "#3e4452"),
+            (6, "#5c6370", "#abb2bf", "#abb2bf"),
+            (1, "#282c34", "#282c34", "#282c34"),
+            (8, "#5c6370", "#abb2bf", "#abb2bf"),
+            (7, "#3e4452", "#3e4452", "#3e4452"),
+            (2, "#21252b", "#21252b", "#21252b"),
+            (3, "#2c313a", "#2c313a", "#2c313a"),
+            (4, "#5c6370", "#5c6370", "#5c6370"),
+            (5, "#3e4452", "#3e4452", "#3e4452"),
             (11, "#181a1f", "#181a1f", "#181a1f"),
             (12, "#3e4452", "#528bff", "#528bff"),
             (13, "#21252b", "#ffffff", "#ffffff"),
@@ -932,23 +1081,23 @@ def getPalette(name):
             (15, "#c678dd", "#c678dd", "#c678dd"),
         ],
         # Material Dark - Google Material Design
-        'material-dark': [
+        "material-dark": [
             (10, "#1e1e1e", "#1e1e1e", "#1e1e1e"),
-            ( 0, "#616161", "#e0e0e0", "#e0e0e0"),
-            ( 9, "#1e1e1e", "#121212", "#121212"),
+            (0, "#616161", "#e0e0e0", "#e0e0e0"),
+            (9, "#1e1e1e", "#121212", "#121212"),
             (16, "#2c2c2c", "#2c2c2c", "#2c2c2c"),
             (18, "#2c2c2c", "#2c2c2c", "#2c2c2c"),
             (19, "#e0e0e0", "#e0e0e0", "#e0e0e0"),
             (19, "#e0e0e0", "#e0e0e0", "#e0e0e0"),
             (20, "#757575", "#757575", "#757575"),
-            ( 6, "#616161", "#e0e0e0", "#e0e0e0"),
-            ( 1, "#1e1e1e", "#1e1e1e", "#1e1e1e"),
-            ( 8, "#616161", "#e0e0e0", "#e0e0e0"),
-            ( 7, "#2c2c2c", "#2c2c2c", "#2c2c2c"),
-            ( 2, "#121212", "#121212", "#121212"),
-            ( 3, "#252525", "#252525", "#252525"),
-            ( 4, "#616161", "#616161", "#616161"),
-            ( 5, "#2c2c2c", "#2c2c2c", "#2c2c2c"),
+            (6, "#616161", "#e0e0e0", "#e0e0e0"),
+            (1, "#1e1e1e", "#1e1e1e", "#1e1e1e"),
+            (8, "#616161", "#e0e0e0", "#e0e0e0"),
+            (7, "#2c2c2c", "#2c2c2c", "#2c2c2c"),
+            (2, "#121212", "#121212", "#121212"),
+            (3, "#252525", "#252525", "#252525"),
+            (4, "#616161", "#616161", "#616161"),
+            (5, "#2c2c2c", "#2c2c2c", "#2c2c2c"),
             (11, "#0a0a0a", "#0a0a0a", "#0a0a0a"),
             (12, "#2c2c2c", "#bb86fc", "#bb86fc"),
             (13, "#121212", "#ffffff", "#ffffff"),

@@ -125,9 +125,15 @@ class DatasetConcreteBase(DatasetBase):
         """
         from .. import setting
         if isinstance(val, str):
-            val, ok = setting.uilocale.toDouble(val)
-            if ok: return val
-            raise ValueError("Invalid floating point number")
+            v, ok = setting.uilocale.toDouble(val)
+            if ok:
+                return v
+            # locale parse failed — try plain float for mixed-locale CSVs
+            # ("1.5" pasted into es_ES session)
+            try:
+                return float(val)
+            except ValueError:
+                raise ValueError("Invalid floating point number")
         return float(val)
 
     def uiDataItemToData(self, val):

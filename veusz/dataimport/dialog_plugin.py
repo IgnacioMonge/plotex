@@ -139,8 +139,9 @@ class ImportTabPlugins(importdialog.ImportTab):
         # check file exists
         if filename != '{clipboard}':
             try:
-                f = open(filename, 'r')
-                f.close()
+                with open(filename, 'r', encoding=encoding or 'utf-8',
+                          errors='replace'):
+                    pass
             except EnvironmentError:
                 self.pluginPreview.setPlainText('')
                 return False

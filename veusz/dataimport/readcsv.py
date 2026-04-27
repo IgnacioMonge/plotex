@@ -30,6 +30,7 @@ from .. import datasets
 from .. import utils
 from .. import qtall as qt
 
+
 class _FileReaderCols:
     """Read a CSV file in rows. This acts as an iterator.
 
@@ -55,9 +56,10 @@ class _FileReaderCols:
 
         # add blank columns up to maximum previously read
         self.maxlen = max(self.maxlen, len(row))
-        row = row + ['']*(self.maxlen - len(row))
+        row = row + [""] * (self.maxlen - len(row))
 
         return row
+
 
 class _FileReaderRows:
     """Read a CSV file in columns. This acts as an iterator.
@@ -93,26 +95,29 @@ class _FileReaderRows:
         retn = []
         for row in self.data:
             if self.counter >= len(row):
-                retn.append('')
+                retn.append("")
             else:
                 retn.append(row[self.counter])
 
         self.counter += 1
         return retn
 
+
 # list of codes which can be added to column descriptors
 typecodes = (
-    ('(string)', 'string'),
-    ('(text)', 'string'),
-    ('(date)', 'date'),
-    ('(time)', 'date'),
-    ('(float)', 'float'),
-    ('(numeric)', 'float'),
-    ('(number)', 'float'),
+    ("(string)", "string"),
+    ("(text)", "string"),
+    ("(date)", "date"),
+    ("(time)", "date"),
+    ("(float)", "float"),
+    ("(numeric)", "float"),
+    ("(number)", "float"),
 )
+
 
 class _NextValue(Exception):
     """A class to be raised to move to next value."""
+
 
 class ReadCSV:
     """A class to import data from CSV files."""
@@ -124,8 +129,7 @@ class ReadCSV:
 
         self.params = params
         self.numericlocale = qt.QLocale(params.numericlocale)
-        self.datere = re.compile(
-            utils.dateStrToRegularExpression(params.dateformat))
+        self.datere = re.compile(utils.dateStrToRegularExpression(params.dateformat))
 
         # created datasets. Each name is associated with a list
         self.data = {}
@@ -133,12 +137,11 @@ class ReadCSV:
     def _generateName(self, column):
         """Generate a name for a column."""
         if self.params.readrows:
-            prefix = 'row'
+            prefix = "row"
         else:
-            prefix = 'col'
+            prefix = "col"
 
-        name = '%s%s%i%s' % (
-            self.params.prefix, prefix, column+1, self.params.suffix)
+        name = "%s%s%i%s" % (self.params.prefix, prefix, column + 1, self.params.suffix)
         return name
 
     def _getNameAndColType(self, colnum, colval):
@@ -146,7 +149,7 @@ class ReadCSV:
 
         name = colval.strip()
 
-        if name in ('+', '-', '+-'):
+        if name in ("+", "-", "+-"):
             # loop to find previous valid column
             prevcol = colnum - 1
             while prevcol >= 0:
@@ -156,18 +159,18 @@ class ReadCSV:
                 if len(n) > 0 and n[-1] not in "+-":
                     # we add a \0 here so that there's no chance of the user
                     # using this as a column name
-                    name = n + '\0' + name
+                    name = n + "\0" + name
 
-                    if self.coltypes[prevcol] == 'unknown':
+                    if self.coltypes[prevcol] == "unknown":
                         # force previous column to float if this
                         # column is an error bar
-                        self.coltypes[prevcol] = 'float'
-                    elif self.coltypes[prevcol] != 'float':
+                        self.coltypes[prevcol] = "float"
+                    elif self.coltypes[prevcol] != "float":
                         # we can't treat this as an error bar if the
                         # previous column is not numeric
                         break
 
-                    return 'float', name
+                    return "float", name
                 prevcol -= 1
 
             # did not find anything
@@ -175,18 +178,18 @@ class ReadCSV:
 
         # examine whether object type is at end of name
         # convert, and remove, if is
-        dtype = 'unknown'
+        dtype = "unknown"
         for codename, codetype in typecodes:
-            if name[-len(codename):] == codename:
+            if name[-len(codename) :] == codename:
                 dtype = codetype
-                name = name[:-len(codename)].strip()
+                name = name[: -len(codename)].strip()
                 break
         return dtype, self.params.prefix + name + self.params.suffix
 
     def _setNameAndType(self, colnum, colname, coltype):
         """Set a name for column number given column name and type."""
         while colnum >= len(self.coltypes):
-            self.coltypes.append('')
+            self.coltypes.append("")
 
         if colname in self.nametypes:
             # if there is an existing dataset with the same name,
@@ -206,53 +209,51 @@ class ReadCSV:
         """Guess type for new dataset."""
         v, ok = self.numericlocale.toDouble(val)
         if ok:
-            return 'float'
+            return "float"
         # fallback: try Python float() for common formats (e.g. '1.5' in es_ES locale)
         try:
             float(val)
-            return 'float'
+            return "float"
         except (ValueError, TypeError):
             pass
         m = self.datere.match(val)
+        if m is None:
+            return "string"
         try:
             utils.dateREMatchToDate(m)
-            return 'date'
+            return "date"
         except ValueError:
-            return 'string'
+            return "string"
 
     def _newValueInBlankColumn(self, colnum, col):
-        """Handle occurance of new data value in previously blank column.
-        """
+        """Handle occurance of new data value in previously blank column."""
 
-        if self.params.headermode == '1st':
+        if self.params.headermode == "1st":
             # just use name of column as title in 1st header mode
             coltype, name = self._getNameAndColType(colnum, col)
             self._setNameAndType(colnum, name.strip(), coltype)
             raise _NextValue()
-        elif self.params.headermode == 'none':
+        elif self.params.headermode == "none":
             # no header, so just start a new data set
             dtype = self._guessType(col)
-            self._setNameAndType(
-                colnum, self._generateName(colnum), dtype)
+            self._setNameAndType(colnum, self._generateName(colnum), dtype)
         else:
             # see whether it looks like data, not a header
             dtype = self._guessType(col)
-            if dtype == 'string':
+            if dtype == "string":
                 # use text as dataset name
                 coltype, name = self._getNameAndColType(colnum, col)
                 self._setNameAndType(colnum, name.strip(), coltype)
                 raise _NextValue()
             else:
                 # use guessed data type and generated name
-                self._setNameAndType(
-                    colnum, self._generateName(colnum), dtype)
+                self._setNameAndType(colnum, self._generateName(colnum), dtype)
 
     def _newUnknownDataValue(self, colnum, col):
-        """Process data value if data type is unknown.
-        """
+        """Process data value if data type is unknown."""
 
         # blank value
-        if col.strip() == '':
+        if col.strip() == "":
             if self.params.blanksaredata:
                 # keep track of blanks above autodetected data
                 self.colblanks[colnum] += 1
@@ -265,20 +266,20 @@ class ReadCSV:
         self.coltypes[colnum] = dtype
 
         # add back on blanks if necessary with correct format
+        blank = "" if dtype == "string" else N.nan
         for i in range(self.colblanks[colnum]):
-            d = (N.nan, '')[dtype == 'string']
-            self.data[self.colnames[colnum]].append(d)
+            self.data[self.colnames[colnum]].append(blank)
         self.colblanks[colnum] = 0
 
     def _handleFailedConversion(self, colnum, col):
         """If conversion from text to data type fails."""
-        if col.strip() == '':
+        if col.strip() == "":
             # skip blanks unless blanksaredata is set
             if self.params.blanksaredata:
                 # assumes a numeric data type
                 self.data[self.colnames[colnum]].append(N.nan)
         else:
-            if self.params.headermode == '1st':
+            if self.params.headermode == "1st":
                 # no more headers, so fill with invalid number
                 self.data[self.colnames[colnum]].append(N.nan)
             else:
@@ -294,7 +295,7 @@ class ReadCSV:
 
         if colnum not in self.colnames:
             # ignore blanks
-            if col.strip() == '':
+            if col.strip() == "":
                 return
             # process value
             self._newValueInBlankColumn(colnum, col)
@@ -305,21 +306,21 @@ class ReadCSV:
             return
 
         # process value if data type unknown
-        if self.coltypes[colnum] == 'unknown':
+        if self.coltypes[colnum] == "unknown":
             self._newUnknownDataValue(colnum, col)
 
         ctype = self.coltypes[colnum]
         try:
             # convert text to data type of column
-            if ctype == 'float':
+            if ctype == "float":
                 v, ok = self.numericlocale.toDouble(col)
                 if not ok:
                     # fallback: try Python float()
                     v = float(col)
-            elif ctype == 'date':
+            elif ctype == "date":
                 m = self.datere.match(col)
                 v = utils.dateREMatchToDate(m)
-            elif ctype == 'string':
+            elif ctype == "string":
                 v = col
             else:
                 raise RuntimeError("Invalid type in CSV reader")
@@ -342,7 +343,8 @@ class ReadCSV:
             delimiter=par.delimiter,
             quotechar=par.textdelimiter,
             skipinitialspace=par.skipwhitespace,
-            encoding=par.encoding )
+            encoding=par.encoding,
+        )
 
         # make in iterator for the file
         if par.readrows:
@@ -389,31 +391,43 @@ class ReadCSV:
         for name in self.data:
             # skip error data here, they are used below
             # error data name contains \0
-            if name.find('\0') >= 0:
+            if name.find("\0") >= 0:
                 continue
 
             # get data and errors (if any)
             data = []
-            for k in (name, name+'\0+-', name+'\0+', name+'\0-'):
-                data.append( self.data.get(k, None) )
+            for k in (name, name + "\0+-", name + "\0+", name + "\0-"):
+                data.append(self.data.get(k, None))
 
             # make them have a maximum length by adding NaNs
-            maxlen = max([len(x) for x in data if x is not None])
+            lengths = [len(x) for x in data if x is not None]
+            if not lengths:
+                # no data found for this name; skip
+                continue
+            maxlen = max(lengths)
             for i in range(len(data)):
                 if data[i] is not None and len(data[i]) < maxlen:
+                    # ``N.full`` writes NaN directly; ``N.zeros() * N.nan``
+                    # allocated, then iterated to multiply — twice the
+                    # work for the same result.
                     data[i] = N.concatenate(
-                        ( data[i], N.zeros(maxlen-len(data[i]))*N.nan ) )
+                        (data[i], N.full(maxlen - len(data[i]), N.nan))
+                    )
 
             # create dataset
             dstype = self.nametypes[name]
-            if dstype == 'string':
+            if dstype == "string":
                 ds = datasets.DatasetText(data=data[0], linked=linkedfile)
-            elif dstype == 'date':
+            elif dstype == "date":
                 ds = datasets.DatasetDateTime(data=data[0], linked=linkedfile)
             else:
                 ds = datasets.Dataset(
-                    data=data[0], serr=data[1], perr=data[2], nerr=data[3],
-                    linked=linkedfile)
+                    data=data[0],
+                    serr=data[1],
+                    perr=data[2],
+                    nerr=data[3],
+                    linked=linkedfile,
+                )
 
             outmap[name] = ds
 

@@ -8,7 +8,8 @@
 
 from .. import qtall as qt
 
-def _(text, disambiguation=None, context='CommandPalette'):
+
+def _(text, disambiguation=None, context="CommandPalette"):
     return qt.QCoreApplication.translate(context, text, disambiguation)
 
 
@@ -17,9 +18,16 @@ class CommandPalette(qt.QDialog):
 
     def __init__(self, actions, parent=None):
         """actions: dict of name → QAction."""
-        qt.QDialog.__init__(self, parent,
-            qt.Qt.WindowType.Popup | qt.Qt.WindowType.FramelessWindowHint)
+        qt.QDialog.__init__(
+            self, parent, qt.Qt.WindowType.Popup | qt.Qt.WindowType.FramelessWindowHint
+        )
         self.setAttribute(qt.Qt.WidgetAttribute.WA_TranslucentBackground)
+        # Popup auto-closes on focus loss but Qt keeps the widget alive
+        # until the parent is destroyed. WA_DeleteOnClose releases the
+        # palette + its captured QAction references promptly so a stale
+        # action (deleted after a tab change, etc.) cannot be invoked
+        # later.
+        self.setAttribute(qt.Qt.WidgetAttribute.WA_DeleteOnClose)
 
         self._actions = {}
         for name, act in actions.items():
@@ -27,7 +35,7 @@ class CommandPalette(qt.QDialog):
                 self._actions[name] = act
 
         self._setupUI()
-        self._populateList('')
+        self._populateList("")
 
     def _setupUI(self):
         layout = qt.QVBoxLayout(self)
@@ -36,7 +44,7 @@ class CommandPalette(qt.QDialog):
 
         # container with rounded corners and shadow
         container = qt.QFrame(self)
-        container.setObjectName('paletteContainer')
+        container.setObjectName("paletteContainer")
         container.setStyleSheet("""
             #paletteContainer {
                 background: white;
@@ -50,7 +58,7 @@ class CommandPalette(qt.QDialog):
 
         # search input
         self._search = qt.QLineEdit()
-        self._search.setPlaceholderText(_('Type a command...'))
+        self._search.setPlaceholderText(_("Type a command..."))
         self._search.setStyleSheet("""
             QLineEdit {
                 border: 1px solid #ddd;
@@ -101,21 +109,20 @@ class CommandPalette(qt.QDialog):
         self._matches = []
         ft = filtertext.strip().lower()
 
-        for name, act in sorted(self._actions.items(),
-                                key=lambda x: x[1].text()):
-            text = act.text().replace('&', '')
+        for name, act in sorted(self._actions.items(), key=lambda x: x[1].text()):
+            text = act.text().replace("&", "")
             shortcut = act.shortcut().toString()
-            tooltip = act.toolTip() or ''
+            tooltip = act.toolTip() or ""
 
             # match against text, name, tooltip
-            searchable = (text + ' ' + name + ' ' + tooltip).lower()
+            searchable = (text + " " + name + " " + tooltip).lower()
             if ft and ft not in searchable:
                 continue
 
             # display text
             display = text
             if shortcut:
-                display += '    %s' % shortcut
+                display += "    %s" % shortcut
 
             item = qt.QListWidgetItem(display)
             if act.icon() and not act.icon().isNull():

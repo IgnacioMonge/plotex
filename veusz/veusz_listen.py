@@ -36,6 +36,7 @@ from . import qtall as qt
 
 from .windows.simplewindow import SimpleWindow
 from . import document
+from .document.commandinterpreter import serialize_json_result
 
 class ReadingThread(qt.QThread):
     """Stdin reading thread. Emits newline signals with new data.
@@ -148,14 +149,7 @@ class InputListener(qt.QObject):
             except Exception as e:
                 retn = e
 
-            if isinstance(retn, Exception):
-                result = json.dumps({
-                    '__exception__': True,
-                    'type': type(retn).__name__,
-                    'message': str(retn),
-                })
-            else:
-                result = json.dumps({'result': retn})
+            result = serialize_json_result(retn)
 
             sys.stdout.write(result + '\n')
             sys.stdout.flush()

@@ -30,23 +30,25 @@ from .. import qtall as qt
 from . import plotters
 from . import controlgraph
 
-def _(text, disambiguation=None, context='TextLabel'):
+
+def _(text, disambiguation=None, context="TextLabel"):
     """Translate text."""
     return qt.QCoreApplication.translate(context, text, disambiguation)
 
+
 class BorderLine(setting.Line):
-    '''Plot line around text.'''
+    """Plot line around text."""
 
     def __init__(self, name, **args):
         setting.Line.__init__(self, name, **args)
-        self.get('hide').newDefault(True)
+        self.get("hide").newDefault(True)
+
 
 class TextLabel(plotters.FreePlotter):
-
     """Add a text label to a graph."""
 
-    typename = 'label'
-    description = _('Text label')
+    typename = "label"
+    description = _("Text label")
     allowusercreation = True
 
     @classmethod
@@ -54,62 +56,88 @@ class TextLabel(plotters.FreePlotter):
         """Construct list of settings."""
         plotters.FreePlotter.addSettings(s)
 
-        s.add( setting.DatasetOrStr(
-            'label', '',
-            descr=_('Text to show or text dataset'),
-            usertext=_('Label')), 0 )
+        s.add(
+            setting.DatasetOrStr(
+                "label",
+                "",
+                descr=_("Text to show or text dataset"),
+                usertext=_("Label"),
+            ),
+            0,
+        )
 
-        s.add( setting.AlignHorz(
-            'alignHorz',
-            'left',
-            descr=_('Horizontal alignment of label'),
-            usertext=_('Horz alignment'),
-            formatting=True), 7)
-        s.add( setting.AlignVert(
-            'alignVert',
-            'bottom',
-            descr=_('Vertical alignment of label'),
-            usertext=_('Vert alignment'),
-            formatting=True), 8)
+        s.add(
+            setting.AlignHorz(
+                "alignHorz",
+                "left",
+                descr=_("Horizontal alignment of label"),
+                usertext=_("Horz alignment"),
+                formatting=True,
+            ),
+            7,
+        )
+        s.add(
+            setting.AlignVert(
+                "alignVert",
+                "bottom",
+                descr=_("Vertical alignment of label"),
+                usertext=_("Vert alignment"),
+                formatting=True,
+            ),
+            8,
+        )
 
-        s.add( setting.Float(
-            'angle', 0.,
-            descr=_('Angle of the label in degrees'),
-            usertext=_('Angle'),
-            formatting=True), 9 )
+        s.add(
+            setting.Float(
+                "angle",
+                0.0,
+                descr=_("Angle of the label in degrees"),
+                usertext=_("Angle"),
+                formatting=True,
+            ),
+            9,
+        )
 
-        s.add( setting.DistancePt(
-            'margin',
-            '4pt',
-            descr=_('Margin of fill/border'),
-            usertext=_('Margin'),
-            formatting=True), 10 )
+        s.add(
+            setting.DistancePt(
+                "margin",
+                "4pt",
+                descr=_("Margin of fill/border"),
+                usertext=_("Margin"),
+                formatting=True,
+            ),
+            10,
+        )
 
-        s.add( setting.Bool(
-            'clip', False,
-            descr=_('Clip text to its container'),
-            usertext=_('Clip'),
-            formatting=True), 11 )
+        s.add(
+            setting.Bool(
+                "clip",
+                False,
+                descr=_("Clip text to its container"),
+                usertext=_("Clip"),
+                formatting=True,
+            ),
+            11,
+        )
 
-        s.add( setting.Text(
-            'Text',
-            descr=_('Text settings'),
-            usertext=_('Text')),
-            pixmap='settings_axislabel' )
-        s.add( setting.ShapeFill(
-            'Background',
-            descr=_('Fill behind text'),
-            usertext=_('Background')),
-            pixmap='settings_bgfill' )
-        s.add( BorderLine(
-            'Border',
-            descr=_('Border around text'),
-            usertext=_('Border')),
-            pixmap='settings_border' )
+        s.add(
+            setting.Text("Text", descr=_("Text settings"), usertext=_("Text")),
+            pixmap="settings_axislabel",
+        )
+        s.add(
+            setting.ShapeFill(
+                "Background", descr=_("Fill behind text"), usertext=_("Background")
+            ),
+            pixmap="settings_bgfill",
+        )
+        s.add(
+            BorderLine("Border", descr=_("Border around text"), usertext=_("Border")),
+            pixmap="settings_border",
+        )
 
     # convert text to alignments used by Renderer
-    cnvtalignhorz = { 'left': -1, 'centre': 0, 'right': 1 }
-    cnvtalignvert = { 'top': 1, 'centre': 0, 'bottom': -1 }
+    cnvtalignhorz = {"left": -1, "centre": 0, "right": 1}
+    cnvtalignvert = {"top": 1, "centre": 0, "bottom": -1}
 
     @property
     def userdescription(self):
@@ -117,7 +145,7 @@ class TextLabel(plotters.FreePlotter):
         s = self.settings
         return _("text='%s'") % s.label
 
-    def draw(self, posn, phelper, outerbounds = None):
+    def draw(self, posn, phelper, outerbounds=None):
         """Draw the text label."""
 
         s = self.settings
@@ -127,7 +155,7 @@ class TextLabel(plotters.FreePlotter):
         if s.hide or s.Text.hide:
             return
 
-        text = s.get('label').getData(d)
+        text = s.get("label").getData(d)
 
         xp, yp = self._getPlotterCoords(posn)
         if xp is None or yp is None:
@@ -136,8 +164,7 @@ class TextLabel(plotters.FreePlotter):
 
         clip = None
         if s.clip:
-            clip = qt.QRectF(
-                qt.QPointF(posn[0], posn[1]), qt.QPointF(posn[2], posn[3]))
+            clip = qt.QRectF(qt.QPointF(posn[0], posn[1]), qt.QPointF(posn[2], posn[3]))
 
         borderorfill = not s.Border.hide or not s.Background.hide
 
@@ -153,32 +180,35 @@ class TextLabel(plotters.FreePlotter):
 
         painter = phelper.painter(self, drawposn, clip=clip)
         with painter:
-            textpen = s.get('Text').makeQPen(painter)
+            textpen = s.get("Text").makeQPen(painter)
             painter.setPen(textpen)
-            font = s.get('Text').makeQFont(painter)
-            margin = s.get('margin').convert(painter)
+            font = s.get("Text").makeQFont(painter)
+            margin = s.get("margin").convert(painter)
 
             # we should only be able to move non-dataset labels
-            isnotdataset = (
-                not s.get('xPos').isDataset(d) and
-                not s.get('yPos').isDataset(d) )
+            isnotdataset = not s.get("xPos").isDataset(d) and not s.get(
+                "yPos"
+            ).isDataset(d)
 
             controlgraphitems = []
-            for index, (x, y, t) in enumerate(zip(
-                    xp, yp, itertools.cycle(text))):
+            for index, (x, y, t) in enumerate(zip(xp, yp, itertools.cycle(text))):
                 # render the text
 
                 dx = dy = 0
                 if borderorfill:
-                    dx = -TextLabel.cnvtalignhorz[s.alignHorz]*margin
-                    dy =  TextLabel.cnvtalignvert[s.alignVert]*margin
+                    dx = -TextLabel.cnvtalignhorz[s.alignHorz] * margin
+                    dy = TextLabel.cnvtalignvert[s.alignVert] * margin
 
                 r = utils.Renderer(
-                    painter, font, x+dx, y+dy, t,
+                    painter,
+                    font,
+                    x + dx,
+                    y + dy,
+                    t,
                     TextLabel.cnvtalignhorz[s.alignHorz],
                     TextLabel.cnvtalignvert[s.alignVert],
                     s.angle,
-                    doc=d
+                    doc=d,
                 )
 
                 tbounds = r.getBounds()
@@ -190,34 +220,38 @@ class TextLabel(plotters.FreePlotter):
                     min(sb[0], tbounds[0]),
                     min(sb[1], tbounds[1]),
                     max(sb[2], tbounds[2]),
-                    max(sb[3], tbounds[3]))
+                    max(sb[3], tbounds[3]),
+                )
 
                 if borderorfill:
                     # draw rotated background/border aligned with text
                     totalwidth, totalheight, dy = r._getWidthHeight()
-                    painter.save()
-                    painter.translate(r.xi, r.yi)
-                    if s.angle != 0:
-                        painter.rotate(s.angle)
-                    # text draws from (0,0) baseline: ascends -totalheight,
-                    # descends +dy
-                    bgrect = qt.QRectF(
-                        -margin, -totalheight - margin,
-                        totalwidth + 2*margin,
-                        totalheight + dy + 2*margin)
-                    bgpath = qt.QPainterPath()
-                    bgpath.addRect(bgrect)
-                    pen = s.get('Border').makeQPenWHide(painter)
-                    utils.brushExtFillPath(
-                        painter, s.Background, bgpath, stroke=pen)
-                    painter.restore()
+                    with utils.painter_state(painter):
+                        painter.translate(r.xi, r.yi)
+                        if s.angle != 0:
+                            painter.rotate(s.angle)
+                        # text draws from (0,0) baseline: ascends -totalheight,
+                        # descends +dy
+                        bgrect = qt.QRectF(
+                            -margin,
+                            -totalheight - margin,
+                            totalwidth + 2 * margin,
+                            totalheight + dy + 2 * margin,
+                        )
+                        bgpath = qt.QPainterPath()
+                        bgpath.addRect(bgrect)
+                        pen = s.get("Border").makeQPenWHide(painter)
+                        utils.brushExtFillPath(
+                            painter, s.Background, bgpath, stroke=pen
+                        )
 
                 r.render()
 
                 # add cgi for adjustable positions
                 if isnotdataset:
-                    cgi = controlgraph.ControlMovableBox(self, tbounds, phelper,
-                                                         crosspos = (x, y))
+                    cgi = controlgraph.ControlMovableBox(
+                        self, tbounds, phelper, crosspos=(x, y)
+                    )
                     cgi.labelpt = (x, y)
                     cgi.widgetposn = posn
                     cgi.index = index
@@ -229,20 +263,22 @@ class TextLabel(plotters.FreePlotter):
         """Update position of point given new name and vals."""
 
         s = self.settings
-        pointsX = list(s.xPos)   # make a copy here so original is not modifed
+        pointsX = list(s.xPos)  # make a copy here so original is not modifed
         pointsY = list(s.yPos)
         ind = cgi.index
 
         # calculate new position coordinate for item
         xpos, ypos = self._getGraphCoords(
             cgi.widgetposn,
-            cgi.deltacrosspos[0]+cgi.posn[0],
-            cgi.deltacrosspos[1]+cgi.posn[1])
+            cgi.deltacrosspos[0] + cgi.posn[0],
+            cgi.deltacrosspos[1] + cgi.posn[1],
+        )
         # this is a small distance away to get delta
         xposd, yposd = self._getGraphCoords(
             cgi.widgetposn,
-            cgi.deltacrosspos[0]+cgi.posn[0]+1,
-            cgi.deltacrosspos[1]+cgi.posn[1]+1)
+            cgi.deltacrosspos[0] + cgi.posn[0] + 1,
+            cgi.deltacrosspos[1] + cgi.posn[1] + 1,
+        )
         if xpos is None or ypos is None:
             return
 
@@ -251,11 +287,13 @@ class TextLabel(plotters.FreePlotter):
 
         pointsX[ind], pointsY[ind] = roundx, roundy
         operations = (
-            document.OperationSettingSet(s.get('xPos'), pointsX),
-            document.OperationSettingSet(s.get('yPos'), pointsY)
+            document.OperationSettingSet(s.get("xPos"), pointsX),
+            document.OperationSettingSet(s.get("yPos"), pointsY),
         )
         self.document.applyOperation(
-            document.OperationMultiple(operations, descr=_('move label')) )
+            document.OperationMultiple(operations, descr=_("move label"))
+        )
+
 
 # allow the factory to instantiate a text label
 document.thefactory.register(TextLabel)

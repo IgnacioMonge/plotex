@@ -1303,6 +1303,10 @@ def makeColorbarImage(minval, maxval, scaling, cmap, transparency,
                       direction='horizontal', barsize=128):
     """Make a colorbar for the scaling given."""
 
+    # guard degenerate sizes to avoid div/0
+    if barsize < 2:
+        barsize = 2
+
     if scaling in ('linear', 'sqrt', 'squared'):
         # do a linear color scaling
         vals = N.arange(barsize)/(barsize-1.0)*(maxval-minval) + minval
@@ -1393,11 +1397,24 @@ def _import_rgb_txt(filename):
                 a = float(parts[3]) if len(parts) > 3 else 1.0
             except ValueError:
                 continue
-            # detect if values are 0-1 or 0-255
-            if r <= 1.0 and g <= 1.0 and b <= 1.0 and r >= 0 and g >= 0 and b >= 0:
-                r, g, b, a = int(r*255), int(g*255), int(b*255), int(a*255)
+            # detect if values are 0-1 or 0-255:
+            # any component > 1 unambiguously means the 0-255 scale
+            is_0_255 = max(r, g, b) > 1.0 or (
+                len(parts) > 3 and a > 1.0)
+            if is_0_255:
+                r = max(0, min(255, int(round(r))))
+                g = max(0, min(255, int(round(g))))
+                b = max(0, min(255, int(round(b))))
+                # alpha column present on 0-255 scale; default opaque
+                a = max(0, min(255, int(round(a)))) \
+                    if len(parts) > 3 else 255
             else:
-                r, g, b, a = int(r), int(g), int(b), int(a) if a > 1 else 255
+                # 0-1 normalized; clamp out-of-range values from bad files
+                r = max(0, min(255, int(round(max(0.0, min(1.0, r)) * 255))))
+                g = max(0, min(255, int(round(max(0.0, min(1.0, g)) * 255))))
+                b = max(0, min(255, int(round(max(0.0, min(1.0, b)) * 255))))
+                a = max(0, min(255, int(round(
+                    max(0.0, min(1.0, a)) * 255))))
             lines.append((b, g, r, a))  # BGRA for Veusz
 
     if not lines:

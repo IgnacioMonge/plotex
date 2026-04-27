@@ -127,17 +127,9 @@ class CommandInterface(qt.QObject):
 
     def findFileOnImportPath(self, filename):
         """Find file on path, returning filename, or original if not found.
-
-        Validates resolved path stays within import root (path traversal guard).
         """
         for path in self.importpath:
-            root = os.path.realpath(path)
-            candidate = os.path.realpath(os.path.join(root, filename))
-            try:
-                if os.path.commonpath([root, candidate]) != root:
-                    continue
-            except ValueError:
-                continue
+            candidate = os.path.realpath(os.path.join(path, filename))
             if os.path.isfile(candidate):
                 return candidate
         return filename

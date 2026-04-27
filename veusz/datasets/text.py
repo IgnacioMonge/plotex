@@ -39,7 +39,10 @@ class DatasetText(DatasetConcreteBase):
         """Initialise dataset with data given. Data are a list of strings."""
 
         DatasetConcreteBase.__init__(self, linked=linked)
-        self.data = list(data)
+        # coerce every item to str so save/reload round-trips cleanly
+        self.data = [
+            x if isinstance(x, str) else str(x) for x in data
+        ] if data is not None else []
 
     def description(self):
         return _('Text (length %i)') % len(self.data)

@@ -14,7 +14,8 @@ from .. import qtall as qt
 from .. import utils
 from .exceptiondialog import versionHeader
 
-def _(text, disambiguation=None, context='AboutDialog'):
+
+def _(text, disambiguation=None, context="AboutDialog"):
     return qt.QCoreApplication.translate(context, text, disambiguation)
 
 
@@ -26,8 +27,8 @@ class AboutDialog(qt.QDialog):
     def __init__(self, mainwindow):
         super().__init__(mainwindow)
         self.setWindowFlags(
-            qt.Qt.WindowType.Dialog |
-            qt.Qt.WindowType.FramelessWindowHint)
+            qt.Qt.WindowType.Dialog | qt.Qt.WindowType.FramelessWindowHint
+        )
         self.setAttribute(qt.Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setFixedWidth(420)
 
@@ -39,10 +40,11 @@ class AboutDialog(qt.QDialog):
     def paintEvent(self, event):
         p = qt.QPainter(self)
         p.setRenderHint(qt.QPainter.RenderHint.Antialiasing)
-        p.setBrush(qt.QColor('#1a1a2e'))
-        p.setPen(qt.QPen(qt.QColor('#2a2a4a'), 1))
-        p.drawRoundedRect(self.rect().adjusted(1, 1, -1, -1),
-                          self._radius, self._radius)
+        p.setBrush(qt.QColor("#1a1a2e"))
+        p.setPen(qt.QPen(qt.QColor("#2a2a4a"), 1))
+        p.drawRoundedRect(
+            self.rect().adjusted(1, 1, -1, -1), self._radius, self._radius
+        )
         p.end()
 
     def _buildUI(self):
@@ -52,11 +54,13 @@ class AboutDialog(qt.QDialog):
 
         # logo
         logo = qt.QLabel()
-        pix = utils.getPixmap('plotex_logo.png')
+        pix = utils.getPixmap("plotex_logo.png")
         scaled = pix.scaled(
-            120, 120,
+            120,
+            120,
             qt.Qt.AspectRatioMode.KeepAspectRatio,
-            qt.Qt.TransformationMode.SmoothTransformation)
+            qt.Qt.TransformationMode.SmoothTransformation,
+        )
         logo.setPixmap(scaled)
         logo.setAlignment(qt.Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(logo)
@@ -64,7 +68,7 @@ class AboutDialog(qt.QDialog):
         layout.addSpacing(14)
 
         # app name
-        title = qt.QLabel('Plotex')
+        title = qt.QLabel("Plotex")
         title.setAlignment(qt.Qt.AlignmentFlag.AlignCenter)
         title.setStyleSheet(
             "color: #e0e0e0;"
@@ -78,13 +82,9 @@ class AboutDialog(qt.QDialog):
         layout.addSpacing(4)
 
         # version
-        ver = qt.QLabel('v%s' % utils.version())
+        ver = qt.QLabel("v%s" % utils.version())
         ver.setAlignment(qt.Qt.AlignmentFlag.AlignCenter)
-        ver.setStyleSheet(
-            "color: #6a6a8a;"
-            "font-size: 12px;"
-            "background: transparent;"
-        )
+        ver.setStyleSheet("color: #6a6a8a;font-size: 12px;background: transparent;")
         layout.addWidget(ver)
 
         layout.addSpacing(16)
@@ -98,54 +98,43 @@ class AboutDialog(qt.QDialog):
         layout.addSpacing(14)
 
         # author
-        author = qt.QLabel('M. Ignacio Monge Garc\u00eda')
+        author = qt.QLabel("M. Ignacio Monge Garc\u00eda")
         author.setAlignment(qt.Qt.AlignmentFlag.AlignCenter)
-        author.setStyleSheet(
-            "color: #c0c0d8;"
-            "font-size: 11px;"
-            "background: transparent;"
-        )
+        author.setStyleSheet("color: #c0c0d8;font-size: 11px;background: transparent;")
         layout.addWidget(author)
 
         layout.addSpacing(4)
 
         # credits
-        credits = qt.QLabel(
-            _('Based on Veusz by Jeremy Sanders'))
+        credits = qt.QLabel(_("Based on Veusz by Jeremy Sanders"))
         credits.setAlignment(qt.Qt.AlignmentFlag.AlignCenter)
-        credits.setStyleSheet(
-            "color: #5a5a7a;"
-            "font-size: 10px;"
-            "background: transparent;"
-        )
+        credits.setStyleSheet("color: #5a5a7a;font-size: 10px;background: transparent;")
         layout.addWidget(credits)
 
         layout.addSpacing(6)
 
         # build date
         builddate = qt.QLabel(
-            _('Build: %s') % datetime.date.today().strftime('%Y-%m-%d'))
+            _("Build: %s") % datetime.date.today().strftime("%Y-%m-%d")
+        )
         builddate.setAlignment(qt.Qt.AlignmentFlag.AlignCenter)
         builddate.setStyleSheet(
-            "color: #4a4a6a;"
-            "font-size: 9px;"
-            "background: transparent;"
+            "color: #4a4a6a;font-size: 9px;background: transparent;"
         )
         layout.addWidget(builddate)
 
         layout.addSpacing(4)
 
-        # github link
+        # github link — Plotex repo (fork of upstream Veusz; upstream
+        # attribution is given separately in the credits section below)
         ghlink = qt.QLabel(
-            '<a href="https://github.com/veusz/veusz"'
+            '<a href="https://github.com/IgnacioMonge/plotex"'
             ' style="color: #88c0d0; text-decoration: none;">'
-            'github.com/veusz/veusz</a>')
+            "github.com/IgnacioMonge/plotex</a>"
+        )
         ghlink.setAlignment(qt.Qt.AlignmentFlag.AlignCenter)
         ghlink.setOpenExternalLinks(True)
-        ghlink.setStyleSheet(
-            "font-size: 9px;"
-            "background: transparent;"
-        )
+        ghlink.setStyleSheet("font-size: 9px;background: transparent;")
         layout.addWidget(ghlink)
 
         layout.addSpacing(12)
@@ -159,13 +148,9 @@ class AboutDialog(qt.QDialog):
         layout.addSpacing(8)
 
         # license
-        lic = qt.QLabel(_('GNU General Public License v2+'))
+        lic = qt.QLabel(_("GNU General Public License v2+"))
         lic.setAlignment(qt.Qt.AlignmentFlag.AlignCenter)
-        lic.setStyleSheet(
-            "color: #4a4a6a;"
-            "font-size: 9px;"
-            "background: transparent;"
-        )
+        lic.setStyleSheet("color: #4a4a6a;font-size: 9px;background: transparent;")
         layout.addWidget(lic)
 
         layout.addSpacing(16)
@@ -192,12 +177,12 @@ class AboutDialog(qt.QDialog):
             }
         """
 
-        versbtn = qt.QPushButton(_('Versions'))
+        versbtn = qt.QPushButton(_("Versions"))
         versbtn.setStyleSheet(btnstyle)
         versbtn.clicked.connect(self._showVersions)
         btnrow.addWidget(versbtn)
 
-        licbtn = qt.QPushButton(_('License'))
+        licbtn = qt.QPushButton(_("License"))
         licbtn.setStyleSheet(btnstyle)
         licbtn.clicked.connect(self._showLicense)
         btnrow.addWidget(licbtn)
@@ -220,7 +205,7 @@ class AboutDialog(qt.QDialog):
             }
         """
 
-        closebtn = qt.QPushButton(_('Close'))
+        closebtn = qt.QPushButton(_("Close"))
         closebtn.setStyleSheet(closestyle)
         closebtn.clicked.connect(self.accept)
         closebtn.setDefault(True)
@@ -232,7 +217,8 @@ class AboutDialog(qt.QDialog):
         """Show software version info."""
         text = versionHeader()
         dlg = qt.QMessageBox(self)
-        dlg.setWindowTitle(_('Software Versions'))
+        dlg.setAttribute(qt.Qt.WidgetAttribute.WA_DeleteOnClose)
+        dlg.setWindowTitle(_("Software Versions"))
         dlg.setText(text)
         dlg.exec()
 
@@ -240,14 +226,15 @@ class AboutDialog(qt.QDialog):
         """Show license text."""
         text = utils.getLicense()
         dlg = qt.QDialog(self)
-        dlg.setWindowTitle(_('License'))
+        dlg.setAttribute(qt.Qt.WidgetAttribute.WA_DeleteOnClose)
+        dlg.setWindowTitle(_("License"))
         dlg.resize(500, 400)
         lay = qt.QVBoxLayout(dlg)
         te = qt.QPlainTextEdit(dlg)
         te.setPlainText(text)
         te.setReadOnly(True)
         lay.addWidget(te)
-        btn = qt.QPushButton(_('Close'))
+        btn = qt.QPushButton(_("Close"))
         btn.clicked.connect(dlg.accept)
         lay.addWidget(btn, alignment=qt.Qt.AlignmentFlag.AlignRight)
         dlg.exec()

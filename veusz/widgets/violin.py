@@ -515,13 +515,9 @@ class ViolinPlot(GenericPlotter):
                     area = 1.0
                 scales.append(1.0 / area if area > 0 else 1.0)
 
-            if common:
-                # common: use same scale for all
-                max_sd = max(
-                    sc * d.max() for sc, d in zip(scales, densities))
-                if max_sd > 0:
-                    scales = [sc / max_sd for sc in scales]
-            else:
+            # normalize so the widest violin has unit scale;
+            # common/non-common produced identical results here
+            if densities:
                 max_sd = max(
                     sc * d.max() for sc, d in zip(scales, densities))
                 if max_sd > 0:

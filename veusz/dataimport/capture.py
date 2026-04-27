@@ -19,21 +19,32 @@
 ##############################################################################
 
 import select
+import shlex
 import subprocess
 import os
 import socket
 import platform
 import signal
+import threading
 
 from .. import qtall as qt
 from .. import utils
 from . import simpleread
 
+# Hard cap on the buffered, unflushed bytes of any single capture stream.
+# A producer that never emits a newline could otherwise grow self.buffer
+# without bound and exhaust memory. 16 MiB is well above any plausible
+# single-line measurement payload.
+_MAX_BUFFER_BYTES = 16 * 1024 * 1024
+
+
 def _(text, disambiguation=None, context="Capture"):
     return qt.QCoreApplication.translate(context, text, disambiguation)
 
+
 class CaptureFinishException(Exception):
     """An exception to say when a stream has been finished."""
+
 
 class CaptureStream(simpleread.Stream):
     """A special stream for capturing data."""
@@ -42,7 +53,7 @@ class CaptureStream(simpleread.Stream):
         """Initialise the stream."""
 
         simpleread.Stream.__init__(self)
-        self.buffer = ''
+        self.buffer = ""
         self.continuousreads = 0
         self.bytesread = 0
         self.linesread = 0
@@ -52,12 +63,14 @@ class CaptureStream(simpleread.Stream):
     def _setTimeout(self, timeout):
         """Setter for setting timeout property."""
         if timeout:
-            self.timer = qt.QTimer.singleShot(
-                timeout*1000, self._timedOut)
+            # ``QTimer.singleShot`` is a static method that returns
+            # ``None``, so ``self.timer = ...`` was assigning None and
+            # the attribute name was misleading. Drop the assignment.
+            qt.QTimer.singleShot(timeout * 1000, self._timedOut)
 
     timeout = property(
-        None, _setTimeout, None,
-        "Time interval to stop in (seconds) or None")
+        None, _setTimeout, None, "Time interval to stop in (seconds) or None"
+    )
 
     def _timedOut(self):
         self.timedout = True
@@ -65,7 +78,7 @@ class CaptureStream(simpleread.Stream):
     def getMoreData(self):
         """Override this to return more data from the source without
         blocking."""
-        return ''
+        return ""
 
     def readLine(self):
         """Return a new line of data.
@@ -86,11 +99,11 @@ class CaptureStream(simpleread.Stream):
                 self.continuousreads = 0
                 raise StopIteration
 
-            index = self.buffer.find('\n')
+            index = self.buffer.find("\n")
             if index >= 0:
                 # is there a line in the buffer?
                 retn = self.buffer[:index]
-                self.buffer = self.buffer[index+1:]
+                self.buffer = self.buffer[index + 1 :]
                 self.linesread += 1
                 self.continuousreads += 1
                 return retn
@@ -103,24 +116,39 @@ class CaptureStream(simpleread.Stream):
                     raise StopIteration
                 self.bytesread += len(data)
                 self.buffer += data
+                if len(self.buffer) > _MAX_BUFFER_BYTES:
+                    # Producer is sending unbounded data without newlines.
+                    # Stop instead of growing memory until the OS kills us.
+                    raise CaptureFinishException(
+                        "Capture buffer overflow (>%d bytes without "
+                        "newline)" % _MAX_BUFFER_BYTES
+                    )
 
     def close(self):
         """Close any allocated object."""
         pass
 
+
 class FileCaptureStream(CaptureStream):
     """Capture from a file or named pipe."""
 
-    def __init__(self, filename):
+    def __init__(self, filename, encoding="utf-8"):
         CaptureStream.__init__(self)
 
-        # open file
-        self.fileobj = open(filename, 'r', encoding='utf-8')
-
-        # make new thread to read file
-        self.readerthread = utils.NonBlockingReaderThread(
-            self.fileobj, exiteof=False)
-        self.readerthread.start()
+        # open file; close on failure to avoid fd leak. Pre-fix the
+        # encoding was hard-coded to utf-8, so capture from a Latin-1 /
+        # cp1252 / shift_jis stream surfaced as decode errors during
+        # parse with no way to override.
+        self.fileobj = open(filename, "r", encoding=encoding, errors="replace")
+        try:
+            # make new thread to read file
+            self.readerthread = utils.NonBlockingReaderThread(
+                self.fileobj, exiteof=False
+            )
+            self.readerthread.start()
+        except Exception:
+            self.fileobj.close()
+            raise
 
         self.name = filename
 
@@ -138,18 +166,36 @@ class FileCaptureStream(CaptureStream):
         """Close file."""
         self.fileobj.close()
 
+
 class CommandCaptureStream(CaptureStream):
     """Capture from an external program."""
 
     def __init__(self, commandline):
-        """Capture from commandline - this is passed to the shell."""
+        """Capture from commandline.
+
+        ``commandline`` is parsed with ``shlex.split`` so the child runs
+        without an intermediate shell. Quoting still works as expected
+        (``'/path with space/cmd' arg1 "arg 2"``) but metacharacters such
+        as ``;``, ``|``, ``$()`` and ``&&`` no longer execute extra
+        commands. The previous ``shell=True`` form was a shell-injection
+        sink whenever the commandline included any user-supplied substring.
+        """
         CaptureStream.__init__(self)
 
         self.name = commandline
+        try:
+            argv = shlex.split(commandline, posix=(os.name != "nt"))
+        except ValueError as e:
+            raise CaptureFinishException("Invalid command line: %s" % str(e))
+        if not argv:
+            raise CaptureFinishException("Empty command line")
         self.popen = subprocess.Popen(
-            commandline, shell=True,
-            bufsize=0, stdout=subprocess.PIPE,
-            universal_newlines=True)
+            argv,
+            shell=False,
+            bufsize=0,
+            stdout=subprocess.PIPE,
+            universal_newlines=True,
+        )
 
         # make new thread to read stdout
         self.readerthread = utils.NonBlockingReaderThread(self.popen.stdout)
@@ -164,28 +210,51 @@ class CommandCaptureStream(CaptureStream):
             poll = self.popen.poll()
             if poll is not None:
                 # process has ended
-                raise CaptureFinishException(
-                    "Process ended (status code %i)" % poll)
+                raise CaptureFinishException("Process ended (status code %i)" % poll)
         return retn
 
     def close(self):
         """Close file."""
 
         if self.popen.poll() is None:
-            # need to kill process if it is still running
-            if platform.system() == 'Windows':
-                # awful code (for windows)
-                # use this to not have a ctypes dependency
-                os.system('TASKKILL /PID %i /F' % self.popen.pid)
+            # Kill child if still running. subprocess.run keeps argv
+            # quoted properly and avoids the shell.
+            if platform.system() == "Windows":
+                try:
+                    subprocess.run(
+                        ["taskkill", "/PID", str(self.popen.pid), "/F"],
+                        check=False,
+                        timeout=5,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                    )
+                except Exception:
+                    pass
             else:
-                # unix
-                os.kill(self.popen.pid, signal.SIGTERM)
+                try:
+                    os.kill(self.popen.pid, signal.SIGTERM)
+                except OSError:
+                    pass
 
         try:
             self.popen.stdout.close()
         except EnvironmentError:
             # problems closing stdout for some reason
             pass
+
+        # Reap the child so we do not leave a zombie. Bounded wait so we
+        # never block the UI thread on a misbehaving process.
+        try:
+            self.popen.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            try:
+                self.popen.kill()
+                self.popen.wait(timeout=2)
+            except Exception:
+                pass
+        except Exception:
+            pass
+
 
 class SocketCaptureStream(CaptureStream):
     """Capture from an internet host."""
@@ -194,11 +263,10 @@ class SocketCaptureStream(CaptureStream):
         """Connect to host and port specified."""
         CaptureStream.__init__(self)
 
-        self.name = '%s:%i' % (host, port)
+        self.name = "%s:%i" % (host, port)
         try:
-            self.socket = socket.socket(
-                socket.AF_INET, socket.SOCK_STREAM )
-            self.socket.connect( (host, port) )
+            self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.socket.connect((host, port))
         except socket.error as e:
             self._handleSocketError(e)
 
@@ -226,13 +294,14 @@ class SocketCaptureStream(CaptureStream):
                 self._handleSocketError(e)
             if len(retn) == 0:
                 raise CaptureFinishException("Remote socket closed")
-            return retn.decode('utf-8', errors='ignore')
+            return retn.decode("utf-8", errors="ignore")
         else:
-            return ''
+            return ""
 
     def close(self):
         """Close the socket."""
         self.socket.close()
+
 
 class OperationDataCaptureSet:
     """An operation for setting the results from a SimpleRead into the
@@ -241,7 +310,7 @@ class OperationDataCaptureSet:
     This is a bit primative, but it is not obvious how to isolate the capturing
     functionality elsewhere."""
 
-    descr = _('data capture')
+    descr = _("data capture")
 
     def __init__(self, simplereadobject):
         """Takes a simpleread object containing the data to be set."""
@@ -249,6 +318,9 @@ class OperationDataCaptureSet:
 
     def do(self, doc):
         """Set the data in the document."""
+
+        locked = doc._write_lock_holder == threading.current_thread().ident
+        setdata = doc._setDataUnlocked if locked else doc.setData
 
         # set the data to the document and keep a list of what's changed
         readdata = {}
@@ -260,15 +332,19 @@ class OperationDataCaptureSet:
         for name in self.nameschanged:
             if name in doc.data:
                 self.olddata[name] = doc.data[name]
-            doc.setData(name, readdata[name])
+            setdata(name, readdata[name])
 
     def undo(self, doc):
         """Undo the results of the capture."""
 
+        locked = doc._write_lock_holder == threading.current_thread().ident
+        setdata = doc._setDataUnlocked if locked else doc.setData
+        deldata = doc._deleteDataUnlocked if locked else doc.deleteData
+
         for name in self.nameschanged:
             if name in self.olddata:
                 # replace datasets with what was there previously
-                doc.setData(name, self.olddata[name])
+                setdata(name, self.olddata[name])
             else:
                 # or delete datasets that weren't there before
-                doc.deleteData(name)
+                deldata(name)

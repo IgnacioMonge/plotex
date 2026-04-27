@@ -26,6 +26,7 @@ import sys
 import signal
 import argparse
 import re
+import ast
 
 import veusz
 from veusz import qtall as qt
@@ -205,19 +206,51 @@ def listen(docs, quiet):
     from veusz.veusz_listen import openWindow
     openWindow(docs, quiet=quiet)
 
+def _parseExportOption(option):
+    """Parse a single --export-option key=value pair safely."""
+
+    try:
+        parsed = ast.parse(option, mode='exec')
+    except SyntaxError as exc:
+        raise ValueError("Invalid export option %r: %s" % (option, exc)) from exc
+
+    if len(parsed.body) != 1 or not isinstance(parsed.body[0], ast.Assign):
+        raise ValueError(
+            "Invalid export option %r: expected key=value" % option)
+
+    assign = parsed.body[0]
+    if len(assign.targets) != 1 or not isinstance(assign.targets[0], ast.Name):
+        raise ValueError(
+            "Invalid export option %r: expected simple keyword name" % option)
+
+    try:
+        value = ast.literal_eval(assign.value)
+    except (ValueError, SyntaxError) as exc:
+        raise ValueError(
+            "Invalid export option %r: value must be a literal" % option) from exc
+
+    return assign.targets[0].id, value
+
+def _parseExportOptions(options):
+    """Parse --export-option values into keyword arguments."""
+
+    out = {}
+    for option in options or ():
+        name, value = _parseExportOption(option)
+        out[name] = value
+    return out
+
 def export(exports, docs, options):
     '''A shortcut to load a set of files and export them.'''
     from veusz import document
-    from veusz import utils
 
-    # TODO: validate options
-    opttxt = ', '.join(options) if options else ''
+    optargs = _parseExportOptions(options)
 
     for expfn, vsz in zip(exports, docs):
         doc = document.Document()
         ci = document.CommandInterpreter(doc)
         ci.Load(vsz)
-        ci.run('Export(%s, %s)' % (repr(expfn), opttxt))
+        ci.runCommand('Export', (expfn,), optargs)
 
 def convertArgsUnicode(args):
     '''Convert set of arguments to unicode (for Python 2).

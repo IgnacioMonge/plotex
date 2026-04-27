@@ -38,48 +38,60 @@ from ..helpers.qtloops import addNumpyToPolygonF, plotClippedPolyline
 
 from .plotters import GenericPlotter
 
-def _(text, disambiguation=None, context='KaplanMeier'):
+
+def _(text, disambiguation=None, context="KaplanMeier"):
     """Translate text."""
     return qt.QCoreApplication.translate(context, text, disambiguation)
 
 
 # ── Confidence band fill ─────────────────────────────────────────────
 
+
 class _ConfFill(setting.PlotterFill):
     """Fill for confidence interval band with sensible defaults."""
+
     def __init__(self, name, **args):
         setting.PlotterFill.__init__(self, name, **args)
-        self.get('color').newDefault('grey')
-        self.get('hide').newDefault(False)
-        self.get('transparency').newDefault(70)
+        self.get("color").newDefault("grey")
+        self.get("hide").newDefault(False)
+        self.get("transparency").newDefault(70)
 
 
 # ── KM result container ──────────────────────────────────────────────
 
+
 class _KMResult:
     """Store Kaplan-Meier estimate for one group."""
+
     __slots__ = (
-        'times', 'survival', 'variance',
-        'ci_lower', 'ci_upper',
-        'censor_times', 'censor_surv',
-        'label', 'n_at_risk_times', 'n_at_risk',
+        "times",
+        "survival",
+        "variance",
+        "ci_lower",
+        "ci_upper",
+        "censor_times",
+        "censor_surv",
+        "label",
+        "n_at_risk_times",
+        "n_at_risk",
     )
 
 
 # ── Widget ────────────────────────────────────────────────────────────
 
+
 class KaplanMeier(GenericPlotter):
     """Plot Kaplan-Meier survival curves."""
 
-    typename = 'kaplanmeier'
+    typename = "kaplanmeier"
     allowusercreation = True
-    description = _('Plot Kaplan-Meier survival curves')
+    description = _("Plot Kaplan-Meier survival curves")
 
     def defaultAxisLabels(self):
         """Return default axis labels for this widget type."""
         return {
-            'x': 'Time',
-            'y': 'Survival Probability (%)',
+            "x": "Time",
+            "y": "Survival Probability (%)",
         }
 
     @classmethod
@@ -88,58 +100,100 @@ class KaplanMeier(GenericPlotter):
         GenericPlotter.addSettings(s)
 
         # ── Data settings ────────────────────────────────────────
-        s.add(setting.DatasetExtended(
-            'timeData', '',
-            descr=_('Dataset of times to event or censoring'),
-            usertext=_('Time data')), 0)
-        s.add(setting.DatasetExtended(
-            'eventData', '',
-            descr=_('Dataset of event indicators (1=event, 0=censored)'),
-            usertext=_('Event data')), 1)
-        s.add(setting.DatasetOrStr(
-            'groupData', '',
-            descr=_('Dataset or string for group stratification (optional)'),
-            usertext=_('Group data')), 2)
+        s.add(
+            setting.DatasetExtended(
+                "timeData",
+                "",
+                descr=_("Dataset of times to event or censoring"),
+                usertext=_("Time data"),
+            ),
+            0,
+        )
+        s.add(
+            setting.DatasetExtended(
+                "eventData",
+                "",
+                descr=_("Dataset of event indicators (1=event, 0=censored)"),
+                usertext=_("Event data"),
+            ),
+            1,
+        )
+        s.add(
+            setting.DatasetOrStr(
+                "groupData",
+                "",
+                descr=_("Dataset or string for group stratification (optional)"),
+                usertext=_("Group data"),
+            ),
+            2,
+        )
 
         # ── Appearance ───────────────────────────────────────────
-        s.add(setting.Color(
-            'color', 'auto',
-            descr=_('Master color for the survival curve'),
-            usertext=_('Color'), formatting=True))
+        s.add(
+            setting.Color(
+                "color",
+                "auto",
+                descr=_("Master color for the survival curve"),
+                usertext=_("Color"),
+                formatting=True,
+            )
+        )
 
-        s.add(setting.Bool(
-            'showCensored', True,
-            descr=_('Show tick marks at censored observations'),
-            usertext=_('Show censored'), formatting=True))
+        s.add(
+            setting.Bool(
+                "showCensored",
+                True,
+                descr=_("Show tick marks at censored observations"),
+                usertext=_("Show censored"),
+                formatting=True,
+            )
+        )
 
-        s.add(setting.Marker(
-            'censorMarker', 'plus',
-            descr=_('Marker for censored observations'),
-            usertext=_('Censor marker'), formatting=True))
+        s.add(
+            setting.Marker(
+                "censorMarker",
+                "plus",
+                descr=_("Marker for censored observations"),
+                usertext=_("Censor marker"),
+                formatting=True,
+            )
+        )
 
-        s.add(setting.DistancePt(
-            'censorSize', '4pt',
-            descr=_('Size of censored observation markers'),
-            usertext=_('Censor size'), formatting=True))
+        s.add(
+            setting.DistancePt(
+                "censorSize",
+                "4pt",
+                descr=_("Size of censored observation markers"),
+                usertext=_("Censor size"),
+                formatting=True,
+            )
+        )
 
         # ── Sub-settings (formatting tabs) ───────────────────────
-        s.add(setting.Line(
-            'PlotLine',
-            descr=_('Survival step line style'),
-            usertext=_('Plot line')),
-            pixmap='settings_plotline')
+        s.add(
+            setting.Line(
+                "PlotLine", descr=_("Survival step line style"), usertext=_("Plot line")
+            ),
+            pixmap="settings_plotline",
+        )
 
-        s.add(_ConfFill(
-            'ConfFill',
-            descr=_('Confidence interval band fill'),
-            usertext=_('CI band fill')),
-            pixmap='settings_plotfillbelow')
+        s.add(
+            _ConfFill(
+                "ConfFill",
+                descr=_("Confidence interval band fill"),
+                usertext=_("CI band fill"),
+            ),
+            pixmap="settings_plotfillbelow",
+        )
 
-        s.add(setting.Line(
-            'MarkerLine',
-            descr=_('Censored marker border line'),
-            usertext=_('Marker line')),
-            pixmap='settings_plotmarkerline')
+        s.add(
+            setting.Line(
+                "MarkerLine",
+                descr=_("Censored marker border line"),
+                usertext=_("Marker line"),
+            ),
+            pixmap="settings_plotmarkerline",
+        )
 
     @property
     def userdescription(self):
@@ -152,20 +206,20 @@ class KaplanMeier(GenericPlotter):
     def affectsAxisRange(self):
         """This widget provides range information about these axes."""
         s = self.settings
-        return ((s.xAxis, 'sx'), (s.yAxis, 'sy'))
+        return ((s.xAxis, "sx"), (s.yAxis, "sy"))
 
     def getRange(self, axis, depname, axrange):
         """Update axis range from data."""
         s = self.settings
         doc = self.document
 
-        if depname == 'sy':
+        if depname == "sy":
             # Y axis: survival probability 0 to 100%
             axrange[0] = min(axrange[0], 0.0)
             axrange[1] = max(axrange[1], 100.0)
-        elif depname == 'sx':
+        elif depname == "sx":
             # X axis: range from time data
-            timedata = s.get('timeData').getData(doc)
+            timedata = s.get("timeData").getData(doc)
             if timedata is not None and len(timedata.data) > 0:
                 tvals = timedata.data
                 finite = tvals[N.isfinite(tvals)]
@@ -193,7 +247,7 @@ class KaplanMeier(GenericPlotter):
         label = groups[number][0]
         if len(groups) == 1:
             return s.key
-        return '%s: %s' % (s.key, label) if s.key else str(label)
+        return "%s: %s" % (s.key, label) if s.key else str(label)
 
     def drawKeySymbol(self, number, painter, x, y, width, height):
         """Draw the key symbol (a short horizontal line)."""
@@ -246,7 +300,7 @@ class KaplanMeier(GenericPlotter):
             return result
 
         # sort by time
-        order = N.argsort(t, kind='stable')
+        order = N.argsort(t, kind="stable")
         t = t[order]
         e = e[order]
 
@@ -280,7 +334,7 @@ class KaplanMeier(GenericPlotter):
             at_risk_n.append(n)
 
             # KM estimate
-            survival *= (1.0 - d / n)
+            survival *= 1.0 - d / n
 
             # Greenwood variance accumulation
             if n > d and n > 0:
@@ -291,7 +345,7 @@ class KaplanMeier(GenericPlotter):
             km_greenwood_sum.append(greenwood_sum)
 
         # find censored observations and their survival at censoring time
-        censor_mask = (e == 0)
+        censor_mask = e == 0
         if N.any(censor_mask):
             ct = t[censor_mask]
             # for each censored time, find survival at that time
@@ -299,7 +353,7 @@ class KaplanMeier(GenericPlotter):
             km_s_arr = N.array(km_surv)
             for ci in ct:
                 # survival is the last KM value at or before this time
-                idx = N.searchsorted(km_t_arr, ci, side='right') - 1
+                idx = N.searchsorted(km_t_arr, ci, side="right") - 1
                 idx = max(0, min(idx, len(km_s_arr) - 1))
                 censor_t.append(float(ci))
                 censor_s.append(float(km_s_arr[idx]))
@@ -335,8 +389,8 @@ class KaplanMeier(GenericPlotter):
         s = self.settings
         doc = self.document
 
-        timedata = s.get('timeData').getData(doc)
-        eventdata = s.get('eventData').getData(doc)
+        timedata = s.get("timeData").getData(doc)
+        eventdata = s.get("eventData").getData(doc)
 
         if timedata is None or eventdata is None:
             return None
@@ -348,12 +402,12 @@ class KaplanMeier(GenericPlotter):
             return None
 
         # check for group data
-        groupdata = s.get('groupData').getData(doc, checknull=True)
+        groupdata = s.get("groupData").getData(doc, checknull=True)
 
         # ensure same length across all arrays
         n = min(len(times), len(events))
         if groupdata is not None:
-            gvals = groupdata.data if hasattr(groupdata, 'data') else groupdata
+            gvals = groupdata.data if hasattr(groupdata, "data") else groupdata
             n = min(n, len(gvals))
         times = times[:n]
         events = events[:n]
@@ -377,18 +431,18 @@ class KaplanMeier(GenericPlotter):
             return groups
         else:
             # single group
-            return [('', times, events)]
+            return [("", times, events)]
 
     def _groupColor(self, painter, groupindex):
         """Get QColor for a specific group index."""
         s = self.settings
-        colorval = s.get('color').val
-        if colorval == 'auto':
+        colorval = s.get("color").val
+        if colorval == "auto":
             return painter.docColor(
-                painter.docColorAuto(
-                    painter.helper.autoColorIndex((self, groupindex))))
+                painter.docColorAuto(painter.helper.autoColorIndex((self, groupindex)))
+            )
         else:
-            return s.get('color').color(painter)
+            return s.get("color").color(painter)
 
     # ── Step coordinates ─────────────────────────────────────────
 
@@ -428,16 +482,18 @@ class KaplanMeier(GenericPlotter):
 
         # get axes widgets
         axes = self.parent.getAxes((s.xAxis, s.yAxis))
-        if (axes[0] is None or axes[1] is None or
-                axes[0].settings.direction != 'horizontal' or
-                axes[1].settings.direction != 'vertical'):
+        if (
+            axes[0] is None
+            or axes[1] is None
+            or axes[0].settings.direction != "horizontal"
+            or axes[1].settings.direction != "vertical"
+        ):
             return
 
         for gi, (label, gtimes, gevents) in enumerate(groups):
             km = self._computeKM(gtimes, gevents)
             color = self._groupColor(painter, gi)
-            self._drawOneGroup(
-                painter, axes, widgetposn, clip, km, color, gi)
+            self._drawOneGroup(painter, axes, widgetposn, clip, km, color, gi)
 
     def _drawOneGroup(self, painter, axes, posn, clip, km, color, gi):
         """Draw a single KM curve with optional CI band and censor marks."""
@@ -476,8 +532,7 @@ class KaplanMeier(GenericPlotter):
 
         # ── Censored tick marks ──────────────────────────────────
         if s.showCensored and len(km.censor_times) > 0:
-            self._drawCensorMarks(
-                painter, axes, posn, clip, km, color)
+            self._drawCensorMarks(painter, axes, posn, clip, km, color)
 
     def _drawConfBand(self, painter, axes, posn, clip, km, color):
         """Draw the confidence interval band as a filled polygon."""
@@ -501,20 +556,19 @@ class KaplanMeier(GenericPlotter):
         # fill using ConfFill settings but override color to match group
         # use direct QPainter filling with transparency
         fillcolor = qt.QColor(color)
-        trans = s.ConfFill.transparency if hasattr(s.ConfFill, 'transparency') else 70
+        trans = s.ConfFill.transparency if hasattr(s.ConfFill, "transparency") else 70
         fillcolor.setAlphaF((100 - trans) / 100.0)
 
-        painter.save()
-        painter.setPen(qt.QPen(qt.Qt.PenStyle.NoPen))
-        painter.setBrush(qt.QBrush(fillcolor))
+        with utils.painter_state(painter):
+            painter.setPen(qt.QPen(qt.Qt.PenStyle.NoPen))
+            painter.setBrush(qt.QBrush(fillcolor))
 
-        # clip the polygon
-        clipped = qt.QPolygonF()
-        utils.polygonClip(poly, clip, clipped)
-        path = qt.QPainterPath()
-        path.addPolygon(clipped)
-        painter.drawPath(path)
-        painter.restore()
+            # clip the polygon
+            clipped = qt.QPolygonF()
+            utils.polygonClip(poly, clip, clipped)
+            path = qt.QPainterPath()
+            path.addPolygon(clipped)
+            painter.drawPath(path)
 
     def _drawCensorMarks(self, painter, axes, posn, clip, km, color):
         """Draw censored observation markers on the survival curve."""
@@ -523,7 +577,7 @@ class KaplanMeier(GenericPlotter):
         cx = axes[0].dataToPlotterCoords(posn, km.censor_times)
         cy = axes[1].dataToPlotterCoords(posn, km.censor_surv * 100.0)
 
-        markersize = s.get('censorSize').convert(painter)
+        markersize = s.get("censorSize").convert(painter)
 
         # set pen for marker
         if not s.MarkerLine.hide:
@@ -535,8 +589,7 @@ class KaplanMeier(GenericPlotter):
         painter.setPen(pen)
         painter.setBrush(qt.QBrush())
 
-        utils.plotMarkers(
-            painter, cx, cy, s.censorMarker, markersize, clip=clip)
+        utils.plotMarkers(painter, cx, cy, s.censorMarker, markersize, clip=clip)
 
 
 # allow the factory to instantiate a KaplanMeier

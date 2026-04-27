@@ -162,21 +162,26 @@ def doBinning(data, weights=None,
 
     if calcmode == 'density' or calcmode == 'density_scaled':
         e = sedges if calcmode=='density' else edges
-        histscale = (1/hist.sum()) / (e[1:]-e[:-1])
-        hist = hist * histscale
-        if perr is not None:
-            perr = perr * histscale
-        if nerr is not None:
-            nerr = nerr * histscale
+        total = hist.sum()
+        widths = e[1:]-e[:-1]
+        # guard against empty histograms / zero-width bins
+        if total > 0 and N.all(widths > 0):
+            histscale = (1/total) / widths
+            hist = hist * histscale
+            if perr is not None:
+                perr = perr * histscale
+            if nerr is not None:
+                nerr = nerr * histscale
 
     if calcmode in {
             'fraction', 'fraction-cumulative', 'fraction-cumulative-reverse'}:
-        invcts = 1/len(data)
-        hist = hist * invcts
-        if perr is not None:
-            perr *= invcts
-        if nerr is not None:
-            nerr *= invcts
+        if len(data) > 0:
+            invcts = 1/len(data)
+            hist = hist * invcts
+            if perr is not None:
+                perr *= invcts
+            if nerr is not None:
+                nerr *= invcts
 
     return hist, perr, nerr, sedges
 

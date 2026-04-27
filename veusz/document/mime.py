@@ -30,13 +30,14 @@ from . import operations
 from . import widgetfactory
 
 # mime type for copy and paste
-widgetmime = 'text/x-vnd.veusz-widget-3'
+widgetmime = "text/x-vnd.veusz-widget-3"
 
 # dataset mime
-datamime = 'text/x-vnd.veusz-data-1'
+datamime = "text/x-vnd.veusz-data-1"
 
 # svg mime (convertable to `svgfile` widget)
-svgmime = 'image/svg+xml'
+svgmime = "image/svg+xml"
+
 
 def generateWidgetsMime(widgets):
     """Create mime data describing widget and children.
@@ -59,33 +60,34 @@ def generateWidgetsMime(widgets):
         header.append(repr(widget.name))
         header.append(repr(widget.path))
         save = widget.getSaveText()
-        header.append( str(save.count('\n')) )
+        header.append(str(save.count("\n")))
         savetext.append(save)
 
-        if widget.typename == 'svgfile':
+        if widget.typename == "svgfile":
             data = None
             s = widget.settings
-            if s.filename == '{embedded}':
-                data = qt.QByteArray.fromBase64(s.embeddedSVGData.encode('ascii'))
-            else :
+            if s.filename == "{embedded}":
+                data = qt.QByteArray.fromBase64(s.embeddedSVGData.encode("ascii"))
+            else:
                 # get data from external file
                 try:
-                    with open(s.filename, 'rb') as f:
+                    with open(s.filename, "rb") as f:
                         data = f.read()
                 except EnvironmentError:
                     print("Could not find image file. Not copying.")
             if data is not None:
                 mimedata.setData(svgmime, qt.QByteArray(data))
-        elif widget.typename =='imagefile':
+        elif widget.typename == "imagefile":
             data = widget.cacheimage
             if data is not None:
                 mimedata.setImageData(data)
 
-    header.append('')
-    text = ('\n'.join(header) + ''.join(savetext)).encode('utf-8')
+    header.append("")
+    text = ("\n".join(header) + "".join(savetext)).encode("utf-8")
 
     mimedata.setData(widgetmime, qt.QByteArray(text))
     return mimedata
+
 
 def generateDatasetsMime(datasets, document):
     """Generate mime for the list of dataset names given in the document.
@@ -101,9 +103,9 @@ def generateDatasetsMime(datasets, document):
     # just plain text format
     output = []
     for name in datasets:
-        output.append( document.data[name].datasetAsText() )
-    text = ('\n'.join(output)).encode('utf-8')
-    mimedata.setData('text/plain', qt.QByteArray(text))
+        output.append(document.data[name].datasetAsText())
+    text = ("\n".join(output)).encode("utf-8")
+    mimedata.setData("text/plain", qt.QByteArray(text))
 
     textfile = StringIO()
     for name in datasets:
@@ -113,22 +115,25 @@ def generateDatasetsMime(datasets, document):
         # write into a string file
         ds.saveToFile(textfile, name)
 
-    rawdata = textfile.getvalue().encode('utf-8')
+    rawdata = textfile.getvalue().encode("utf-8")
     mimedata.setData(datamime, rawdata)
 
     return mimedata
+
 
 def isClipboardDataMime():
     """Returns whether data available on clipboard."""
     mimedata = qt.QApplication.clipboard().mimeData()
     return datamime in mimedata.formats()
 
+
 def getWidgetMime(mimedata):
     """Given mime data, return decoded python string."""
     if widgetmime in mimedata.formats():
-        return mimedata.data(widgetmime).data().decode('utf-8')
+        return mimedata.data(widgetmime).data().decode("utf-8")
     else:
         return None
+
 
 def getClipboardWidgetMime():
     """Returns widget mime data if mimedata contains correct mimetype or None
@@ -152,31 +157,39 @@ def getClipboardWidgetMime():
             ba = qt.QByteArray()
             buffer = qt.QBuffer(ba)
             buffer.open(qt.QIODevice.OpenModeFlag.WriteOnly)
-            qimage.save(buffer, 'png')
-            return convertImgtoWidgetMime(ba, 'image/png')
+            qimage.save(buffer, "png")
+            return convertImgtoWidgetMime(ba, "image/png")
+
 
 def getMimeWidgetTypes(data):
     """Get list of widget types in the mime data."""
-    lines = data.split('\n')
+    lines = data.split("\n")
     try:
         numwidgets = int(lines[0])
     except ValueError:
         return []
-    types = lines[1:1+4*numwidgets:4]
+    types = lines[1 : 1 + 4 * numwidgets : 4]
     return types
+
+
+_MAX_PATH_LITERAL = 64 * 1024  # widget paths are tiny; cap literal_eval input
+
 
 def getMimeWidgetPaths(data):
     """Get list of widget paths in the mime data."""
-    lines = data.split('\n')
+    lines = data.split("\n")
 
     numwidgets = int(lines[0])
     paths = []
-    for x in lines[3:3+4*numwidgets:4]:
+    for x in lines[3 : 3 + 4 * numwidgets : 4]:
+        if len(x) > _MAX_PATH_LITERAL:
+            raise ValueError("Widget path in mime data exceeds size limit")
         path = ast.literal_eval(x)
         if not isinstance(path, str):
             raise ValueError("Invalid widget path in mime data: expected str")
         paths.append(path)
     return paths
+
 
 def isWidgetMimePastable(parentwidget, mimedata):
     """Is widget mime data suitable to paste at parentwidget?"""
@@ -189,6 +202,7 @@ def isWidgetMimePastable(parentwidget, mimedata):
             return False
     return True
 
+
 def isMimeDropable(parentwidget, mimedata):
     """Can parent have this data pasted directly inside?"""
     if mimedata is None or parentwidget is None:
@@ -200,36 +214,40 @@ def isMimeDropable(parentwidget, mimedata):
             return False
     return True
 
+
 def getMimeWidgetCount(mimedata):
     """Get number of widgets in mimedata."""
-    return int( mimedata[:mimedata.find('\n')] )
+    return int(mimedata[: mimedata.find("\n")])
+
 
 def convertImgtoWidgetMime(ba, mimetype):
     """Given image bite array and mimetype, return decoded python string."""
     if mimetype == svgmime:
-        typename = 'svgfile'
-        name = 'svgfile1'
-        path = '/page1/svgfile1'
-        key = 'embeddedSVGData'
+        typename = "svgfile"
+        name = "svgfile1"
+        path = "/page1/svgfile1"
+        key = "embeddedSVGData"
     else:
-        typename = 'imagefile'
-        name = 'imagefile1'
-        path = '/page1/imagefile1'
-        key = 'embeddedImageData'
+        typename = "imagefile"
+        name = "imagefile1"
+        path = "/page1/imagefile1"
+        key = "embeddedImageData"
 
-    encoded = base64.b64encode(ba).decode('ascii')
-    settings = {'filename': "'{embedded}'",
-                key: "'{}'".format(encoded),
-                }
-    head = ['1', typename, "'{}'".format(name), "'{}'".format(path), '2']
-    body = ["Set('{}', {})".format(s,v) for (s,v) in settings.items()]
+    encoded = base64.b64encode(ba).decode("ascii")
+    settings = {
+        "filename": "'{embedded}'",
+        key: "'{}'".format(encoded),
+    }
+    head = ["1", typename, "'{}'".format(name), "'{}'".format(path), "2"]
+    body = ["Set('{}', {})".format(s, v) for (s, v) in settings.items()]
 
-    return '\n'.join(head) + '\n' + '\n'.join(body) + '\n'
+    return "\n".join(head) + "\n" + "\n".join(body) + "\n"
+
 
 class OperationWidgetPaste(operations.OperationMultiple):
     """Paste a widget from mime data."""
 
-    descr= 'paste widget'
+    descr = "paste widget"
 
     def __init__(self, parent, mimedata, index=-1, newnames=None):
         """Paste widget into parent widget from mimedata.
@@ -252,30 +270,33 @@ class OperationWidgetPaste(operations.OperationMultiple):
         # get document to keep track of changes for undo/redo
         document.batchHistory(self)
 
-        # fire up interpreter to read file
+        # fire up interpreter to read file. Force safe mode so a malicious
+        # clipboard payload cannot escape the documented widget command set
+        # (Set/Add/To/etc.) into arbitrary Python. CommandInterpreter defaults
+        # to safe_mode=True today, but pasting untrusted mime data warrants an
+        # explicit guarantee — matches OperationDataPaste in this same file.
         interpreter = commandinterpreter.CommandInterpreter(document)
+        interpreter.setSafeMode(True)
         parentwidget = document.resolveWidgetPath(None, self.parentpath)
 
-        lines = self.mimedata.split('\n')
+        lines = self.mimedata.split("\n")
         numwidgets = int(lines[0])
 
         # get types, names and number of lines for widgets
-        types = lines[1:1+4*numwidgets:4]
-        names = lines[2:2+4*numwidgets:4]
+        types = lines[1 : 1 + 4 * numwidgets : 4]
+        names = lines[2 : 2 + 4 * numwidgets : 4]
         names = [ast.literal_eval(name) for name in names]
         for name in names:
             if not isinstance(name, str):
-                raise ValueError(
-                    "Invalid widget name in mime data: expected str"
-                )
+                raise ValueError("Invalid widget name in mime data: expected str")
         if self.newnames is not None:
             names = self.newnames
         # paths = lines[3:3+4*numwidgets:4] (not required here)
-        widgetslines = lines[4:4+4*numwidgets:4]
+        widgetslines = lines[4 : 4 + 4 * numwidgets : 4]
         widgetslines = [int(x) for x in widgetslines]
 
         newwidgets = []
-        widgetline = 1+4*numwidgets
+        widgetline = 1 + 4 * numwidgets
         try:
             for wtype, name, numline in zip(types, names, widgetslines):
                 thisparent = doc.getSuitableParent(wtype, parentwidget)
@@ -290,13 +311,14 @@ class OperationWidgetPaste(operations.OperationMultiple):
                 # make new widget
                 widget = document.applyOperation(
                     operations.OperationWidgetAdd(
-                        thisparent, wtype, autoadd=False,
-                        name=name, index=index) )
+                        thisparent, wtype, autoadd=False, name=name, index=index
+                    )
+                )
                 newwidgets.append(widget)
 
                 # run generating commands
                 interpreter.interface.currentwidget = widget
-                for line in lines[widgetline:widgetline+numline]:
+                for line in lines[widgetline : widgetline + numline]:
                     interpreter.run(line)
 
                 if index >= 0:
@@ -313,30 +335,31 @@ class OperationWidgetPaste(operations.OperationMultiple):
         document.batchHistory(None)
         return newwidgets
 
+
 class OperationWidgetClone(OperationWidgetPaste):
     """Clone a widget."""
 
-    descr = 'clone widget'
+    descr = "clone widget"
 
     def __init__(self, widget, newparent, newname):
         mime = generateWidgetsMime([widget])
-        mimedec = mime.data(widgetmime).data().decode('utf-8')
-        OperationWidgetPaste.__init__(
-            self, newparent, mimedec, newnames=[newname])
+        mimedec = mime.data(widgetmime).data().decode("utf-8")
+        OperationWidgetPaste.__init__(self, newparent, mimedec, newnames=[newname])
 
     def do(self, document):
         """Do the import."""
         widgets = OperationWidgetPaste.do(self, document)
         return widgets[0]
 
+
 class OperationDataPaste(operations.Operation):
     """Paste dataset from mime data."""
 
-    descr = 'paste data'
+    descr = "paste data"
 
     def __init__(self, mimedata):
         """Paste datasets into document."""
-        self.data = mimedata.data(datamime).data().decode('utf-8')
+        self.data = mimedata.data(datamime).data().decode("utf-8")
 
     def do(self, thisdoc):
         """Do the data paste."""
@@ -348,27 +371,26 @@ class OperationDataPaste(operations.Operation):
         # interpreter to create datasets
         interpreter = commandinterpreter.CommandInterpreter(tempdoc)
         interpreter.setSafeMode(True)
-        interpreter.run(self.data, '<paste>')
+        interpreter.run(self.data, "<paste>")
 
         # list of pasted datasets
         self.newds = []
 
         # now transfer datasets to existing document
         for name, ds in sorted(tempdoc.data.items()):
-
             # get new name
             if name not in thisdoc.data:
                 newname = name
             else:
                 for idx in count(2):
-                    newname = '%s_%s' % (name, idx)
+                    newname = "%s_%s" % (name, idx)
                     if newname not in thisdoc.data:
                         break
 
-            thisdoc.setData(newname, ds)
+            thisdoc._setDataUnlocked(newname, ds)
             self.newds.append(newname)
 
     def undo(self, thisdoc):
         """Undo pasting datasets."""
         for n in self.newds:
-            thisdoc.deleteData(n)
+            thisdoc._deleteDataUnlocked(n)

@@ -28,8 +28,10 @@ import numpy as N
 from .. import utils
 from .. import datasets
 
+
 class ImportingError(RuntimeError):
     """Common error when import fails."""
+
 
 class ImportParamsBase:
     """Import parameters for the various imports.
@@ -45,18 +47,17 @@ class ImportParamsBase:
     """
 
     defaults = {
-        'filename': None,
-        'linked': False,
-        'encoding': 'utf_8',
-        'prefix': '',
-        'suffix': '',
-        'tags': None,
-        'renames': None,
+        "filename": None,
+        "linked": False,
+        "encoding": "utf_8",
+        "prefix": "",
+        "suffix": "",
+        "tags": None,
+        "renames": None,
     }
 
     def __init__(self, **argsv):
-        """Initialise the reader to import data from filename.
-        """
+        """Initialise the reader to import data from filename."""
 
         #  set defaults
         for k, v in self.defaults.items():
@@ -79,6 +80,7 @@ class ImportParamsBase:
             newp[k] = getattr(self, k)
         return self.__class__(**newp)
 
+
 class LinkedFileBase:
     """A base class for linked files containing common routines."""
 
@@ -95,8 +97,9 @@ class LinkedFileBase:
         """Get filename."""
         return self.params.filename
 
-    def _saveHelper(self, fileobj, cmd, fixedparams,
-                    renameparams={}, relpath=None, extraargs={}):
+    def _saveHelper(
+        self, fileobj, cmd, fixedparams, renameparams={}, relpath=None, extraargs={}
+    ):
         """Helper to write command to reload data.
 
         fileobj: file object to write to
@@ -112,7 +115,7 @@ class LinkedFileBase:
 
         # arguments without names at command start
         for par in fixedparams:
-            if par == 'filename':
+            if par == "filename":
                 v = self._getSaveFilename(relpath)
             else:
                 v = getattr(p, par)
@@ -120,22 +123,22 @@ class LinkedFileBase:
 
         # parameters key, values to put in command line
         plist = sorted(
-            [(par, getattr(p, par)) for par in p.defaults] +
-            list(extraargs.items())
+            [(par, getattr(p, par)) for par in p.defaults] + list(extraargs.items())
         )
 
         for par, val in plist:
-            if ( val and
-                 (par not in p.defaults or p.defaults[par] != val) and
-                 par not in fixedparams and
-                 par != 'tags' ):
-
+            if (
+                val
+                and (par not in p.defaults or p.defaults[par] != val)
+                and par not in fixedparams
+                and par != "tags"
+            ):
                 if par in renameparams:
                     par = renameparams[par]
-                args.append('%s=%s' % (par, utils.rrepr(val)))
+                args.append("%s=%s" % (par, utils.rrepr(val)))
 
         # write command using comma-separated list
-        fileobj.write('%s(%s)\n' % (cmd, ', '.join(args)))
+        fileobj.write("%s(%s)\n" % (cmd, ", ".join(args)))
 
     def saveToFile(self, fileobj, relpath=None):
         """Save the link to the document file."""
@@ -151,8 +154,8 @@ class LinkedFileBase:
             f = self.filename
         # Here we convert backslashes in Windows to forward slashes
         # This is compatible, but also works on Unix/Mac
-        if sys.platform == 'win32':
-            f = f.replace('\\', '/')
+        if sys.platform == "win32":
+            f = f.replace("\\", "/")
         return f
 
     def _deleteLinkedDatasets(self, document):
@@ -175,6 +178,7 @@ class LinkedFileBase:
         """
 
         read = []
+        skipped = []
         for name, ds in list(tempdoc.data.items()):
             if name not in document.data:
                 ds.linked = self
@@ -182,6 +186,14 @@ class LinkedFileBase:
                     ds.tags = tags[name]
                 document._setDataUnlocked(name, ds)
                 read.append(name)
+            else:
+                # existing dataset with the same name is NOT overwritten —
+                # report it so silent data loss is visible to the user
+                skipped.append(name)
+        if skipped:
+            document.log(
+                "Import skipped (name already in document): %s" % ", ".join(skipped)
+            )
         return read
 
     def reloadLinks(self, document):
@@ -196,14 +208,17 @@ class LinkedFileBase:
         try:
             tempdoc.applyOperation(op)
         except Exception as ex:
-            # if something breaks, record an error and return nothing
-            document.log(str(ex))
+            # if something breaks, record an error and return nothing;
+            # include traceback to aid debugging of linked-dataset failures
+            import traceback
+
+            document.log("%s: %s\n%s" % (type(ex).__name__, ex, traceback.format_exc()))
 
             # find datasets which are linked using this link object
             # return errors for them
             errors = dict(
-                [(name, 1) for name, ds in document.data.items()
-                 if ds.linked is self])
+                [(name, 1) for name, ds in document.data.items() if ds.linked is self]
+            )
             return ([], errors)
 
         # delete datasets which are linked and imported here
@@ -215,6 +230,7 @@ class LinkedFileBase:
         errors = op.outinvalids
 
         return (read, errors)
+
 
 class OperationDataImportBase:
     """Default useful import class."""
@@ -231,12 +247,12 @@ class OperationDataImportBase:
         """Optionally, add the customs return by plugins to document."""
 
         type_attrs = {
-            'import': 'def_imports',
-            'color': 'def_colors',
-            'colormap': 'def_colormaps',
-            'constant': 'def_definitions',
-            'function': 'def_definitions',
-            'definition': 'def_definitions',
+            "import": "def_imports",
+            "color": "def_colors",
+            "colormap": "def_colormaps",
+            "constant": "def_definitions",
+            "function": "def_definitions",
+            "definition": "def_definitions",
         }
 
         if len(customs) > 0:
@@ -245,7 +261,8 @@ class OperationDataImportBase:
                 copy.deepcopy(doceval.def_imports),
                 copy.deepcopy(doceval.def_definitions),
                 copy.deepcopy(doceval.def_colors),
-                copy.deepcopy(doceval.def_colormaps)]
+                copy.deepcopy(doceval.def_colormaps),
+            ]
 
             # FIXME: inefficient for large number of definitions
             for item in customs:
@@ -278,7 +295,7 @@ class OperationDataImportBase:
     def do(self, document):
         """Do import."""
 
-        if not getattr(self, '_preloaded', False):
+        if not getattr(self, "_preloaded", False):
             # list of returned dataset names
             self.outnames = []
             # map of names to datasets
@@ -308,13 +325,13 @@ class OperationDataImportBase:
                 del self.outdatasets[name]
                 self.outdatasets[self.params.renames[name]] = ds
 
-        # only remember the parts we need
-        self.olddatasets = [
-            (n, document.data.get(n)) for n in self.outdatasets ]
-
+        # Capture old datasets and apply new ones in a single pass.
+        # The previous code built ``self.olddatasets`` via comprehension
+        # and then immediately reset it to ``[]`` at the next line,
+        # discarding the list — so the comprehension was dead code.
         self.olddatasets = []
         for name, ds in self.outdatasets.items():
-            self.olddatasets.append( (name, document.data.get(name)) )
+            self.olddatasets.append((name, document.data.get(name)))
             document._setDataUnlocked(name, ds)
 
         self.outnames = sorted(self.outdatasets)
@@ -358,10 +375,10 @@ def rows_to_datasets(allrows, headerrow, prefix, suffix, linkedfile):
         headers = []
         for i in range(ncols):
             val = allrows[0][i] if i < len(allrows[0]) else None
-            headers.append(str(val) if val is not None else 'col%d' % (i+1))
+            headers.append(str(val) if val is not None else "col%d" % (i + 1))
         datarows = allrows[1:]
     else:
-        headers = ['col%d' % (i+1) for i in range(ncols)]
+        headers = ["col%d" % (i + 1) for i in range(ncols)]
         datarows = allrows
 
     if not datarows:
@@ -371,13 +388,13 @@ def rows_to_datasets(allrows, headerrow, prefix, suffix, linkedfile):
     for col_idx in range(ncols):
         name = headers[col_idx].strip()
         if not name:
-            name = 'col%d' % (col_idx + 1)
+            name = "col%d" % (col_idx + 1)
 
         # quick check: skip columns where every cell is empty/None
         has_data = False
         for row in datarows:
             v = row[col_idx] if col_idx < len(row) else None
-            if v is not None and v != '':
+            if v is not None and v != "":
                 has_data = True
                 break
         if not has_data:
@@ -388,13 +405,13 @@ def rows_to_datasets(allrows, headerrow, prefix, suffix, linkedfile):
         is_numeric = True
         for row in datarows:
             v = row[col_idx] if col_idx < len(row) else None
-            if v is None or v == '':
+            if v is None or v == "":
                 vals.append(N.nan if is_numeric else v)
             elif isinstance(v, (int, float)):
                 vals.append(float(v))
             elif isinstance(v, str):
                 try:
-                    vals.append(float(v.replace(',', '.')))
+                    vals.append(float(v.replace(",", ".")))
                 except (ValueError, AttributeError):
                     is_numeric = False
                     vals.append(v)
@@ -404,10 +421,7 @@ def rows_to_datasets(allrows, headerrow, prefix, suffix, linkedfile):
 
         # backfill None/empty as text if column turned out non-numeric
         if not is_numeric:
-            vals = [
-                (str(v) if v is not None and v == v else '')
-                for v in vals
-            ]
+            vals = [(str(v) if v is not None and v == v else "") for v in vals]
 
         if is_numeric:
             ds = datasets.Dataset(data=N.array(vals, dtype=N.float64))
@@ -415,7 +429,7 @@ def rows_to_datasets(allrows, headerrow, prefix, suffix, linkedfile):
             textvals = []
             for v in vals:
                 if v is None or (isinstance(v, float) and N.isnan(v)):
-                    textvals.append('')
+                    textvals.append("")
                 else:
                     textvals.append(str(v))
             ds = datasets.DatasetText(data=textvals)

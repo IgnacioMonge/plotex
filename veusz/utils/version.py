@@ -43,6 +43,8 @@ located. See INSTALL for details.
 """
 
 _ver = None
+
+
 def version():
     """Return the version number as a string."""
 
@@ -59,9 +61,11 @@ def version():
         sys.stderr.write(_errmsg)
         sys.exit(1)
 
+
 def versionToTuple(ver):
     """Convert version to tuple, e.g. '2.1.1' -> (2,1,1)."""
-    return tuple([int(x) for x in ver.split('.')])
+    return tuple([int(x) for x in ver.split(".")])
+
 
 def latestVersion():
     """Get latest version of Veusz from website as string.
@@ -69,19 +73,24 @@ def latestVersion():
     Returns None if error
     """
 
+    # Use HTTPS (the http:// host has redirected to https for years; the
+    # plain http URL was vulnerable to MITM injection of a fake newer
+    # version string). ``with`` + timeout so a slow CDN cannot stall the
+    # main thread on startup.
     try:
-        f = request.urlopen(
-            'http://veusz.github.io/download/newest-version.html')
-        p = f.read()
-        f.close()
+        with request.urlopen(
+            "https://veusz.github.io/download/newest-version.html", timeout=10
+        ) as f:
+            p = f.read()
 
-        latest = p.decode('ascii').strip()
+        latest = p.decode("ascii").strip()
         # check format
         intver = versionToTuple(latest)
     except Exception:
         return None
 
     return latest
+
 
 class VersionCheckThread(qt.QThread):
     """Asynchronously check for new version, emitting signal if found."""
@@ -95,33 +104,38 @@ class VersionCheckThread(qt.QThread):
         # can't import setting above because of loops
         from .. import setting
 
-        if ( disableVersionChecks or
-             setting.settingdb['vercheck_disabled'] or
-             not setting.settingdb['vercheck_asked_user']):
+        if (
+            disableVersionChecks
+            or setting.settingdb["vercheck_disabled"]
+            or not setting.settingdb["vercheck_asked_user"]
+        ):
             return
 
         today = datetime.date.today()
         dayssincecheck = (
-            today -
-            datetime.date(*setting.settingdb['vercheck_last_done'])).days
+            today - datetime.date(*setting.settingdb["vercheck_last_done"])
+        ).days
 
         if dayssincecheck >= self.mininterval or dayssincecheck < 0:
-            setting.settingdb['vercheck_last_done'] = (
-                today.year, today.month, today.day)
-            #print("doing check")
+            setting.settingdb["vercheck_last_done"] = (
+                today.year,
+                today.month,
+                today.day,
+            )
+            # print("doing check")
             latestver = latestVersion()
             if latestver:
-                setting.settingdb['vercheck_latest'] = latestver
+                setting.settingdb["vercheck_latest"] = latestver
 
         thisver = version()
-        latestver = setting.settingdb['vercheck_latest']
-        #print('latest ver', latestver, thisver)
+        latestver = setting.settingdb["vercheck_latest"]
+        # print('latest ver', latestver, thisver)
 
         # is newer version available?
-        if ( latestver and
-             versionToTuple(latestver) > versionToTuple(thisver)):
+        if latestver and versionToTuple(latestver) > versionToTuple(thisver):
             self.newversion.emit(latestver)
+
 
 # patch this to be True if you are packaging Veusz and want to disable
 # version checks
-disableVersionChecks=False
+disableVersionChecks = False

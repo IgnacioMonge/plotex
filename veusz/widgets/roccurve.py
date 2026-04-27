@@ -30,7 +30,8 @@ from .. import utils
 
 from .plotters import GenericPlotter
 
-def _(text, disambiguation=None, context='ROCCurve'):
+
+def _(text, disambiguation=None, context="ROCCurve"):
     """Translate text."""
     return qt.QCoreApplication.translate(context, text, disambiguation)
 
@@ -38,9 +39,9 @@ def _(text, disambiguation=None, context='ROCCurve'):
 class ROCCurve(GenericPlotter):
     """Plot an ROC (Receiver Operating Characteristic) curve."""
 
-    typename = 'roccurve'
+    typename = "roccurve"
     allowusercreation = True
-    description = _('ROC curve (diagnostic performance)')
+    description = _("ROC curve (diagnostic performance)")
 
     def __init__(self, parent, **args):
         GenericPlotter.__init__(self, parent, **args)
@@ -56,8 +57,8 @@ class ROCCurve(GenericPlotter):
     def defaultAxisLabels(self):
         """Return default axis labels for this widget type."""
         return {
-            'x': '100-Specificity',
-            'y': 'Sensitivity',
+            "x": "100-Specificity",
+            "y": "Sensitivity",
         }
 
     @classmethod
@@ -65,97 +66,159 @@ class ROCCurve(GenericPlotter):
         GenericPlotter.addSettings(s)
 
         # ── Data ────────────────────────────────────────────────────
-        s.add(setting.DatasetExtended(
-            'truthData', '',
-            descr=_('Binary outcome data (0/1)'),
-            usertext=_('Truth data')), 0)
-        s.add(setting.DatasetExtended(
-            'scoreData', '',
-            descr=_('Continuous predictor score'),
-            usertext=_('Score data')), 1)
+        s.add(
+            setting.DatasetExtended(
+                "truthData",
+                "",
+                descr=_("Binary outcome data (0/1)"),
+                usertext=_("Truth data"),
+            ),
+            0,
+        )
+        s.add(
+            setting.DatasetExtended(
+                "scoreData",
+                "",
+                descr=_("Continuous predictor score"),
+                usertext=_("Score data"),
+            ),
+            1,
+        )
 
         # ── Curve ──────────────────────────────────────────────────
-        s.add(setting.Color(
-            'color', 'auto',
-            descr=_('ROC curve color'),
-            usertext=_('Color'), formatting=True))
+        s.add(
+            setting.Color(
+                "color",
+                "auto",
+                descr=_("ROC curve color"),
+                usertext=_("Color"),
+                formatting=True,
+            )
+        )
 
         # ── Display ────────────────────────────────────────────────
-        s.add(setting.Bool(
-            'percentAxes', True,
-            descr=_('Show axes as 0–100% instead of 0–1'),
-            usertext=_('Percent axes'), formatting=True))
-        s.add(setting.Bool(
-            'showDiagonal', True,
-            descr=_('Show chance line (diagonal)'),
-            usertext=_('Show diagonal'), formatting=True))
-        s.add(setting.Bool(
-            'showAUC', True,
-            descr=_('Show AUC value with 95% CI'),
-            usertext=_('Show AUC'), formatting=True))
-        s.add(setting.Bool(
-            'showConfBand', False,
-            descr=_('Show approximate pointwise sensitivity band'),
-            usertext=_('Show approx. band'), formatting=True))
-        s.add(setting.Bool(
-            'showYouden', False,
-            descr=_("Show optimal threshold (Youden's J)"),
-            usertext=_("Show Youden's point"), formatting=True))
-        s.add(setting.Bool(
-            'showYoudenAnnot', False,
-            descr=_('Annotate Youden point with sensitivity/specificity'),
-            usertext=_('Youden annotation'), formatting=True))
+        s.add(
+            setting.Bool(
+                "percentAxes",
+                True,
+                descr=_("Show axes as 0–100% instead of 0–1"),
+                usertext=_("Percent axes"),
+                formatting=True,
+            )
+        )
+        s.add(
+            setting.Bool(
+                "showDiagonal",
+                True,
+                descr=_("Show chance line (diagonal)"),
+                usertext=_("Show diagonal"),
+                formatting=True,
+            )
+        )
+        s.add(
+            setting.Bool(
+                "showAUC",
+                True,
+                descr=_("Show AUC value with 95% CI"),
+                usertext=_("Show AUC"),
+                formatting=True,
+            )
+        )
+        s.add(
+            setting.Bool(
+                "showConfBand",
+                False,
+                descr=_("Show approximate pointwise sensitivity band"),
+                usertext=_("Show approx. band"),
+                formatting=True,
+            )
+        )
+        s.add(
+            setting.Bool(
+                "showYouden",
+                False,
+                descr=_("Show optimal threshold (Youden's J)"),
+                usertext=_("Show Youden's point"),
+                formatting=True,
+            )
+        )
+        s.add(
+            setting.Bool(
+                "showYoudenAnnot",
+                False,
+                descr=_("Annotate Youden point with sensitivity/specificity"),
+                usertext=_("Youden annotation"),
+                formatting=True,
+            )
+        )
 
         # ── AUC position ───────────────────────────────────────────
-        s.add(setting.Choice(
-            'aucPosition',
-            ['bottom-right', 'bottom-left', 'top-right', 'top-left',
-             'center'],
-            'bottom-right',
-            descr=_('Position of AUC annotation'),
-            usertext=_('AUC position'), formatting=True))
+        s.add(
+            setting.Choice(
+                "aucPosition",
+                ["bottom-right", "bottom-left", "top-right", "top-left", "center"],
+                "bottom-right",
+                descr=_("Position of AUC annotation"),
+                usertext=_("AUC position"),
+                formatting=True,
+            )
+        )
 
         # ── Youden marker ─────────────────────────────────────────
-        s.add(setting.Marker(
-            'youdenMarker', 'diamond',
-            descr=_("Marker for Youden's point"),
-            usertext=_('Youden marker'), formatting=True))
-        s.add(setting.DistancePt(
-            'youdenMarkerSize', '6pt',
-            descr=_("Youden marker size"),
-            usertext=_('Youden size'), formatting=True))
+        s.add(
+            setting.Marker(
+                "youdenMarker",
+                "diamond",
+                descr=_("Marker for Youden's point"),
+                usertext=_("Youden marker"),
+                formatting=True,
+            )
+        )
+        s.add(
+            setting.DistancePt(
+                "youdenMarkerSize",
+                "6pt",
+                descr=_("Youden marker size"),
+                usertext=_("Youden size"),
+                formatting=True,
+            )
+        )
 
         # ── Line styles ────────────────────────────────────────────
-        s.add(setting.Line(
-            'PlotLine',
-            descr=_('ROC curve line'),
-            usertext=_('ROC line')),
-            pixmap='settings_plotline')
-        s.add(setting.Line(
-            'DiagonalLine',
-            descr=_('Diagonal reference line'),
-            usertext=_('Diagonal')),
-            pixmap='settings_plotline')
-        s.add(setting.PlotterFill(
-            'ConfFill',
-            descr=_('CI band fill'),
-            usertext=_('CI band')),
-            pixmap='settings_plotfillbelow')
-        s.add(setting.Text(
-            'Label',
-            descr=_('AUC annotation font'),
-            usertext=_('AUC label')),
-            pixmap='settings_axislabel')
+        s.add(
+            setting.Line("PlotLine", descr=_("ROC curve line"), usertext=_("ROC line")),
+            pixmap="settings_plotline",
+        )
+        s.add(
+            setting.Line(
+                "DiagonalLine",
+                descr=_("Diagonal reference line"),
+                usertext=_("Diagonal"),
+            ),
+            pixmap="settings_plotline",
+        )
+        s.add(
+            setting.PlotterFill(
+                "ConfFill", descr=_("CI band fill"), usertext=_("CI band")
+            ),
+            pixmap="settings_plotfillbelow",
+        )
+        s.add(
+            setting.Text(
+                "Label", descr=_("AUC annotation font"), usertext=_("AUC label")
+            ),
+            pixmap="settings_axislabel",
+        )
 
         # defaults
-        s.DiagonalLine.get('color').newDefault('grey')
-        s.DiagonalLine.get('style').newDefault('dashed')
-        s.PlotLine.get('color').newDefault('auto')
-        s.PlotLine.get('width').newDefault('1.5pt')
+        s.DiagonalLine.get("color").newDefault("grey")
+        s.DiagonalLine.get("style").newDefault("dashed")
+        s.PlotLine.get("color").newDefault("auto")
+        s.PlotLine.get("width").newDefault("1.5pt")
         # CI band: light blue, 70% transparent, NOT hidden
-        s.ConfFill.get('color').newDefault('auto')
-        s.ConfFill.get('transparency').newDefault(70)
-        s.ConfFill.get('hide').newDefault(False)
+        s.ConfFill.get("color").newDefault("auto")
+        s.ConfFill.get("transparency").newDefault(70)
+        s.ConfFill.get("hide").newDefault(False)
 
     # ─── Computation ──────────────────────────────────────────────
 
@@ -169,8 +232,7 @@ class ROCCurve(GenericPlotter):
         Neg = N.sum(truth == 0)
 
         if P == 0 or Neg == 0:
-            return (N.array([0., 1.]), N.array([0., 1.]),
-                    0.5, 0.0, 0, None)
+            return (N.array([0.0, 1.0]), N.array([0.0, 1.0]), 0.5, 0.0, 0, None)
 
         tp = N.cumsum(truth_sorted == 1).astype(float)
         fp = N.cumsum(truth_sorted == 0).astype(float)
@@ -179,30 +241,35 @@ class ROCCurve(GenericPlotter):
 
         # remove duplicate fpr points (keep last = highest tpr)
         unique_mask = N.concatenate([N.diff(fpr) > 0, [True]])
-        tpr_u = N.concatenate([[0.], tpr[unique_mask]])
-        fpr_u = N.concatenate([[0.], fpr[unique_mask]])
+        tpr_u = N.concatenate([[0.0], tpr[unique_mask]])
+        fpr_u = N.concatenate([[0.0], fpr[unique_mask]])
 
-        # AUC
-        auc = float(N.trapz(tpr_u, fpr_u))
+        # AUC — N.trapezoid in numpy 2.x, N.trapz in 1.x
+        _trapz = getattr(N, "trapezoid", None) or N.trapz
+        auc = float(_trapz(tpr_u, fpr_u))
 
         # Hanley-McNeil (1982) SE approximation
         Q1 = auc / (2.0 - auc)
         Q2 = 2.0 * auc * auc / (1.0 + auc)
         se = math.sqrt(
-            (auc * (1 - auc) + (P - 1) * (Q1 - auc*auc)
-             + (Neg - 1) * (Q2 - auc*auc)) / (P * Neg))
+            (
+                auc * (1 - auc)
+                + (P - 1) * (Q1 - auc * auc)
+                + (Neg - 1) * (Q2 - auc * auc)
+            )
+            / (P * Neg)
+        )
 
         # Youden's J = max(sensitivity + specificity - 1) = max(tpr - fpr)
-        tpr_full = N.concatenate([[0.], tpr])
-        fpr_full = N.concatenate([[0.], fpr])
+        tpr_full = N.concatenate([[0.0], tpr])
+        fpr_full = N.concatenate([[0.0], fpr])
         j_values = tpr_full - fpr_full
         youden_idx_full = int(N.argmax(j_values))
 
         # map back to unique arrays for drawing
         # find closest index in fpr_u
         if youden_idx_full > 0 and youden_idx_full <= len(scores_sorted):
-            threshold = scores_sorted[min(youden_idx_full - 1,
-                                          len(scores_sorted) - 1)]
+            threshold = scores_sorted[min(youden_idx_full - 1, len(scores_sorted) - 1)]
         else:
             threshold = None
 
@@ -224,8 +291,8 @@ class ROCCurve(GenericPlotter):
         self._youden_threshold = None
 
         s = self.settings
-        truth_ds = s.get('truthData').getData(d)
-        score_ds = s.get('scoreData').getData(d)
+        truth_ds = s.get("truthData").getData(d)
+        score_ds = s.get("scoreData").getData(d)
         if truth_ds is None or score_ds is None:
             return
 
@@ -270,7 +337,7 @@ class ROCCurve(GenericPlotter):
 
     def affectsAxisRange(self):
         s = self.settings
-        return ((s.xAxis, 'sx'), (s.yAxis, 'sy'))
+        return ((s.xAxis, "sx"), (s.yAxis, "sy"))
 
     def getRange(self, axis, depname, axrange):
         s = self.settings
@@ -289,14 +356,12 @@ class ROCCurve(GenericPlotter):
         if not s.PlotLine.hide:
             painter.setBrush(qt.QBrush())
             pen = s.PlotLine.makeQPen(painter)
-            if s.color == 'auto':
-                pen.setColor(
-                    painter.docColor(self.autoColor(painter)))
+            if s.color == "auto":
+                pen.setColor(painter.docColor(self.autoColor(painter)))
             else:
-                pen.setColor(s.get('color').color(painter))
+                pen.setColor(s.get("color").color(painter))
             painter.setPen(pen)
-            painter.drawLine(
-                qt.QPointF(x, yp), qt.QPointF(x + width, yp))
+            painter.drawLine(qt.QPointF(x, yp), qt.QPointF(x + width, yp))
 
     # ─── Drawing ─────────────────────────────────────────────────
 
@@ -322,12 +387,10 @@ class ROCCurve(GenericPlotter):
 
         x1, y1, x2, y2 = posn
         pw = 2.0
-        clip = qt.QRectF(
-            qt.QPointF(x1 - pw, y1 - pw),
-            qt.QPointF(x2 + pw, y2 + pw))
+        clip = qt.QRectF(qt.QPointF(x1 - pw, y1 - pw), qt.QPointF(x2 + pw, y2 + pw))
 
         # resolve curve color from master color setting
-        curvecolor = s.get('color').color(painter)
+        curvecolor = s.get("color").color(painter)
 
         # ── 1. Diagonal ───────────────────────────────────────────
         if s.showDiagonal and not s.DiagonalLine.hide:
@@ -384,22 +447,22 @@ class ROCCurve(GenericPlotter):
         if s.showYouden and yi is not None and yi < len(px):
             yx = px[yi]
             yy = py[yi]
-            ms = s.get('youdenMarkerSize').convert(painter)
+            ms = s.get("youdenMarkerSize").convert(painter)
             painter.setPen(qt.QPen(curvecolor, 1.5))
             painter.setBrush(qt.QBrush(curvecolor))
             utils.plotMarkers(
-                painter, N.array([yx]), N.array([yy]),
-                s.youdenMarker, ms, clip=clip)
+                painter, N.array([yx]), N.array([yy]), s.youdenMarker, ms, clip=clip
+            )
 
             # annotation
             if s.showYoudenAnnot:
                 sens = tpr[yi] * 100
                 spec = (1 - fpr[yi]) * 100
                 thr = self._youden_threshold
-                parts = ['Sens: %.1f%%' % sens, 'Spec: %.1f%%' % spec]
+                parts = ["Sens: %.1f%%" % sens, "Spec: %.1f%%" % spec]
                 if thr is not None:
-                    parts.append('Cutoff: %.2g' % thr)
-                annot = '\n'.join(parts)
+                    parts.append("Cutoff: %.2g" % thr)
+                annot = "\n".join(parts)
 
                 font = s.Label.makeQFont(painter)
                 painter.setFont(font)
@@ -407,22 +470,22 @@ class ROCCurve(GenericPlotter):
                 fm = qt.QFontMetricsF(font)
                 tr = fm.boundingRect(
                     qt.QRectF(-500, -500, 1000, 1000),
-                    int(qt.Qt.AlignmentFlag.AlignLeft), annot)
+                    int(qt.Qt.AlignmentFlag.AlignLeft),
+                    annot,
+                )
                 tr.moveTopLeft(qt.QPointF(yx + ms, yy - tr.height()))
                 # keep on screen
                 if tr.right() > x2:
                     tr.moveRight(yx - ms)
                 if tr.top() < y1:
                     tr.moveTop(yy + ms)
-                painter.drawText(
-                    tr, int(qt.Qt.AlignmentFlag.AlignLeft), annot)
+                painter.drawText(tr, int(qt.Qt.AlignmentFlag.AlignLeft), annot)
 
         # ── 5. AUC text ──────────────────────────────────────────
         if s.showAUC and auc is not None and not s.Label.hide:
             ci_lo = max(auc - 1.96 * auc_se, 0)
             ci_hi = min(auc + 1.96 * auc_se, 1)
-            text = 'AUC = %.3f (95%% CI: %.3f\u2013%.3f)' % (
-                auc, ci_lo, ci_hi)
+            text = "AUC = %.3f (95%% CI: %.3f\u2013%.3f)" % (auc, ci_lo, ci_hi)
 
             font = s.Label.makeQFont(painter)
             painter.setFont(font)
@@ -433,16 +496,16 @@ class ROCCurve(GenericPlotter):
             margin = 8
 
             pos = s.aucPosition
-            if pos == 'bottom-right':
+            if pos == "bottom-right":
                 tx = x2 - textw - margin
                 ty = y2 - margin
-            elif pos == 'bottom-left':
+            elif pos == "bottom-left":
                 tx = x1 + margin
                 ty = y2 - margin
-            elif pos == 'top-right':
+            elif pos == "top-right":
                 tx = x2 - textw - margin
                 ty = y1 + texth + margin
-            elif pos == 'top-left':
+            elif pos == "top-left":
                 tx = x1 + margin
                 ty = y1 + texth + margin
             else:
@@ -452,9 +515,9 @@ class ROCCurve(GenericPlotter):
             rect = qt.QRectF(tx, ty - texth, textw + 2, texth + 2)
             painter.drawText(
                 rect,
-                int(qt.Qt.AlignmentFlag.AlignLeft |
-                    qt.Qt.AlignmentFlag.AlignVCenter),
-                text)
+                int(qt.Qt.AlignmentFlag.AlignLeft | qt.Qt.AlignmentFlag.AlignVCenter),
+                text,
+            )
 
 
 document.thefactory.register(ROCCurve)

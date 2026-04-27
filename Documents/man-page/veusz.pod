@@ -81,10 +81,12 @@ Displays information about the currently installed version and exits.
 
 =head1 BUGS
 
-Please report bugs at https://github.com/veusz/veusz/issues
+Please report bugs at https://github.com/IgnacioMonge/plotex/issues
+(Plotex fork; upstream Veusz issues at https://github.com/veusz/veusz/issues).
 
 =head1 AUTHORS
 
+B<Plotex> is a fork of B<Veusz> by M. Ignacio Monge GarcE<iacute>a.
 B<Veusz> was written by Jeremy Sanders <jeremy@jeremysanders.net>.
 
 This manual page was written by Jeremy Sanders <jeremy@jeremysanders.net>.

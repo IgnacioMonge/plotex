@@ -46,9 +46,11 @@ from .. import datasets
 from .. import utils
 from .. import setting
 
+
 def _(text, disambiguation=None, context="Document"):
     """Translate text."""
     return qt.QCoreApplication.translate(context, text, disambiguation)
+
 
 def getSuitableParent(widgettype, initialwidget):
     """Find the nearest relevant parent for the widgettype given."""
@@ -61,22 +63,27 @@ def getSuitableParent(widgettype, initialwidget):
         parent = parent.parent
     return parent
 
+
 class DocSuspend:
     """Handle document updates/suspensions."""
+
     def __init__(self, doc):
         self.doc = doc
+
     def __enter__(self):
         self.doc.suspendUpdates()
         return self
+
     def __exit__(self, type, value, traceback):
         self.doc.enableUpdates()
+
 
 class PluginLoadError(RuntimeError):
     pass
 
+
 class Document(qt.QObject):
-    """Document class for holding the graph data.
-    """
+    """Document class for holding the graph data."""
 
     pluginsloaded = False
 
@@ -96,15 +103,15 @@ class Document(qt.QObject):
 
     def __init__(self):
         """Initialise the document."""
-        qt.QObject.__init__( self )
+        qt.QObject.__init__(self)
 
         # load plugins if not already loaded
         if not Document.pluginsloaded:
             Document.loadPlugins()
 
         # change tracking of document as a whole
-        self.changeset = 0            # increased when the document changes
-        self.compatlevel = 0          # for non-backward compatible changes
+        self.changeset = 0  # increased when the document changes
+        self.compatlevel = 0  # for non-backward compatible changes
 
         # map tags to dataset names
         self.datasettags = defaultdict(list)
@@ -133,8 +140,10 @@ class Document(qt.QObject):
         """Wipe out any stored data."""
         self.data = {}
 
-        self.basewidget = widgetfactory.thefactory.makeWidget(
-            'document', None, self)
+        # Ensure widgets are registered in fresh API-only sessions.
+        from .. import widgets  # noqa: F401
+
+        self.basewidget = widgetfactory.thefactory.makeWidget("document", None, self)
 
         self.setModified(False)
         self.filename = ""
@@ -174,24 +183,24 @@ class Document(qt.QObject):
             level = self.maxcompatlevel
         elif level > self.maxcompatlevel:
             raise ValueError(
-                "Compatibility level greater than supported by this Plotex version")
+                "Compatibility level greater than supported by this Plotex version"
+            )
         self.compatlevel = level
         self.basewidget.makeStylesheet(compatlevel=self.compatlevel)
 
-    def makeDefaultDoc(self, mode='graph', compatlevel=-1):
+    def makeDefaultDoc(self, mode="graph", compatlevel=-1):
         """Add default widgets to create document.
 
         mode == 'graph', 'polar', 'ternary' or 'graph3d'
         """
         self.setCompatLevel(compatlevel)
-        page = widgetfactory.thefactory.makeWidget(
-            'page', self.basewidget, self)
+        page = widgetfactory.thefactory.makeWidget("page", self.basewidget, self)
 
-        if mode == 'graph3d':
-            scene = widgetfactory.thefactory.makeWidget('scene3d', page, self)
-            widgetfactory.thefactory.makeWidget('graph3d', scene, self)
+        if mode == "graph3d":
+            scene = widgetfactory.thefactory.makeWidget("scene3d", page, self)
+            widgetfactory.thefactory.makeWidget("graph3d", scene, self)
         else:
-            assert mode in ('graph', 'polar', 'ternary')
+            assert mode in ("graph", "polar", "ternary")
             widgetfactory.thefactory.makeWidget(mode, page, self)
         self.setModified()
         self.setModified(False)
@@ -264,11 +273,18 @@ class Document(qt.QObject):
         If the current thread already holds the write lock (e.g.
         setData called from within operation.do()), this is a no-op.
 
-        Uses increasing timeouts with safe event processing between
-        attempts to give the render thread a chance to release its
-        read lock (breaks potential deadlocks).
+        Uses increasing tryLockForWrite timeouts. The render thread runs
+        independently of the main-thread event loop; it does NOT need
+        ``processEvents`` to release its read lock. Pumping the event
+        loop here was a hazard: a queued slot (timer tick, signal from
+        another thread) could call back into ``applyOperation`` →
+        ``_acquireWriteLock``, escalating the depth counter without ever
+        releasing the underlying ``QReadWriteLock``. Removing the
+        processEvents leaves the contention window genuinely unblocked
+        and removes the reentrancy cliff.
         """
         import threading
+
         tid = threading.current_thread().ident
         if self._write_lock_holder == tid:
             # Already hold the lock — reentrant call, skip
@@ -279,8 +295,7 @@ class Document(qt.QObject):
                 self._write_lock_holder = tid
                 self._write_lock_depth = 1
                 return
-            qt.QCoreApplication.processEvents(
-                qt.QEventLoop.ProcessEventsFlag.ExcludeUserInputEvents, 50)
+            # Render thread releases on its own; nothing useful here.
         # Last resort: blocking (render should have finished by now)
         self._render_lock.lockForWrite()
         self._write_lock_holder = tid
@@ -373,7 +388,8 @@ class Document(qt.QObject):
         """Notify dataset was modified"""
         self._acquireWriteLock()
         try:
-            assert dataset in self.data.values()
+            if dataset not in self.data.values():
+                raise ValueError("Dataset not registered on this document")
         finally:
             self._releaseWriteLock()
         self.setModified()
@@ -384,9 +400,7 @@ class Document(qt.QObject):
         """
         links = set()
         for ds in self.data.values():
-            if ds.linked and (
-                    filenames is None or
-                    ds.linked.filename in filenames):
+            if ds.linked and (filenames is None or ds.linked.filename in filenames):
                 links.add(ds.linked)
         return list(links)
 
@@ -447,7 +461,8 @@ class Document(qt.QObject):
         # traceback.print_stack()
 
         self.modified = ismodified
-        self.changeset += 1
+        if ismodified:
+            self.changeset += 1
 
         if len(self.suspendupdates) == 0:
             self.signalModified.emit(ismodified)
@@ -484,17 +499,17 @@ class Document(qt.QObject):
         kls.pluginsloaded = True
 
         if pluginlist is None:
-            pluginlist = setting.settingdb.get('plugins', [])
+            pluginlist = setting.settingdb.get("plugins", [])
 
         for plugin in pluginlist:
             if not kls._is_trusted_plugin(plugin):
-                raise PluginLoadError(
-                    _('Untrusted plugin path: %s') % plugin)
+                raise PluginLoadError(_("Untrusted plugin path: %s") % plugin)
 
             try:
                 spec = importlib.util.spec_from_file_location(
-                    "plotex_plugin_%s" % os.path.basename(plugin).replace('.', '_'),
-                    plugin)
+                    "plotex_plugin_%s" % os.path.basename(plugin).replace(".", "_"),
+                    plugin,
+                )
                 if spec is None or spec.loader is None:
                     raise ImportError("Cannot load plugin: %s" % plugin)
                 module = importlib.util.module_from_spec(spec)
@@ -502,8 +517,10 @@ class Document(qt.QObject):
             except PluginLoadError:
                 raise
             except Exception:
-                err = _('Error loading plugin %s\n\n%s') % (
-                    plugin, traceback.format_exc())
+                err = _("Error loading plugin %s\n\n%s") % (
+                    plugin,
+                    traceback.format_exc(),
+                )
                 raise PluginLoadError(err)
 
     def paintTo(self, painthelper, page):
@@ -521,8 +538,7 @@ class Document(qt.QObject):
     def getVisiblePages(self):
         """Return list of 0-indexed numbers of visible pages."""
         return [
-            i for i, pg in enumerate(self.basewidget.children)
-            if not pg.settings.hide
+            i for i, pg in enumerate(self.basewidget.children) if not pg.settings.hide
         ]
 
     def getPage(self, pagenumber):
@@ -539,10 +555,8 @@ class Document(qt.QObject):
     def _writeFileHeader(self, fileobj, type):
         """Write a header to a saved file of type."""
 
-        fileobj.write('# Plotex %s (version %s)\n' % (type, utils.version()))
-        fileobj.write(
-            '# Saved at %s\n\n' %
-            datetime.datetime.utcnow().isoformat())
+        fileobj.write("# Plotex %s (version %s)\n" % (type, utils.version()))
+        fileobj.write("# Saved at %s\n\n" % datetime.datetime.utcnow().isoformat())
 
     def saveDatasetTags(self, fileobj):
         """Write dataset tags to output file"""
@@ -556,7 +570,8 @@ class Document(qt.QObject):
         # write out tags
         for tag, val in sorted(bytag.items()):
             fileobj.write(
-                'TagDatasets(%s, %s)\n' % (utils.rrepr(tag), utils.rrepr(val)))
+                "TagDatasets(%s, %s)\n" % (utils.rrepr(tag), utils.rrepr(val))
+            )
 
     def serializeToText(self, fileobj):
         """Serialize the document to text without side effects.
@@ -564,8 +579,8 @@ class Document(qt.QObject):
         Unlike saveToFile(), this does NOT call setModified(False)
         or emit signals.  Use for snapshots/rollback.
         """
-        self._writeFileHeader(fileobj, 'saved document')
-        fileobj.write('SetCompatLevel(%s)\n' % self.compatlevel)
+        self._writeFileHeader(fileobj, "saved document")
+        fileobj.write("SetCompatLevel(%s)\n" % self.compatlevel)
 
         # save linked datasets
         savedlinks = {}
@@ -593,24 +608,23 @@ class Document(qt.QObject):
            override defined datasets, so save links first
         """
 
-        self._writeFileHeader(fileobj, 'saved document')
+        self._writeFileHeader(fileobj, "saved document")
 
         # write compatibility level
-        fileobj.write('SetCompatLevel(%s)\n' % self.compatlevel)
+        fileobj.write("SetCompatLevel(%s)\n" % self.compatlevel)
 
         # add file directory to import path if we know it
         reldirname = None
-        if getattr(fileobj, 'name', False):
-            reldirname = os.path.dirname( os.path.abspath(fileobj.name) )
-            if setting.settingdb['docfile_addimportpaths']:
-                fileobj.write('AddImportPath(%s)\n' % utils.rrepr(reldirname))
+        if getattr(fileobj, "name", False):
+            reldirname = os.path.dirname(os.path.abspath(fileobj.name))
+            if setting.settingdb["docfile_addimportpaths"]:
+                fileobj.write("AddImportPath(%s)\n" % utils.rrepr(reldirname))
 
         # save those datasets which are linked
         # we do this first in case the datasets are overridden below
         savedlinks = {}
         for name, dataset in sorted(self.data.items()):
-            dataset.saveLinksToSavedDoc(fileobj, savedlinks,
-                                        relpath=reldirname)
+            dataset.saveLinksToSavedDoc(fileobj, savedlinks, relpath=reldirname)
 
         # save the remaining datasets
         for name, dataset in sorted(self.data.items()):
@@ -631,22 +645,22 @@ class Document(qt.QObject):
         """Save to HDF5 (h5py) output file given."""
 
         # groups in output hdf5
-        vszgrp = fileobj.create_group('Veusz')
-        vszgrp.attrs['vsz_version'] = utils.version()
-        vszgrp.attrs['vsz_saved_at'] = datetime.datetime.utcnow().isoformat()
-        vszgrp.attrs['vsz_format'] = 1  # version number (currently unused)
-        datagrp = vszgrp.create_group('Data')
-        docgrp = vszgrp.create_group('Document')
+        vszgrp = fileobj.create_group("Veusz")
+        vszgrp.attrs["vsz_version"] = utils.version()
+        vszgrp.attrs["vsz_saved_at"] = datetime.datetime.utcnow().isoformat()
+        vszgrp.attrs["vsz_format"] = 1  # version number (currently unused)
+        datagrp = vszgrp.create_group("Data")
+        docgrp = vszgrp.create_group("Document")
 
         textstream = StringIO()
 
-        self._writeFileHeader(textstream, 'saved document')
+        self._writeFileHeader(textstream, "saved document")
 
         # add file directory to import path if we know it
         reldirname = None
-        if getattr(fileobj, 'filename', False):
-            reldirname = os.path.dirname( os.path.abspath(fileobj.filename) )
-            textstream.write('AddImportPath(%s)\n' % utils.rrepr(reldirname))
+        if getattr(fileobj, "filename", False):
+            reldirname = os.path.dirname(os.path.abspath(fileobj.filename))
+            textstream.write("AddImportPath(%s)\n" % utils.rrepr(reldirname))
 
         # add custom definitions
         self.evaluate.saveCustomDefinitions(textstream)
@@ -655,12 +669,11 @@ class Document(qt.QObject):
         # we do this first in case the datasets are overridden below
         savedlinks = {}
         for name, dataset in sorted(self.data.items()):
-            dataset.saveLinksToSavedDoc(
-                textstream, savedlinks, relpath=reldirname)
+            dataset.saveLinksToSavedDoc(textstream, savedlinks, relpath=reldirname)
 
         # save the remaining datasets
         for name, dataset in sorted(self.data.items()):
-            dataset.saveToFile(textstream, name, mode='hdf5', hdfgroup=datagrp)
+            dataset.saveToFile(textstream, name, mode="hdf5", hdfgroup=datagrp)
 
         # handle tagging
         # get a list of all tags and which datasets have them
@@ -670,73 +683,81 @@ class Document(qt.QObject):
                 bytag[t].append(name)
 
         # write out tags as datasets
-        tagsgrp = docgrp.create_group('Tags')
+        tagsgrp = docgrp.create_group("Tags")
         for tag, dsnames in sorted(bytag.items()):
-            tagsgrp[tag] = [v.encode('utf-8') for v in sorted(dsnames)]
+            tagsgrp[tag] = [v.encode("utf-8") for v in sorted(dsnames)]
 
         # save the actual tree structure
         textstream.write(self.basewidget.getSaveText())
 
         # create single dataset contains document
-        docgrp['document'] = [ textstream.getvalue().encode('utf-8') ]
+        docgrp["document"] = [textstream.getvalue().encode("utf-8")]
 
         self.setModified(False)
 
-    def save(self, filename, mode='vsz'):
+    def save(self, filename, mode="vsz"):
         """Save to output file.
 
         mode is 'vsz' or 'hdf5'
         """
-        if mode == 'vsz':
-            with codecs.open(filename, 'w', 'utf-8') as f:
+        if mode == "vsz":
+            with codecs.open(filename, "w", "utf-8") as f:
                 self.saveToFile(f)
-        elif mode == 'hdf5':
+        elif mode == "hdf5":
             if h5py is None:
-                raise RuntimeError('Missing h5py module')
-            with h5py.File(filename, 'w') as f:
+                raise RuntimeError("Missing h5py module")
+            with h5py.File(filename, "w") as f:
                 self.saveToHDF5File(f)
         else:
-            raise RuntimeError('Invalid save mode')
+            raise RuntimeError("Invalid save mode")
 
         self.filename = filename
 
-    def load(self, filename, mode='vsz',
-             callbackunsafe=None,
-             callbackimporterror=None,
-             callbackprogress=None):
+    def load(
+        self,
+        filename,
+        mode="vsz",
+        callbackunsafe=None,
+        callbackimporterror=None,
+        callbackprogress=None,
+    ):
         """Load document from file.
 
         mode is 'vsz' or 'hdf5'
         """
         from . import loader
+
         loader.loadDocument(
-            self, filename, mode=mode,
+            self,
+            filename,
+            mode=mode,
             callbackunsafe=callbackunsafe,
             callbackimporterror=callbackimporterror,
-            callbackprogress=callbackprogress)
+            callbackprogress=callbackprogress,
+        )
 
     def exportStyleSheet(self, fileobj):
         """Export the StyleSheet to a file."""
 
-        self._writeFileHeader(fileobj, 'exported stylesheet')
+        self._writeFileHeader(fileobj, "exported stylesheet")
         stylesheet = self.basewidget.settings.StyleSheet
 
-        fileobj.write( stylesheet.saveText(True, rootname='') )
+        fileobj.write(stylesheet.saveText(True, rootname=""))
 
     def _pagedocsize(self, widget, dpi, scaling, integer):
         """Helper for page or doc size."""
         if dpi is None:
             p = qt.QPixmap(1, 1)
             dpi = (p.logicalDpiX(), p.logicalDpiY())
-        helper = painthelper.PaintHelper(self, (1,1), dpi=dpi)
-        w = widget.settings.get('width').convert(helper) * scaling
-        h = widget.settings.get('height').convert(helper) * scaling
+        helper = painthelper.PaintHelper(self, (1, 1), dpi=dpi)
+        w = widget.settings.get("width").convert(helper) * scaling
+        h = widget.settings.get("height").convert(helper) * scaling
         if integer:
             return int(w), int(h)
         else:
             return w, h
 
-    def pageSize(self, pagenum, dpi=None, scaling=1., integer=True):
+    def pageSize(self, pagenum, dpi=None, scaling=1.0, integer=True):
         """Get the size of a particular page in pixels.
 
         If dpi is None, use the default Qt screen dpi
@@ -745,14 +766,13 @@ class Document(qt.QObject):
         page = self.basewidget.getPage(pagenum)
         if page is None:
             return self.docSize(dpi=dpi, scaling=scaling, integer=integer)
-        return self._pagedocsize(
-            page, dpi=dpi, scaling=scaling, integer=integer)
+        return self._pagedocsize(page, dpi=dpi, scaling=scaling, integer=integer)
 
-    def docSize(self, dpi=None, scaling=1., integer=True):
+    def docSize(self, dpi=None, scaling=1.0, integer=True):
         """Get size for document."""
         return self._pagedocsize(
-            self.basewidget,
-            dpi=dpi, scaling=scaling, integer=integer)
+            self.basewidget, dpi=dpi, scaling=scaling, integer=integer
+        )
 
     def resolvePath(self, fromobj, path):
         """Resolve item relative to fromobj.
@@ -763,16 +783,16 @@ class Document(qt.QObject):
         """
 
         # where to search from
-        obj = self.basewidget if (path[:1]=='/' or fromobj is None) else fromobj
+        obj = self.basewidget if (path[:1] == "/" or fromobj is None) else fromobj
 
         # iterate over path parts
-        for p in path.split('/'):
-            if p == '..':
+        for p in path.split("/"):
+            if p == "..":
                 p = obj.parent
                 if p is None:
                     raise ValueError("Base graph has no parent")
                 obj = p
-            elif p == '.' or len(p) == 0:
+            elif p == "." or len(p) == 0:
                 pass
             elif obj.iswidget:
                 if p in obj.settings:
@@ -814,9 +834,9 @@ class Document(qt.QObject):
             raise ValueError("Not path to setting")
         return obj
 
-    def walkNodes(self, tocall, root=None,
-                  nodetypes=('widget', 'setting', 'settings'),
-                  _path=None):
+    def walkNodes(
+        self, tocall, root=None, nodetypes=("widget", "setting", "settings"), _path=None
+    ):
         """Walk the widget/settings/setting nodes in the document.
         For each one call tocall(path, node).
         nodetypes is tuple of possible node types
@@ -830,39 +850,35 @@ class Document(qt.QObject):
         if root.nodetype in nodetypes:
             tocall(_path, root)
 
-        if root.nodetype == 'widget':
+        if root.nodetype == "widget":
             # get rid of // at start of path
-            if _path == '/':
-                _path = ''
+            if _path == "/":
+                _path = ""
 
             # do the widget's children
             for w in root.children:
                 self.walkNodes(
-                    tocall, root=w, nodetypes=nodetypes,
-                    _path=_path+'/'+w.name)
+                    tocall, root=w, nodetypes=nodetypes, _path=_path + "/" + w.name
+                )
             # then do the widget's settings
-            self.walkNodes(
-                tocall, root=root.settings,
-                nodetypes=nodetypes, _path=_path)
-        elif root.nodetype == 'settings':
+            self.walkNodes(tocall, root=root.settings, nodetypes=nodetypes, _path=_path)
+        elif root.nodetype == "settings":
             # do the settings of the settings
             for name, s in sorted(root.setdict.items()):
                 self.walkNodes(
-                    tocall, root=s, nodetypes=nodetypes,
-                    _path=_path+'/'+s.name)
+                    tocall, root=s, nodetypes=nodetypes, _path=_path + "/" + s.name
+                )
         # elif root.nodetype == 'setting': pass
 
     def formatValsWithDatatypeToText(self, vals, displaydatatype):
         """Given a set of values, datatype, return a list of strings
         corresponding to these data."""
 
-        if displaydatatype == 'text':
+        if displaydatatype == "text":
             return vals
-        elif displaydatatype == 'numeric':
-            return [
-                utils.formatNumber(val, '%Vg', locale=self.locale)
-                for val in vals ]
-        elif displaydatatype == 'date':
-            return [ utils.dateFloatToString(val) for val in vals ]
+        elif displaydatatype == "numeric":
+            return [utils.formatNumber(val, "%Vg", locale=self.locale) for val in vals]
+        elif displaydatatype == "date":
+            return [utils.dateFloatToString(val) for val in vals]
         else:
-            raise RuntimeError('Invalid data type')
+            raise RuntimeError("Invalid data type")

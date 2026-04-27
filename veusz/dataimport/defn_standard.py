@@ -181,7 +181,9 @@ def ImportString(comm, descriptor, dstring, useblocks=False):
         if m:
             name = m.group(1)
             try:
-                vals = N.fromstring(dstring, dtype=N.float64, sep='\n')
+                # N.fromstring with sep= emits DeprecationWarning on NumPy 2+;
+                # split+array is equivalent and forward-compatible
+                vals = N.array(dstring.split(), dtype=N.float64)
                 if len(vals) > 0:
                     data = datasets.Dataset(data=vals)
                     comm.document.setData(name, data)

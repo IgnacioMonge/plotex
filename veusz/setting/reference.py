@@ -18,6 +18,7 @@
 #
 ##############################################################################
 
+
 class ReferenceBase:
     """Reference objects are inherited from this base class.
 
@@ -39,6 +40,7 @@ class ReferenceBase:
     def setOnModified(self, setn, fn):
         """Set on modified on settings pointed to by this reference."""
 
+
 class Reference(ReferenceBase):
     """A value a setting can have to point to another setting.
 
@@ -53,7 +55,7 @@ class Reference(ReferenceBase):
     def __init__(self, value):
         """Initialise reference with value, which is a string as above."""
         ReferenceBase.__init__(self, value)
-        self.split = value.split('/')
+        self.split = value.split("/")
         self.resolved = None
 
     def getPaths(self):
@@ -61,7 +63,16 @@ class Reference(ReferenceBase):
         return [self.value]
 
     def resolve(self, thissetting):
-        """Return the setting object associated with the reference."""
+        """Return the setting object associated with the reference.
+
+        Detects circular references by walking through chained
+        ``Reference`` values and tracking visited setting ids. Without
+        this, a stylesheet like ``Set('/StyleSheet/Line/color', '/Foo/x')``
+        where ``/Foo/x`` itself references back into the chain would
+        recurse until Python's stack overflowed (``RecursionError`` deep
+        inside ``Setting.get()``). ``ReferenceMultiple`` already had
+        cycle detection; ``Reference`` did not.
+        """
 
         # this is for stylesheet references which don't move
         if self.resolved:
@@ -69,7 +80,7 @@ class Reference(ReferenceBase):
 
         item = thissetting.parent
         parts = list(self.split)
-        if parts[0] == '':
+        if parts[0] == "":
             # need root widget if begins with slash
             while item.parent is not None:
                 item = item.parent
@@ -77,10 +88,10 @@ class Reference(ReferenceBase):
 
         # do an iterative lookup of the setting
         for p in parts:
-            if p == '..':
+            if p == "..":
                 if item.parent is not None:
                     item = item.parent
-            elif p == '':
+            elif p == "":
                 pass
             else:
                 if item.iswidget:
@@ -98,9 +109,28 @@ class Reference(ReferenceBase):
                     except KeyError:
                         raise self.ResolveException()
 
+        # Walk through chained references, rejecting cycles. ``visited``
+        # uses id() because settings are not hashable. The upper bound on
+        # chain length is also a sanity guard against pathological docs.
+        visited = {id(thissetting)}
+        max_chain = 64
+        steps = 0
+        while isinstance(getattr(item, "_val", None), ReferenceBase):
+            steps += 1
+            if steps > max_chain:
+                raise self.ResolveException(
+                    "Reference chain too deep (>%d hops)" % max_chain
+                )
+            if id(item) in visited:
+                raise self.ResolveException(
+                    "Circular reference detected at %s" % self.value
+                )
+            visited.add(id(item))
+            item = item._val.resolve(item)
+
         # shortcut to resolve stylesheets
         # hopefully this won't ever change
-        if len(self.split) > 2 and self.split[1] == 'StyleSheet':
+        if len(self.split) > 2 and self.split[1] == "StyleSheet":
             self.resolved = item
 
         return item
@@ -109,6 +139,7 @@ class Reference(ReferenceBase):
         """Set on modified on settings pointed to by this reference."""
         resolved = self.resolve(setn)
         resolved.setOnModified(fn)
+
 
 class ReferenceMultiple(ReferenceBase):
     """A reference to more than one item.
@@ -143,9 +174,15 @@ class ReferenceMultiple(ReferenceBase):
             try:
                 setn = ref.resolve(thissetting)
                 jumps = 1
+                # detect cycles with a visited set keyed by id(setn)
+                # to prevent infinite recursion on circular references
+                visited = {id(setn)}
                 while isinstance(setn._val, ReferenceBase):
                     setn = setn._val.resolve(setn)
                     jumps += 1
+                    if id(setn) in visited:
+                        raise self.ResolveException("Circular reference detected")
+                    visited.add(id(setn))
 
                 if retn is None:
                     retn = setn

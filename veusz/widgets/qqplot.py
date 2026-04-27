@@ -194,98 +194,99 @@ class QQPlot(GenericPlotter):
 
         cliprect = clip
         painter.save()
-        painter.setClipRect(cliprect)
+        try:
+            painter.setClipRect(cliprect)
 
-        # confidence band
-        if s.showCI and len(theo) > 2:
-            n = len(theo)
-            dist = self._getDistribution()
-            if dist is None:
-                return
-            pp = (N.arange(1, n + 1) - 0.375) / (n + 0.25)
+            # confidence band
+            if s.showCI and len(theo) > 2:
+                n = len(theo)
+                dist = self._getDistribution()
+                if dist is None:
+                    return
+                pp = (N.arange(1, n + 1) - 0.375) / (n + 0.25)
 
-            # Approximate pointwise envelope using order-statistic
-            # variance of the plotting positions.  This is NOT a
-            # rigorous simultaneous confidence band — it provides a
-            # rough visual guide only.
-            se = (pp * (1 - pp) / n) ** 0.5
-            if s.distribution == 'normal':
-                loc = N.mean(obs)
-                scale = N.std(obs, ddof=1)
-                if scale < 1e-15:
-                    scale = 1.0
-                lower = dist.ppf(N.clip(pp - 1.96 * se, 0.001, 0.999)) * scale + loc
-                upper = dist.ppf(N.clip(pp + 1.96 * se, 0.001, 0.999)) * scale + loc
-            else:
-                lower = dist.ppf(N.clip(pp - 1.96 * se, 0.001, 0.999))
-                upper = dist.ppf(N.clip(pp + 1.96 * se, 0.001, 0.999))
+                # Approximate pointwise envelope using order-statistic
+                # variance of the plotting positions.  This is NOT a
+                # rigorous simultaneous confidence band — it provides a
+                # rough visual guide only.
+                se = (pp * (1 - pp) / n) ** 0.5
+                if s.distribution == 'normal':
+                    loc = N.mean(obs)
+                    scale = N.std(obs, ddof=1)
+                    if scale < 1e-15:
+                        scale = 1.0
+                    lower = dist.ppf(N.clip(pp - 1.96 * se, 0.001, 0.999)) * scale + loc
+                    upper = dist.ppf(N.clip(pp + 1.96 * se, 0.001, 0.999)) * scale + loc
+                else:
+                    lower = dist.ppf(N.clip(pp - 1.96 * se, 0.001, 0.999))
+                    upper = dist.ppf(N.clip(pp + 1.96 * se, 0.001, 0.999))
 
-            yl = yaxis.dataToPlotterCoords(widgetposn, lower)
-            yu = yaxis.dataToPlotterCoords(widgetposn, upper)
+                yl = yaxis.dataToPlotterCoords(widgetposn, lower)
+                yu = yaxis.dataToPlotterCoords(widgetposn, upper)
 
-            cibrush = s.CIFill.makeQBrushWHide(painter)
-            painter.setBrush(cibrush)
-            painter.setPen(qt.Qt.PenStyle.NoPen)
+                cibrush = s.CIFill.makeQBrushWHide(painter)
+                painter.setBrush(cibrush)
+                painter.setPen(qt.Qt.PenStyle.NoPen)
 
-            path = qt.QPainterPath()
-            valid = N.isfinite(xplt) & N.isfinite(yl) & N.isfinite(yu)
-            started = False
-            for i in range(n):
-                if valid[i]:
-                    if not started:
-                        path.moveTo(xplt[i], yl[i])
-                        started = True
-                    else:
-                        path.lineTo(xplt[i], yl[i])
-            for i in range(n - 1, -1, -1):
-                if valid[i]:
-                    path.lineTo(xplt[i], yu[i])
-            path.closeSubpath()
-            painter.drawPath(path)
+                path = qt.QPainterPath()
+                valid = N.isfinite(xplt) & N.isfinite(yl) & N.isfinite(yu)
+                started = False
+                for i in range(n):
+                    if valid[i]:
+                        if not started:
+                            path.moveTo(xplt[i], yl[i])
+                            started = True
+                        else:
+                            path.lineTo(xplt[i], yl[i])
+                for i in range(n - 1, -1, -1):
+                    if valid[i]:
+                        path.lineTo(xplt[i], yu[i])
+                path.closeSubpath()
+                painter.drawPath(path)
 
-        # reference line (45° through Q1-Q3)
-        if s.showRefLine:
-            refpen = s.RefLine.makeQPenWHide(painter)
-            painter.setPen(refpen)
-            painter.setBrush(qt.Qt.BrushStyle.NoBrush)
+            # reference line (45° through Q1-Q3)
+            if s.showRefLine:
+                refpen = s.RefLine.makeQPenWHide(painter)
+                painter.setPen(refpen)
+                painter.setBrush(qt.Qt.BrushStyle.NoBrush)
 
-            q1_obs = N.percentile(obs, 25)
-            q3_obs = N.percentile(obs, 75)
-            q1_theo = N.percentile(theo, 25)
-            q3_theo = N.percentile(theo, 75)
+                q1_obs = N.percentile(obs, 25)
+                q3_obs = N.percentile(obs, 75)
+                q1_theo = N.percentile(theo, 25)
+                q3_theo = N.percentile(theo, 75)
 
-            if abs(q3_theo - q1_theo) > 1e-15:
-                slope = (q3_obs - q1_obs) / (q3_theo - q1_theo)
-                intercept = q1_obs - slope * q1_theo
-            else:
-                slope = 1.0
-                intercept = 0.0
+                if abs(q3_theo - q1_theo) > 1e-15:
+                    slope = (q3_obs - q1_obs) / (q3_theo - q1_theo)
+                    intercept = q1_obs - slope * q1_theo
+                else:
+                    slope = 1.0
+                    intercept = 0.0
 
-            xmin, xmax = N.nanmin(theo), N.nanmax(theo)
-            margin = (xmax - xmin) * 0.05
-            lx = N.array([xmin - margin, xmax + margin])
-            ly = slope * lx + intercept
+                xmin, xmax = N.nanmin(theo), N.nanmax(theo)
+                margin = (xmax - xmin) * 0.05
+                lx = N.array([xmin - margin, xmax + margin])
+                ly = slope * lx + intercept
 
-            lxp = xaxis.dataToPlotterCoords(widgetposn, lx)
-            lyp = yaxis.dataToPlotterCoords(widgetposn, ly)
-            if N.all(N.isfinite(lxp)) and N.all(N.isfinite(lyp)):
-                painter.drawLine(
-                    qt.QPointF(lxp[0], lyp[0]),
-                    qt.QPointF(lxp[1], lyp[1]))
+                lxp = xaxis.dataToPlotterCoords(widgetposn, lx)
+                lyp = yaxis.dataToPlotterCoords(widgetposn, ly)
+                if N.all(N.isfinite(lxp)) and N.all(N.isfinite(lyp)):
+                    painter.drawLine(
+                        qt.QPointF(lxp[0], lyp[0]),
+                        qt.QPointF(lxp[1], lyp[1]))
 
-        # markers
-        markerbrush = s.MarkerFill.makeQBrushWHide(painter)
-        markeredge = s.MarkerBorder.makeQPenWHide(painter)
-        painter.setPen(markeredge)
-        painter.setBrush(markerbrush)
+            # markers
+            markerbrush = s.MarkerFill.makeQBrushWHide(painter)
+            markeredge = s.MarkerBorder.makeQPenWHide(painter)
+            painter.setPen(markeredge)
+            painter.setBrush(markerbrush)
 
-        markersize = s.get('markerSize').convert(painter)
-        valid = N.isfinite(xplt) & N.isfinite(yplt)
-        utils.plotMarkers(
-            painter, xplt[valid], yplt[valid],
-            s.marker, markersize, clip=cliprect)
-
-        painter.restore()
+            markersize = s.get('markerSize').convert(painter)
+            valid = N.isfinite(xplt) & N.isfinite(yplt)
+            utils.plotMarkers(
+                painter, xplt[valid], yplt[valid],
+                s.marker, markersize, clip=cliprect)
+        finally:
+            painter.restore()
 
 
 document.thefactory.register(QQPlot)

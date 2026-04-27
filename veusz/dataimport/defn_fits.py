@@ -27,11 +27,14 @@ from .. import datasets
 from . import base
 from . import fits_hdf5_helpers
 
+
 def _(text, disambiguation=None, context="Import_FITS"):
     return qt.QCoreApplication.translate(context, text, disambiguation)
 
+
 # lazily imported
 fits = None
+
 
 def loadFITSModule():
     global fits
@@ -43,7 +46,9 @@ def loadFITSModule():
         except ImportError:
             raise RuntimeError(
                 "Cannot load astropy.io.fits or pyfits module. "
-                "Please install before loading documents with FITS data.")
+                "Please install before loading documents with FITS data."
+            )
+
 
 class ImportParamsFITS(base.ImportParamsBase):
     """HDF5 file import parameters.
@@ -58,14 +63,15 @@ class ImportParamsFITS(base.ImportParamsBase):
     """
 
     defaults = {
-        'items': None,
-        'namemap': None,
-        'slices': None,
-        'twodranges': None,
-        'twod_as_oned': None,
-        'wcsmodes': None,
+        "items": None,
+        "namemap": None,
+        "slices": None,
+        "twodranges": None,
+        "twod_as_oned": None,
+        "wcsmodes": None,
     }
     defaults.update(base.ImportParamsBase.defaults)
+
 
 class LinkedFileFITS(base.LinkedFileBase):
     """Links a HDF5 file to the data."""
@@ -77,10 +83,9 @@ class LinkedFileFITS(base.LinkedFileBase):
     def saveToFile(self, fileobj, relpath=None):
         """Save the link to the document file."""
         self._saveHelper(
-            fileobj,
-            'ImportFileFITS',
-            ('filename', 'items'),
-            relpath=relpath)
+            fileobj, "ImportFileFITS", ("filename", "items"), relpath=relpath
+        )
+
 
 class _DataRead:
     """Data read from file during import.
@@ -88,10 +93,12 @@ class _DataRead:
     This is so we can store the original name and options stored in
     attributes from the file.
     """
+
     def __init__(self, origname, data, options):
         self.origname = origname
         self.data = data
         self.options = options
+
 
 class OperationDataImportFITS(base.OperationDataImportBase):
     """Import 1d, 2d, text or nd data from a fits file."""
@@ -107,8 +114,7 @@ class OperationDataImportFITS(base.OperationDataImportBase):
         """
 
         # find name for dataset
-        if (self.params.namemap is not None and
-            dsname in self.params.namemap ):
+        if self.params.namemap is not None and dsname in self.params.namemap:
             name = self.params.namemap[dsname]
         else:
             if "name" in options:
@@ -126,15 +132,15 @@ class OperationDataImportFITS(base.OperationDataImportBase):
             aslice = None
             if "slice" in options:
                 s = fits_hdf5_helpers.convertTextToSlice(
-                    options["slice"], len(data.shape))
+                    options["slice"], len(data.shape)
+                )
                 if s != -1:
                     aslice = s
             if self.params.slices and dsname in self.params.slices:
                 aslice = self.params.slices[dsname]
 
             # finally return data
-            objdata = fits_hdf5_helpers.convertDatasetToObject(
-                data, aslice)
+            objdata = fits_hdf5_helpers.convertDatasetToObject(data, aslice)
             dsread[name] = _DataRead(dsname, objdata, options)
 
         except fits_hdf5_helpers.ConvertError:
@@ -151,30 +157,31 @@ class OperationDataImportFITS(base.OperationDataImportBase):
         mode = "linear_wcs"
         if self.params.wcsmodes:
             mode = self.params.wcsmodes.get(dsname, "linear_wcs")
-        if 'wcsmode' in attr:
-            mode = attr['wcsmode']
+        if "wcsmode" in attr:
+            mode = attr["wcsmode"]
 
         # standard linear wcs keywords
         wcs = [
-            hdu.header.get(x, None) for x in (
-                'CRVAL1', 'CRPIX1', 'CDELT1',
-                'CRVAL2', 'CRPIX2', 'CDELT2')
+            hdu.header.get(x, None)
+            for x in ("CRVAL1", "CRPIX1", "CDELT1", "CRVAL2", "CRPIX2", "CDELT2")
         ]
 
         if mode == "pixel" or (None in wcs and "wcs" in mode):
             rangex = rangey = None
         elif mode == "fraction":
-            rangex = rangey = (0., 1.)
+            rangex = rangey = (0.0, 1.0)
         elif mode == "pixel_wcs":
-            rangex = (hdu.shape[1]-wcs[1], 0-wcs[1])
-            rangey = (0-wcs[4], hdu.shape[0]-wcs[4])
+            rangex = (hdu.shape[1] - wcs[1], 0 - wcs[1])
+            rangey = (0 - wcs[4], hdu.shape[0] - wcs[4])
         elif mode == "linear_wcs":
             rangex = (
-                (0.5-wcs[1])*wcs[2] + wcs[0],
-                (hdu.shape[1]+0.5-wcs[1])*wcs[2] + wcs[0])
+                (0.5 - wcs[1]) * wcs[2] + wcs[0],
+                (hdu.shape[1] + 0.5 - wcs[1]) * wcs[2] + wcs[0],
+            )
             rangey = (
-                (0.5-wcs[4])*wcs[5] + wcs[3],
-                (hdu.shape[0]+0.5-wcs[4])*wcs[5] + wcs[3])
+                (0.5 - wcs[4]) * wcs[5] + wcs[3],
+                (hdu.shape[0] + 0.5 - wcs[4]) * wcs[5] + wcs[3],
+            )
         else:
             raise RuntimeError("Invalid WCS mode")
 
@@ -195,7 +202,7 @@ class OperationDataImportFITS(base.OperationDataImportBase):
         """Read a specific column from a FITS file."""
 
         # dsname is /hduname/colname
-        colname = dsname.split('/')[-1].strip().lower()
+        colname = dsname.split("/")[-1].strip().lower()
 
         # get attributes for column
         attr, colattr = fits_hdf5_helpers.hduVeuszAttrs(hdu)
@@ -217,45 +224,57 @@ class OperationDataImportFITS(base.OperationDataImportBase):
         else:
             # Table HDU
             for col in hdu.data.columns:
-                self.readTableColumn(
-                    hdu, '%s/%s' % (dsname, col.name.lower()), dsread)
+                self.readTableColumn(hdu, "%s/%s" % (dsname, col.name.lower()), dsread)
 
     def walkFile(self, fitsf, hdunames, dsread):
         """Import everything from a fits file."""
 
         for hdu, name in zip(fitsf, hdunames):
-            self.walkHdu(hdu, '/%s' % name, dsread)
+            self.walkHdu(hdu, "/%s" % name, dsread)
 
     def readDataFromFile(self):
-        """Read data from fits file and return a dict of names to data."""
+        """Read data from fits file and return a dict of names to data.
+
+        Per-item failures (missing HDU, malformed column, oversize name)
+        are collected into ``self._import_errors`` instead of aborting
+        the whole import. Pre-fix the first bad item raised
+        ``RuntimeError`` and the user lost every other valid HDU in the
+        file. Surfacing the partial result + a list of failed items lets
+        the user keep what's good and fix what isn't.
+        """
 
         dsread = {}
-        with fits.open(self.params.filename, 'readonly') as fitsf:
+        self._import_errors = []
+        with fits.open(self.params.filename, "readonly") as fitsf:
             hdunames = fits_hdf5_helpers.getFITSHduNames(fitsf)
 
             for item in self.params.items:
-                parts = [p.strip() for p in item.split('/') if p.strip()]
+                parts = [p.strip() for p in item.split("/") if p.strip()]
 
-                if not parts:
-                    # / or empty
-                    self.walkFile(fitsf, hdunames, dsread)
-                elif len(parts) >= 1:
-                    try:
-                        idx = hdunames.index(parts[0])
-                    except ValueError:
-                        raise RuntimeError(
-                            "Cannot find HDU '%s' in FITS file" % parts[0])
-                    hdu = fitsf[idx]
-                    if len(parts) == 1:
-                        # read whole HDU
-                        self.walkHdu(hdu, '/%s' % parts[0], dsread)
-                    elif len(parts) == 2:
-                        # column of table
-                        self.readTableColumn(
-                            hdu, '/%s/%s' % (parts[0], parts[1]), dsread)
-                    else:
-                        raise RuntimeError(
-                            'Too many parts in FITS dataset name')
+                try:
+                    if not parts:
+                        # / or empty
+                        self.walkFile(fitsf, hdunames, dsread)
+                    elif len(parts) >= 1:
+                        try:
+                            idx = hdunames.index(parts[0])
+                        except ValueError:
+                            raise RuntimeError(
+                                "Cannot find HDU '%s' in FITS file" % parts[0]
+                            )
+                        hdu = fitsf[idx]
+                        if len(parts) == 1:
+                            # read whole HDU
+                            self.walkHdu(hdu, "/%s" % parts[0], dsread)
+                        elif len(parts) == 2:
+                            # column of table
+                            self.readTableColumn(
+                                hdu, "/%s/%s" % (parts[0], parts[1]), dsread
+                            )
+                        else:
+                            raise RuntimeError("Too many parts in FITS dataset name")
+                except Exception as e:
+                    self._import_errors.append((item, str(e)))
 
         return dsread
 
@@ -266,7 +285,8 @@ class OperationDataImportFITS(base.OperationDataImportBase):
         # separate out datasets with error bars
         # this a defaultdict of defaultdict with None as default
         errordatasets = collections.defaultdict(
-            lambda: collections.defaultdict(lambda: None))
+            lambda: collections.defaultdict(lambda: None)
+        )
         for name in list(dsread):
             dr = dsread[name]
             ds = dr.data
@@ -274,9 +294,9 @@ class OperationDataImportFITS(base.OperationDataImportBase):
                 # skip non-numeric or 2d datasets
                 continue
 
-            for err in ('+', '-', '+-'):
-                ln = len(err)+3
-                if name[-ln:] == (' (%s)' % err):
+            for err in ("+", "-", "+-"):
+                ln = len(err) + 3
+                if name[-ln:] == (" (%s)" % err):
                     refname = name[:-ln].strip()
                     if refname in dsread:
                         errordatasets[refname][err] = ds
@@ -295,15 +315,14 @@ class OperationDataImportFITS(base.OperationDataImportBase):
             # Standard 1D Import
             # handle any possible error bars
             args = {
-                'data': data,
-                'serr': errordatasets[name]['+-'],
-                'nerr': errordatasets[name]['-'],
-                'perr': errordatasets[name]['+'] 
+                "data": data,
+                "serr": errordatasets[name]["+-"],
+                "nerr": errordatasets[name]["-"],
+                "perr": errordatasets[name]["+"],
             }
 
             # find minimum length and cut down if necessary
-            minlen = min([len(d) for d in args.values()
-                          if d is not None])
+            minlen = min([len(d) for d in args.values() if d is not None])
             for a in list(args):
                 if args[a] is not None and len(args[a]) > minlen:
                     args[a] = args[a][:minlen]
@@ -312,16 +331,20 @@ class OperationDataImportFITS(base.OperationDataImportBase):
 
         elif data.ndim == 2:
             # 2D dataset
-            if ( ((self.params.twod_as_oned and
-                   dread.origname in self.params.twod_as_oned) or
-                  dread.options.get("twod_as_oned") ) and
-                 data.shape[1] in (2,3) ):
+            if (
+                (
+                    self.params.twod_as_oned
+                    and dread.origname in self.params.twod_as_oned
+                )
+                or dread.options.get("twod_as_oned")
+            ) and data.shape[1] in (2, 3):
                 # actually a 1D dataset in disguise
                 if data.shape[1] == 2:
-                    ds = datasets.Dataset(data=data[:,0], serr=data[:,1])
+                    ds = datasets.Dataset(data=data[:, 0], serr=data[:, 1])
                 else:
                     ds = datasets.Dataset(
-                        data=data[:,0], perr=data[:,1], nerr=data[:,2])
+                        data=data[:, 0], perr=data[:, 1], nerr=data[:, 2]
+                    )
             else:
                 # this really is a 2D dataset
 
@@ -331,14 +354,11 @@ class OperationDataImportFITS(base.OperationDataImportBase):
                     r = dread.options["range"]
                     attrs["xrange"] = (r[0], r[2])
                     attrs["yrange"] = (r[1], r[3])
-                for attr in (
-                        "xrange", "yrange", "xcent", "ycent",
-                        "xedge", "yedge" ):
+                for attr in ("xrange", "yrange", "xcent", "ycent", "xedge", "yedge"):
                     if attr in dread.options:
                         attrs[attr] = dread.options.get(attr)
 
-                if ( self.params.twodranges and
-                     dread.origname in self.params.twodranges ):
+                if self.params.twodranges and dread.origname in self.params.twodranges:
                     r = self.params.twodranges[dread.origname]
                     attrs["xrange"] = (r[0], r[2])
                     attrs["yrange"] = (r[1], r[3])
@@ -393,18 +413,21 @@ class OperationDataImportFITS(base.OperationDataImportBase):
             fullname = par.prefix + name + par.suffix
             self.outdatasets[fullname] = ds
 
+
 def ImportFileFITS(
-        comm,
-        filename,
-        items,
-        namemap=None,
-        slices=None,
-        twodranges=None,
-        twod_as_oned=None,
-        wcsmodes=None,
-        prefix='', suffix='',
-        renames=None,
-        linked=False):
+    comm,
+    filename,
+    items,
+    namemap=None,
+    slices=None,
+    twodranges=None,
+    twod_as_oned=None,
+    wcsmodes=None,
+    prefix="",
+    suffix="",
+    renames=None,
+    linked=False,
+):
     """Import data from a FITS file
 
     items is a list of datasets to be imported.
@@ -484,22 +507,32 @@ def ImportFileFITS(
         twodranges=twodranges,
         twod_as_oned=twod_as_oned,
         wcsmodes=wcsmodes,
-        prefix=prefix, suffix=suffix,
+        prefix=prefix,
+        suffix=suffix,
         renames=renames,
-        linked=linked)
+        linked=linked,
+    )
     op = OperationDataImportFITS(params)
     comm.document.applyOperation(op)
 
     if comm.verbose:
-        print("Imported datasets %s" % ', '.join(op.outnames))
+        print("Imported datasets %s" % ", ".join(op.outnames))
     return op.outnames
 
-def ImportFITSFile(comm, dsname, filename, hdu,
-                   datacol = None, symerrcol = None,
-                   poserrcol = None, negerrcol = None,
-                   wcsmode = None,
-                   renames = None,
-                   linked = False):
+
+def ImportFITSFile(
+    comm,
+    dsname,
+    filename,
+    hdu,
+    datacol=None,
+    symerrcol=None,
+    poserrcol=None,
+    negerrcol=None,
+    wcsmode=None,
+    renames=None,
+    linked=False,
+):
     """Compatibility wrapper for ImportFileFITS.
     Do not use this in new code.
 
@@ -535,7 +568,7 @@ def ImportFITSFile(comm, dsname, filename, hdu,
     # work out new HDU name by looking up what would have been chosen
     # before
     loadFITSModule()
-    with fits.open(realfilename, 'readonly') as fitsf:
+    with fits.open(realfilename, "readonly") as fitsf:
         hdunames = fits_hdf5_helpers.getFITSHduNames(fitsf)
         hdu = fitsf[hdu]
         idx = list(fitsf).index(hdu)
@@ -544,10 +577,10 @@ def ImportFITSFile(comm, dsname, filename, hdu,
     if datacol is None:
         # default is pixel here
         if wcsmode is None:
-            wcsmode = 'pixel'
+            wcsmode = "pixel"
 
         # image mode
-        fullname = '/'+hduname
+        fullname = "/" + hduname
         return ImportFileFITS(
             comm,
             filename,
@@ -563,22 +596,22 @@ def ImportFITSFile(comm, dsname, filename, hdu,
         dsnames = []
         namemap = {}
 
-        name = '/%s/%s' % (hduname, datacol)
+        name = "/%s/%s" % (hduname, datacol)
         namemap[name] = dsname
         dsnames.append(name)
 
         # handle conversion of errors
         if symerrcol:
-            name = '/%s/%s' % (hduname, symerrcol)
-            namemap[name] = '%s (+-)' % dsname
+            name = "/%s/%s" % (hduname, symerrcol)
+            namemap[name] = "%s (+-)" % dsname
             dsnames.append(name)
         if poserrcol:
-            name = '/%s/%s' % (hduname, poserrcol)
-            namemap[name] = '%s (+)' % dsname
+            name = "/%s/%s" % (hduname, poserrcol)
+            namemap[name] = "%s (+)" % dsname
             dsnames.append(name)
         if negerrcol:
-            name = '/%s/%s' % (hduname, negerrcol)
-            namemap[name] = '%s (-)' % dsname
+            name = "/%s/%s" % (hduname, negerrcol)
+            namemap[name] = "%s (-)" % dsname
             dsnames.append(name)
 
         return ImportFileFITS(
@@ -589,6 +622,7 @@ def ImportFITSFile(comm, dsname, filename, hdu,
             renames=renames,
             linked=linked,
         )
+
 
 # new import command
 document.registerImportCommand("ImportFileFITS", ImportFileFITS)

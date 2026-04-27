@@ -18,8 +18,8 @@
 #
 ##############################################################################
 
-'''Dialog to pop up if an exception occurs in Veusz.
-This allows the user to send a bug report.'''
+"""Dialog to pop up if an exception occurs in Veusz.
+This allows the user to send a bug report."""
 
 import sys
 import time
@@ -33,14 +33,15 @@ from .. import qtall as qt
 from .. import utils
 from .veuszdialog import VeuszDialog
 
+
 def _(text, disambiguation=None, context="ExceptionDialog"):
     """Translate text."""
     return qt.QCoreApplication.translate(context, text, disambiguation)
 
-_emailUrl ='https://barmag.net/veusz-mail.php'
 
-_sendformat = \
-'''Email: %s
+_emailUrl = "https://barmag.net/veusz-mail.php"
+
+_sendformat = """Email: %s
 
 Error report
 ------------
@@ -49,33 +50,35 @@ Error report
 What the user was doing before the crash
 ----------------------------------------
 %s
-'''
+"""
 
 
 def versionHeader():
     """Get software versions"""
-    return f'''Plotex version: {utils.version()}
+    return f"""Plotex version: {utils.version()}
 Python version: {sys.version}
 Python platform: {sys.platform}
 Numpy version: {numpy.__version__}
 Qt version: {qt.QT_VERSION_STR}
 PyQt version: {qt.PYQT_VERSION_STR}
-sip version: {qt.sip.SIP_VERSION_STR}'''
+sip version: {qt.sip.SIP_VERSION_STR}"""
+
 
 def createReportText(exception):
 
-    timehdr = time.strftime('%a, %d %b %Y %H:%M:%S +0000', time.gmtime())
-    return f'''{versionHeader()}
+    timehdr = time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime())
+    return f"""{versionHeader()}
 Date: {timehdr}
 
-{str(exception)}'''
+{str(exception)}"""
+
 
 class ExceptionSendDialog(VeuszDialog):
     """Dialog to send debugging report."""
 
     def __init__(self, exception, parent):
 
-        VeuszDialog.__init__(self, parent, 'exceptionsend.ui')
+        VeuszDialog.__init__(self, parent, "exceptionsend.ui")
 
         # debugging report text
         self.text = createReportText(exception)
@@ -84,35 +87,42 @@ class ExceptionSendDialog(VeuszDialog):
     def accept(self):
         """Send text."""
         # build up the text of the message
-        text = (
-            _sendformat % (
-                self.emailedit.text(),
-                self.text,
-                self.detailsedit.toPlainText()
-                ))
+        text = _sendformat % (
+            self.emailedit.text(),
+            self.text,
+            self.detailsedit.toPlainText(),
+        )
 
         # send the message as base-64 encoded utf-8
-        text = base64.b64encode(text.encode('utf8'))
+        text = base64.b64encode(text.encode("utf8"))
 
         try:
-            # send the message
-            request.urlopen(_emailUrl, b'message='+text)
+            # Send the message. ``with`` + bounded timeout so a stalled
+            # report server cannot freeze the dialog forever.
+            with request.urlopen(_emailUrl, b"message=" + text, timeout=15) as resp:
+                resp.read()
         except Exception:
             # something went wrong...
             qt.QMessageBox.critical(
-                None, _("Plotex"),
-                _("Failed to connect to error server "
-                  "to send report. Is your internet connected?"))
+                None,
+                _("Plotex"),
+                _(
+                    "Failed to connect to error server "
+                    "to send report. Is your internet connected?"
+                ),
+            )
             return
 
         qt.QMessageBox.information(
-            self, _("Submitted"),
-            _("Thank you for submitting an error report"))
+            self, _("Submitted"), _("Thank you for submitting an error report")
+        )
         VeuszDialog.accept(self)
+
 
 def _raiseIgnoreException():
     """Ignore this exception to clear out stack frame of previous exception."""
     raise utils.IgnoreException()
+
 
 def formatLocals(exception):
     """Return local variables."""
@@ -125,12 +135,11 @@ def formatLocals(exception):
         frame = tb.tb_frame
         tb = tb.tb_next
 
-        outlines.append('')
+        outlines.append("")
         outlines.append(
-            'Frame %s (File %s, line %s)' %
-            (frame.f_code.co_name,
-             frame.f_code.co_filename,
-             frame.f_lineno))
+            "Frame %s (File %s, line %s)"
+            % (frame.f_code.co_name, frame.f_code.co_filename, frame.f_lineno)
+        )
 
         # get local variables for frame
         for key, value in frame.f_locals.items():
@@ -138,33 +147,34 @@ def formatLocals(exception):
             try:
                 v = repr(value)
             except Exception:
-                v = '<???>'
+                v = "<???>"
             if len(v) > 128:
-                v = v[:120] + '...'
-            outlines.append(' %s = %s' % (key, v))
+                v = v[:120] + "..."
+            outlines.append(" %s = %s" % (key, v))
 
             # print out attributes if item is self
-            if key == 'self' and id(value) not in alreadyself:
+            if key == "self" and id(value) not in alreadyself:
                 alreadyself.add(id(value))
-                for attr in sorted( dir(value) ):
+                for attr in sorted(dir(value)):
                     try:
                         v = getattr(value, attr)
                     except Exception:
                         # can sometimes get type error
                         continue
-                    if hasattr(v, '__call__'):
+                    if hasattr(v, "__call__"):
                         # skip callables, to cut down output
                         continue
                     try:
                         sv = repr(v)
                     except Exception:
-                        sv = '<???>'
+                        sv = "<???>"
                     if len(sv) > 128:
-                        sv = sv[:120] + '...'
+                        sv = sv[:120] + "..."
 
-                    outlines.append('  self.%s = %s' % (attr, sv))
+                    outlines.append("  self.%s = %s" % (attr, sv))
 
-    return '\n'.join(outlines)
+    return "\n".join(outlines)
+
 
 class ExceptionDialog(VeuszDialog):
     """Choose an exception to send to developers."""
@@ -173,17 +183,20 @@ class ExceptionDialog(VeuszDialog):
 
     def __init__(self, exception, parent):
 
-        VeuszDialog.__init__(self, parent, 'exceptionlist.ui')
+        VeuszDialog.__init__(self, parent, "exceptionlist.ui")
 
         # get text for traceback and locals
-        self.fmtexcept = ''.join(traceback.format_exception(*exception))
+        self.fmtexcept = "".join(traceback.format_exception(*exception))
         self.backtrace = self.fmtexcept + formatLocals(exception)
 
         self.errortextedit.setPlainText(self.backtrace)
 
         # set critical pixmap to left of dialog
-        icon = qt.QApplication.instance().style().standardIcon(
-            qt.QStyle.StandardPixmap.SP_MessageBoxCritical, None, self)
+        icon = (
+            qt.QApplication.instance()
+            .style()
+            .standardIcon(qt.QStyle.StandardPixmap.SP_MessageBoxCritical, None, self)
+        )
         self.erroriconlabel.setPixmap(icon.pixmap(32))
 
         self.ignoreSessionButton.clicked.connect(self.ignoreSessionSlot)
@@ -201,26 +214,34 @@ class ExceptionDialog(VeuszDialog):
         newver = utils.latestVersion()
         thisver = utils.version()
         if not newver:
-            msg = _('Could not check the latest Plotex version')
+            msg = _("Could not check the latest Plotex version")
         else:
             # convert to tuples for comparison
             newver_tup = utils.versionToTuple(newver)
             thisver_tup = utils.versionToTuple(thisver)
 
             if thisver_tup == newver_tup:
-                msg = _('You are running the latest released Plotex version')
+                msg = _("You are running the latest released Plotex version")
             elif thisver_tup > newver_tup:
-                msg = _('You are running an unreleased Plotex version')
+                msg = _("You are running an unreleased Plotex version")
             else:
-                msg = (_(
-                    '<b>Your current version of Plotex is old. '
-                    'Plotex %s is available.</b>') % newver)
+                msg = (
+                    _(
+                        "<b>Your current version of Plotex is old. "
+                        "Plotex %s is available.</b>"
+                    )
+                    % newver
+                )
 
         self.veuszversionlabel.setText(msg)
 
     def accept(self):
         """Accept by opening send dialog."""
         d = ExceptionSendDialog(self.backtrace, self)
+        try:
+            d.setAttribute(qt.Qt.WidgetAttribute.WA_DeleteOnClose)
+        except Exception:
+            pass
         if d.exec() == qt.QDialog.DialogCode.Accepted:
             VeuszDialog.accept(self)
 
@@ -230,9 +251,9 @@ class ExceptionDialog(VeuszDialog):
         self.reject()
 
     def saveButtonSlot(self):
-        filename = qt.QFileDialog.getSaveFileName(self, 'Save File')
+        filename = qt.QFileDialog.getSaveFileName(self, "Save File")
         if filename[0]:
-            f = open(filename[0], 'w')
+            f = open(filename[0], "w")
             f.write(createReportText(self.backtrace))
             f.close()
 

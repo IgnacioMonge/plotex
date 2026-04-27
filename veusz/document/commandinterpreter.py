@@ -49,17 +49,72 @@ import io
 import os.path
 import json
 import warnings
+import datetime
+
+import numpy as N
 
 from .commandinterface import CommandInterface
 from .. import utils
+
+
+def make_json_safe(value):
+    """Convert common Veusz/Python values into JSON-safe structures."""
+
+    if isinstance(value, dict):
+        return {str(key): make_json_safe(val) for key, val in value.items()}
+
+    if isinstance(value, N.ndarray):
+        return make_json_safe(value.tolist())
+
+    if isinstance(value, N.generic):
+        return make_json_safe(value.item())
+
+    if isinstance(value, (list, tuple)):
+        return [make_json_safe(item) for item in value]
+
+    if isinstance(value, set):
+        return [make_json_safe(item) for item in value]
+
+    if isinstance(value, (datetime.datetime, datetime.date, datetime.time)):
+        return value.isoformat()
+
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+
+    return repr(value)
+
+
+def serialize_json_result(result, include_traceback=False):
+    """Serialize command results or exceptions to a JSON string."""
+
+    if isinstance(result, Exception):
+        out = {
+            "__exception__": True,
+            "type": type(result).__name__,
+            "message": str(result),
+        }
+        if include_traceback and result.__traceback__ is not None:
+            out["traceback"] = "".join(
+                traceback.format_exception(type(result), result, result.__traceback__)
+            )
+    else:
+        out = {"result": make_json_safe(result)}
+    return json.dumps(out)
+
 
 class CommandInterpreter:
     """Class for executing commands in the Veusz command line language."""
 
     def __init__(self, document):
-        """ Initialise object with the document it interfaces."""
+        """Initialise object with the document it interfaces."""
         self.document = document
         self.safe_mode = True
+
+        # Importers register commands dynamically on CommandInterface.
+        from .. import dataimport  # noqa: F401
 
         # set up interface to document
         self.interface = CommandInterface(document)
@@ -76,7 +131,7 @@ class CommandInterpreter:
         exec("from numpy import *", self.globals)
 
         # define root object
-        self.globals['Root'] = self.interface.Root
+        self.globals["Root"] = self.interface.Root
 
         # shortcut
         ifc = self.interface
@@ -84,19 +139,26 @@ class CommandInterpreter:
         # define commands for interface
         self.cmds = {}
         for cmd in (
-                CommandInterface.safe_commands +
-                CommandInterface.unsafe_commands +
-                CommandInterface.import_commands):
+            CommandInterface.safe_commands
+            + CommandInterface.unsafe_commands
+            + CommandInterface.import_commands
+        ):
             self.cmds[cmd] = getattr(ifc, cmd)
-        self.cmds['GPL'] = self.GPL
-        self.cmds['Load'] = self.Load
+        self.cmds["GPL"] = self.GPL
+        self.cmds["Load"] = self.Load
+        self.safe_cmds = set(
+            CommandInterface.safe_commands
+            + CommandInterface.import_commands
+            + ["GPL", "Load"]
+        )
 
-        self.globals.update( self.cmds )
+        self.globals.update(self.cmds)
 
     def addCommand(self, name, command):
         """Add the given command to the list of available commands."""
         self.cmds[name] = command
         self.globals[name] = command
+        self.safe_cmds.add(name)
 
     def setSafeMode(self, enabled):
         """Toggle safe mode on or off.
@@ -119,50 +181,114 @@ class CommandInterpreter:
     def _pythonise(self, text):
         """Internal routine to convert commands in the form Cmd a b c into Cmd(a,b,c)."""
 
-        out = ''
+        out = ""
         # iterate over lines
-        for line in text.split('\n'):
+        for line in text.split("\n"):
             parts = line.split()
 
             # turn Cmd a b c into Cmd(a,b,c)
             if len(parts) != 0 and parts[0] in self.cmds:
                 line = utils.pythonise(line)
 
-            out += line + '\n'
+            out += line + "\n"
 
         return out
 
     def _validate_safe_ast(self, source):
         """Validate that source only contains calls to whitelisted commands.
 
-        Raises RuntimeError if any non-whitelisted code is found.
+        Walks the *entire* AST recursively — not just the top-level Call —
+        so that an attacker cannot embed arbitrary Python inside an argument
+        of a whitelisted command. Previous version only checked the top-level
+        ``Call.func``, leaving bypasses like::
+
+            Set('x', __import__('os').system('rm -rf /'))
+            Set('x', (lambda: open('/etc/passwd').read())())
+            Set('x', [c for c in ().__class__.__bases__])
+
+        The new policy: every statement must be ``Expr(Call(Name))`` where
+        the name is in ``safe_cmds``; every argument (positional or keyword)
+        must reduce to a literal, a container of literals, a unary +/- on a
+        literal, or another whitelisted call. Anything else — Attribute,
+        Subscript, Lambda, comprehensions, BinOp, JoinedStr, NamedExpr,
+        Starred — is rejected.
+
+        Raises RuntimeError on any non-whitelisted construct.
         """
         import ast
-        try:
-            tree = ast.parse(source, mode='exec')
-        except SyntaxError:
-            # Let compile() handle syntax errors later
-            return
-        for node in tree.body:
-            if not isinstance(node, ast.Expr) or not isinstance(node.value, ast.Call):
-                raise RuntimeError(
-                    'Python execution disabled in safe mode. '
-                    'Use documented commands only '
-                    '(e.g., Set, Get, Add, To, etc.)')
-            func = node.value.func
-            if not isinstance(func, ast.Name) or func.id not in self.cmds:
-                raise RuntimeError(
-                    'Command not allowed in safe mode: %s' % ast.dump(func))
 
-    def run(self, inputcmds, filename = None):
-        """ Run a set of commands inside the preserved environment.
+        try:
+            tree = ast.parse(source, mode="exec")
+        except SyntaxError:
+            # Let compile() handle syntax errors later in run().
+            return
+
+        SAFE_UNARY_OPS = (ast.USub, ast.UAdd, ast.Not, ast.Invert)
+
+        def reject(node, what):
+            raise RuntimeError(
+                "%s not allowed in safe mode: %s" % (what, ast.dump(node))
+            )
+
+        def check_value(node):
+            # Constants: numbers, strings, bytes, None, True/False, Ellipsis
+            if isinstance(node, ast.Constant):
+                return
+            # Containers of safe values
+            if isinstance(node, (ast.List, ast.Tuple, ast.Set)):
+                for elt in node.elts:
+                    check_value(elt)
+                return
+            if isinstance(node, ast.Dict):
+                for k in node.keys:
+                    if k is not None:
+                        check_value(k)
+                for v in node.values:
+                    check_value(v)
+                return
+            # Unary +/-/not/~ on a safe value (covers -1.5, +0, etc.)
+            if isinstance(node, ast.UnaryOp) and isinstance(node.op, SAFE_UNARY_OPS):
+                check_value(node.operand)
+                return
+            # Nested whitelisted command call (e.g. Set('x', To('foo')))
+            if isinstance(node, ast.Call):
+                check_call(node)
+                return
+            reject(node, "argument expression")
+
+        def check_call(call):
+            if not isinstance(call.func, ast.Name):
+                reject(call, "callee")
+            if call.func.id not in self.safe_cmds:
+                raise RuntimeError(
+                    "Command not allowed in safe mode: %s" % call.func.id
+                )
+            for arg in call.args:
+                check_value(arg)
+            for kw in call.keywords:
+                if kw.arg is None:
+                    # **kwargs unpacking: opaque, reject
+                    reject(kw, "keyword unpacking")
+                check_value(kw.value)
+
+        for stmt in tree.body:
+            if not (isinstance(stmt, ast.Expr) and isinstance(stmt.value, ast.Call)):
+                raise RuntimeError(
+                    "Python execution disabled in safe mode. "
+                    "Use documented commands only "
+                    "(e.g., Set, Get, Add, To, etc.)"
+                )
+            check_call(stmt.value)
+
+    def run(self, inputcmds, filename=None):
+        """Run a set of commands inside the preserved environment.
 
         inputcmds: a string with the commands to run
         filename: a filename to report if there are errors
         """
 
         if filename is None:
-            filename = '<string>'
+            filename = "<string>"
 
         # pythonise!
         inputcmds = self._pythonise(inputcmds)
@@ -174,14 +300,17 @@ class CommandInterpreter:
         # preserve output streams
         saved = sys.stdout, sys.stderr, sys.stdin
         sys.stdout, sys.stderr, sys.stdin = (
-            self.write_stdout, self.write_stderr, self.read_stdin)
+            self.write_stdout,
+            self.write_stderr,
+            self.read_stdin,
+        )
 
         # count number of newlines in expression
         # If it's 2, then execute as a single statement (print out result)
-        if inputcmds.count('\n') == 2:
-            stattype = 'single'
+        if inputcmds.count("\n") == 2:
+            stattype = "single"
         else:
-            stattype = 'exec'
+            stattype = "exec"
 
         # first compile the code to check for syntax errors
         try:
@@ -215,28 +344,17 @@ class CommandInterpreter:
 
     def Load(self, filename):
         """Replace the document with a new one from the filename."""
+        from . import loader
 
-        with io.open(filename, 'r', encoding='utf8') as f:
-            self.document.wipe()
-            self.interface.To('/')
-            oldfile = self.globals['__file__']
-            absfname = os.path.abspath(filename)
-            self.globals['__file__'] = absfname
-
-            self.interface.importpath.append(
-                os.path.dirname(os.path.abspath(filename)))
-            self.runFile(f)
-            self.interface.importpath.pop()
-            self.globals['__file__'] = oldfile
-            self.document.filename = absfname
-            self.document.setModified()
-            self.document.setModified(False)
-            self.document.clearHistory()
+        absfname = os.path.abspath(filename)
+        ext = os.path.splitext(absfname)[1].lower()
+        mode = "hdf5" if ext in (".vszh5", ".h5", ".hdf5", ".he5") else "vsz"
+        loader.loadDocument(self.document, absfname, mode=mode)
 
     def runFile(self, fileobject):
-        """ Run a file in the preserved environment."""
+        """Run a file in the preserved environment."""
         content = fileobject.read()
-        self.run(content, getattr(fileobject, 'name', '<file>'))
+        self.run(content, getattr(fileobject, "name", "<file>"))
 
     def evaluate(self, expression):
         """Evaluate an expression in the environment."""
@@ -269,7 +387,7 @@ class CommandInterpreter:
 
     def GPL(self):
         """Write the GPL to the console window."""
-        sys.stdout.write( utils.getLicense() )
+        sys.stdout.write(utils.getLicense())
 
     def runCommand(self, name, args, namedargs):
         """Run a command by name with the given arguments.
@@ -307,7 +425,7 @@ class CommandInterpreter:
 
         # Decode from JSON
         if isinstance(command, (bytes, bytearray)):
-            command = command.decode('utf-8')
+            command = command.decode("utf-8")
         name, args, namedargs = json.loads(command)
 
         try:
@@ -315,12 +433,4 @@ class CommandInterpreter:
         except Exception as e:
             retn = e
 
-        # Serialize result as JSON
-        if isinstance(retn, Exception):
-            return json.dumps({
-                '__exception__': True,
-                'type': type(retn).__name__,
-                'message': str(retn),
-            }).encode('utf-8')
-        else:
-            return json.dumps({'result': retn}).encode('utf-8')
+        return serialize_json_result(retn).encode("utf-8")

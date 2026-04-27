@@ -181,7 +181,10 @@ def convertDatasetToObject(data, slices, fill_value=None):
         if hasattr(data, 'ndim') and data.ndim != 1:
             raise ConvertError(_("Text datasets must have 1 dimension"))
 
-        strcnv = list(data)
+        # Veusz text datasets must be str; bytes items (kind 'S'/'a' from
+        # HDF5) are decoded via convertFromBytes so downstream code does
+        # not receive a mix of bytes and str.
+        strcnv = [convertFromBytes(item) for item in data]
         return strcnv
 
     raise ConvertError(_("Dataset has an invalid type"))
