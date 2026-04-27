@@ -33,17 +33,17 @@
 - **Fit widget with confidence/prediction bands**: persisted across save/load, Levenberg-Marquardt and Minuit backends
 - **Modernized UI**: ribbon toolbar, command palette, split view, rulers, dark/light themes
 - **6 scientific color palettes**: Okabe-Ito, Wong, Tol-Vibrant, Tol-Muted, Tableau 10, Plotex custom
-- **Improved reliability**: reentrant document locking, document snapshot/rollback on failed loads, render thread resilience, 39 automated regression tests
+- **Improved reliability**: reentrant document locking, document snapshot/rollback on failed loads, render thread resilience, HMAC-signed bytecode cache, hardened safe-mode AST validator, 107 automated regression tests
 - **Excel, JSON, and ODS import** support
 - **Debounced zoom** with fast preview
 - **Pan with middle mouse button**
 
 ## Requirements
 
-- Python 3.9+
-- PyQt6 6.x
-- NumPy
-- Optional: SciPy (for QQ plots, fitting), h5py (for HDF5), iminuit (for Minuit fitting)
+- Python 3.8+
+- PyQt6 >= 6.3
+- NumPy >= 1.20 (NumPy 2.x supported)
+- Optional: SciPy (for QQ plots, fitting), h5py (for HDF5), astropy (for FITS), iminuit (for Minuit fitting)
 
 ## Installation
 
@@ -82,6 +82,12 @@ python -m PyInstaller support/veusz_windows_pyinst.spec --noconfirm
 pip install pytest
 pytest tests/test_audit_fixes.py -v
 ```
+
+The suite covers document locking, painter state, loader rollback,
+HMAC-signed bytecode cache, AST safe-mode validator (with bypass
+regression cases), capture shell-injection guards, image cache
+thread-safety, settings type-strict validators, ENVIRON whitelist, and
+statistical correctness for ROC/Bland-Altman/Kaplan-Meier.
 
 ## File formats
 
