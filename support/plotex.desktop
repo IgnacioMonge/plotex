@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Plotex
+GenericName=Scientific plotting
+Comment=Scientific plotting and graphing package (Veusz fork)
+Comment[es]=Paquete de gráficas y diagramas científicos (fork de Veusz)
+MimeType=application/x-plotex;application/x-veusz;
+Exec=plotex %F
+Icon=plotex
+Terminal=false
+Type=Application
+Categories=DataVisualization;Science;
+Keywords=graphing;plotting;graph;plot;visualization;science;math;data;medical;statistics;

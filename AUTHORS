@@ -1,3 +1,21 @@
+Plotex (this fork) — primary author
+-----------------------------------
+M. Ignacio Monge García <monge.ignacio@gmail.com>
+   https://github.com/IgnacioMonge/plotex
+
+Plotex was forked from Veusz 4.2 in 2026 and adds new plot types
+(Kaplan-Meier, ROC, Bland-Altman, violin, pie, Pareto, QQ, ridgeline,
+heatmaps, polar trending, bracket annotations), a modernized ribbon UI,
+12+ plot themes, scientific color palettes, hardened safe-mode and
+loader, and an extensive regression test suite.
+
+
+Upstream Veusz — original authors
+---------------------------------
 Jeremy Sanders <jeremy@jeremysanders.net>
    http://www.jeremysanders.net/
 James Graham <jg307@cam.ac.uk>
+
+Plotex is built on the foundation of Veusz; the work of Jeremy Sanders
+and every Veusz contributor is gratefully acknowledged. See
+ChangeLog.veusz-upstream for the original Veusz changelog.

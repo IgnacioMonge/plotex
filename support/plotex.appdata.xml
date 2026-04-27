@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2026 M. Ignacio Monge García <monge.ignacio@gmail.com> -->
+<!-- Original Veusz appdata copyright 2014 Jeremy Sanders -->
+<component type="desktop-application">
+  <id>io.github.IgnacioMonge.Plotex</id>
+  <launchable type="desktop-id">plotex.desktop</launchable>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-2.0+</project_license>
+  <name>Plotex</name>
+  <summary>Scientific plotting package (Veusz fork)</summary>
+  <description>
+    <p>
+      Plotex is an interactive graphical scientific plotting and
+      graphing package — a fork of Veusz 4.2 by Jeremy Sanders.
+      Designed to produce publication-ready PDF, SVG, EMF and bitmap
+      output. Reads data from text, CSV, HDF5 and FITS files. Provides
+      a command line and Python scripting interface to its plotting
+      facilities and can also be used as a Python plotting module.
+    </p>
+    <p>
+      Plotex extends Veusz with new plot types relevant to medical and
+      statistical research: Kaplan-Meier survival curves, ROC curves
+      with confidence bands, Bland-Altman plots, violin plots, pie
+      charts, Pareto charts, QQ plots, ridgeline plots, heatmaps,
+      polar trending and bracket annotations. It also adds 12+ plot
+      themes (Classic, Publication, ggplot2, Seaborn, Economist, BMJ,
+      GraphPad Prism, Solarized…), 6 scientific color palettes, a
+      modernized ribbon UI, command palette, and a hardened safe-mode
+      with HMAC-signed bytecode cache.
+    </p>
+  </description>
+  <screenshots>
+    <screenshot type="default">
+        <image>https://raw.githubusercontent.com/IgnacioMonge/plotex/master/screenshots/plotex-ui.png</image>
+    </screenshot>
+    <screenshot>
+        <image>https://raw.githubusercontent.com/IgnacioMonge/plotex/master/screenshots/plotex-roc.png</image>
+    </screenshot>
+    <screenshot>
+        <image>https://raw.githubusercontent.com/IgnacioMonge/plotex/master/screenshots/plotex-ridgeline.png</image>
+    </screenshot>
+    <screenshot>
+        <image>https://raw.githubusercontent.com/IgnacioMonge/plotex/master/screenshots/plotex-scatter.png</image>
+    </screenshot>
+    <screenshot>
+        <image>https://raw.githubusercontent.com/IgnacioMonge/plotex/master/screenshots/plotex-fit.png</image>
+    </screenshot>
+  </screenshots>
+  <url type="homepage">https://github.com/IgnacioMonge/plotex</url>
+  <url type="help">https://github.com/IgnacioMonge/plotex#readme</url>
+  <url type="bugtracker">https://github.com/IgnacioMonge/plotex/issues</url>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="1.7.0" date="2026-04-27">
+      <description>
+        <p>Audit fixes: security (HMAC cache, hardened safe-mode AST validator,
+        forbidden_attrs blacklist, ENVIRON whitelist), threading (painter try/finally,
+        loader timeouts, document snapshot under read lock), UX (Preferences Cancel
+        actually cancels, fitdialog re-entrancy fix), settings (cycle detection,
+        type-strict normalisers), build coherence. 61 fixes, 107 regression tests.</p>
+      </description>
+    </release>
+    <release version="1.5.1" date="2026-04-11">
+      <description>
+        <p>Hotfix: loader hang on Windows when opening files from protected
+        directories (e.g. Program Files). Bytecode cache moved to
+        %LOCALAPPDATA%\Plotex\cache.</p>
+      </description>
+    </release>
+    <release version="1.0.0" date="2026-04-07">
+      <description>
+        <p>Initial public release of the Plotex fork from Veusz 4.2.</p>
+      </description>
+    </release>
+  </releases>
+  <developer_name>M. Ignacio Monge García</developer_name>
+  <update_contact>monge.ignacio@gmail.com</update_contact>
+</component>
