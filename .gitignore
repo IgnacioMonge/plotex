@@ -19,6 +19,10 @@ veusz/helpers/*.so
 .vscode/
 *~
 
+# Local agent scaffold (not part of the public repo)
+.mex/
+AGENTS.md
+
 # Testing
 .pytest_cache/
 

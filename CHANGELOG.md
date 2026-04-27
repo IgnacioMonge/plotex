@@ -4,7 +4,12 @@ All changes relative to Veusz 4.2 (base fork).
 
 ---
 
-## v1.7.0 (work in progress) — Sprint 2+3+4
+## v1.7.0 (2026-04-27) — Sprint 1+2+3+4 from internal audit
+
+Consolidates Sprint 1 (HIGH quick wins), Sprint 2 (refactors), Sprint 3
+(MED batch) and Sprint 4 (LOW cleanup, hardening, docs) into a single
+release. v1.6.0 was an interim wip tag inside this same audit cycle and
+is not a separately published release.
 
 ### Sprint 4 — LOW cleanup, hardening, docs (this slice)
 
@@ -56,7 +61,7 @@ All changes relative to Veusz 4.2 (base fork).
 
 ---
 
-## v1.7.0 (work in progress) — Sprint 2+3: settings, security, UX, build
+## v1.7.0 (rolled up — see header above) — Sprint 2+3: settings, security, UX, build
 
 ### Security
 - `evaluate.py` ENVIRON now exposes only a whitelist of locale/system
@@ -167,7 +172,7 @@ All changes relative to Veusz 4.2 (base fork).
 
 ---
 
-## v1.6.0 (work in progress) — Sprint 1: HIGH quick wins
+## v1.6.0 (interim, rolled into v1.7.0) — Sprint 1: HIGH quick wins
 
 Builds on v1.5.2. Fixes 16 HIGH-severity issues from the 2026-04-27 audit.
 
