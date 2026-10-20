@@ -31,19 +31,19 @@
   </description>
   <screenshots>
     <screenshot type="default">
-        <image>https://raw.githubusercontent.com/IgnacioMonge/plotex/master/screenshots/plotex-ui.png</image>
+        <image>https://raw.githubusercontent.com/IgnacioMonge/plotex/main/screenshots/plotex-ui.png</image>
     </screenshot>
     <screenshot>
-        <image>https://raw.githubusercontent.com/IgnacioMonge/plotex/master/screenshots/plotex-roc.png</image>
+        <image>https://raw.githubusercontent.com/IgnacioMonge/plotex/main/screenshots/plotex-roc.png</image>
     </screenshot>
     <screenshot>
-        <image>https://raw.githubusercontent.com/IgnacioMonge/plotex/master/screenshots/plotex-ridgeline.png</image>
+        <image>https://raw.githubusercontent.com/IgnacioMonge/plotex/main/screenshots/plotex-ridgeline.png</image>
     </screenshot>
     <screenshot>
-        <image>https://raw.githubusercontent.com/IgnacioMonge/plotex/master/screenshots/plotex-scatter.png</image>
+        <image>https://raw.githubusercontent.com/IgnacioMonge/plotex/main/screenshots/plotex-scatter.png</image>
     </screenshot>
     <screenshot>
-        <image>https://raw.githubusercontent.com/IgnacioMonge/plotex/master/screenshots/plotex-fit.png</image>
+        <image>https://raw.githubusercontent.com/IgnacioMonge/plotex/main/screenshots/plotex-fit.png</image>
     </screenshot>
   </screenshots>
   <url type="homepage">https://github.com/IgnacioMonge/plotex</url>
@@ -51,6 +51,14 @@
   <url type="bugtracker">https://github.com/IgnacioMonge/plotex/issues</url>
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="1.7.3" date="2026-10-20">
+      <description>
+        <p>Use consistent device font metrics for contour-label spacing and
+        clipping. Enable all graphical comparisons, including the twelve
+        formerly excluded 3D, MathML and 2D examples, with reviewed references
+        and regression checks.</p>
+      </description>
+    </release>
     <release version="1.7.2" date="2026-10-20">
       <description>
         <p>Reduce memory use and interpreter blocking during marker rendering;

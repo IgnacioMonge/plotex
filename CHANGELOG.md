@@ -4,6 +4,8 @@ All changes relative to Veusz 4.2 (base fork).
 
 ## [Unreleased]
 
+## [1.7.3] - 2026-10-20
+
 ### Added
 - Complete graphical references for the five 3D examples and MathML, reviewed
   against their equations, data and rendered output.
@@ -11,6 +13,7 @@ All changes relative to Veusz 4.2 (base fork).
   output as a failure.
 
 ### Changed
+- Use `main` as the default development branch.
 - Compare every rendered graphical test with its reference; remove the twelve
   inherited exclusions and refresh reviewed 2D references for current styles.
 
@@ -544,6 +547,7 @@ Classic, Black & White, Publication, Minimal, Dark, ggplot2, Seaborn, Economist,
 *Plotex is based on Veusz 4.2 by Jeremy Sanders.*
 *Extended by M. Ignacio Monge Garcia with assistance from Claude (Anthropic).*
 
-[Unreleased]: https://github.com/IgnacioMonge/plotex/compare/v1.7.2...master
+[Unreleased]: https://github.com/IgnacioMonge/plotex/compare/v1.7.3...main
+[1.7.3]: https://github.com/IgnacioMonge/plotex/compare/v1.7.2...v1.7.3
 [1.7.2]: https://github.com/IgnacioMonge/plotex/compare/v1.7.0...v1.7.2
 [1.7.0]: https://github.com/IgnacioMonge/plotex/releases/tag/v1.7.0
