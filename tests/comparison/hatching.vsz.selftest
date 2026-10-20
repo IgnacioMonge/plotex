@@ -4,7 +4,7 @@
 <svg width="531.4px" height="531.4px" version="1.1"
     xmlns="http://www.w3.org/2000/svg"
     xmlns:xlink="http://www.w3.org/1999/xlink">
-<desc>Veusz output document</desc>
+<desc>Plotex output document</desc>
 <defs>
 <clipPath id="c0">
 <path d="m0,0l531.4,0l0,531.4l-531.4,0l0,-531.4"/>
@@ -35,12 +35,6 @@
 <g clip-path="url(#c0)">
 <g fill="#ffffff" stroke-width="1.2">
 <path d="m28.3,28.3l474.8,0l0,474.8l-474.8,0l0,-474.8"/>
-</g>
-<g fill="none" stroke="#008000" stroke-width="1">
-<text x="220.7" y="2.1" font-size="18pt" fill="#008000">Hatch</text>
-</g>
-<g fill="none" stroke-width="1">
-<text x="276.9" y="2.1" font-size="18pt" fill="#000000">ing</text>
 </g>
 </g>
 <g clip-path="url(#c2)">
@@ -119,7 +113,7 @@
 </g>
 </g>
 <g clip-path="url(#c0)">
-<g fill="none" stroke-linecap="butt" stroke-width="0.6">
+<g fill="none" stroke-width="0.6">
 <path d="M28.3,503.1l0,-474.8"/>
 <path d="M28.3,503.1l7.5,0M28.3,424l7.5,0M28.3,344.8l7.5,0M28.3,265.7l7.5,0M28.3,186.6l7.5,0M28.3,107.4l7.5,0M28.3,28.3l7.5,0"/>
 </g>
@@ -132,7 +126,7 @@
 <text x="7.3" y="116.2" font-size="14pt" fill="#000000">10</text>
 <text x="7.3" y="37" font-size="14pt" fill="#000000">12</text>
 </g>
-<g fill="none" stroke-linecap="butt" stroke-width="0.6">
+<g fill="none" stroke-width="0.6">
 <path d="M503.1,503.1l0,-474.8"/>
 <path d="M503.1,503.1l-7.5,0M503.1,424l-7.5,0M503.1,344.8l-7.5,0M503.1,265.7l-7.5,0M503.1,186.6l-7.5,0M503.1,107.4l-7.5,0M503.1,28.3l-7.5,0"/>
 <path d="M28.3,503.1l474.8,0"/>
@@ -147,9 +141,20 @@
 <text x="419.6" y="508.4" font-size="14pt" fill="#000000">6</text>
 <text x="498.7" y="508.4" font-size="14pt" fill="#000000">7</text>
 </g>
-<g fill="none" stroke-linecap="butt" stroke-width="0.6">
+<g fill="none" stroke-width="0.6">
 <path d="M28.3,28.3l474.8,0"/>
 <path d="M28.3,28.3l0,7.5M107.4,28.3l0,7.5M186.6,28.3l0,7.5M265.7,28.3l0,7.5M344.8,28.3l0,7.5M424,28.3l0,7.5M503.1,28.3l0,7.5"/>
+</g>
+<g fill="#ffffff" stroke="none" stroke-width="1">
+<g transform="translate(220.7,7.1)">
+<path d="m-5,-7.2l100,0l0,12.2l-100,0l0,-12.2"/>
+</g>
+</g>
+<g fill="none" stroke="#008000" stroke-width="1">
+<text x="220.7" y="7.1" font-size="18pt" fill="#008000">Hatch</text>
+</g>
+<g fill="none" stroke-width="1">
+<text x="276.9" y="7.1" font-size="18pt" fill="#000000">ing</text>
 </g>
 </g>
 </g>

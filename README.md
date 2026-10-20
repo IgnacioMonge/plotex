@@ -100,8 +100,8 @@ python tests/runselftest.py --test-saves
 ```
 
 Missing reference files and rendering errors fail the suite without stopping
-the remaining cases. Optional FITS/HDF5 support and existing platform-sensitive
-comparison exclusions are reported separately. Review visual differences
+the remaining cases. Every rendered case is compared with its reference;
+missing optional FITS/HDF5 support is reported separately. Review visual differences
 before regenerating references.
 
 Untrusted documents allow numerical expressions and ordinary document commands.

@@ -91,30 +91,6 @@ except ImportError:
     except ImportError:
         pyfits = None
 
-# these tests fail for some reason which haven't been debugged
-# it appears the failures aren't important however
-excluded_tests = set([
-        # fails on Linux Arm
-        'spectrum.vsz',
-        'hatching.vsz',
-
-        # fails on suse / fedora
-        'contour_labels.vsz',
-        # new arm self test failures
-        'example_import.vsz',
-        'profile.vsz',
-        '1dto2d.vsz',
-
-        # don't expect this to work
-        'mathml.vsz',
-
-        # 3d rendering needs more work
-        '3d_errors.vsz',
-        '3d_function.vsz',
-        '3d_points.vsz',
-        '3d_surface.vsz',
-        '3d_volume.vsz',
-    ])
 
 class StupidFontMetrics:
     """This is a fake font metrics device which should return the same
@@ -235,7 +211,6 @@ def runTests(test_saves=False, test_unlink=False):
     fails = 0
     passes = 0
     skipped_support = 0
-    skipped_wip = 0
 
     d = Dirs()
     for infile in sorted(d.infiles):
@@ -268,12 +243,6 @@ def runTests(test_saves=False, test_unlink=False):
             fails += 1
             continue
 
-        if base in excluded_tests:
-            print(" SKIPWIP: rendered, but comparison skipped")
-            skipped_wip += 1
-            os.unlink(outfile)
-            continue
-
         comparfile = os.path.join(d.thisdir, 'comparison', base + '.selftest')
         if not os.path.isfile(comparfile):
             print(" FAIL: missing comparison file %s" % comparfile)
@@ -294,8 +263,6 @@ def runTests(test_saves=False, test_unlink=False):
     print()
     if skipped_support != 0:
         print('Skipped %i tests (missing support)' % skipped_support)
-    if skipped_wip != 0:
-        print('Skipped %i comparisons (work in progress)' % skipped_wip)
     if fails == 0:
         print("All tests %i/%i PASSED" % (passes, passes))
         sys.exit(0)

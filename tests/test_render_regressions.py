@@ -50,6 +50,28 @@ def test_comparison_only_normalizes_application_metadata(runner):
         new.replace("l3,4", "l4,4"))
 
 
+@pytest.mark.parametrize("name", [
+    "spectrum.vsz", "hatching.vsz", "contour_labels.vsz", "example_import.vsz",
+    "profile.vsz", "1dto2d.vsz", "mathml.vsz", "3d_errors.vsz",
+    "3d_function.vsz", "3d_points.vsz", "3d_surface.vsz", "3d_volume.vsz",
+])
+def test_formerly_excluded_graphics_fail_on_changed_output(
+        runner, tmp_path, monkeypatch, capsys, name):
+    comparison = tmp_path / "comparison"
+    comparison.mkdir()
+    (comparison / (name + ".selftest")).write_text("expected", encoding="utf-8")
+    monkeypatch.setattr(runner, "Dirs", lambda: SimpleNamespace(
+        thisdir=str(tmp_path), infiles=[str(tmp_path / name)]))
+    monkeypatch.setattr(runner, "renderVszTest",
+                        lambda source, output, **kwargs:
+                        Path(output).write_text("changed", encoding="utf-8"))
+    with pytest.raises(SystemExit) as error:
+        runner.runTests()
+    assert error.value.code == 1
+    assert "FAIL: results differed" in capsys.readouterr().out
+    assert (tmp_path / (name + ".temp.selftest")).is_file()
+
+
 def test_embedded_graphical_test_has_execution_timeout(runner, monkeypatch):
     calls = []
     monkeypatch.setattr(runner.subprocess, "call",
@@ -71,3 +93,24 @@ def test_save_roundtrip_keeps_document_filename_labels(runner, tmp_path, monkeyp
     text = output.read_text(encoding="utf-8")
     assert "named.vsz" in text
     assert "self-test-temporary" not in text
+
+
+def test_contour_labels_use_the_same_device_metrics_as_their_text(
+        runner, tmp_path, monkeypatch):
+    monkeypatch.setitem(runner.setting.transient_settings, "unsafe_mode", True)
+    monkeypatch.setattr(runner.utils, "FontMetrics", runner.StupidFontMetrics)
+    monkeypatch.setattr(
+        runner.utils.textrender, "FontMetrics", runner.StupidFontMetrics)
+    monkeypatch.setattr(runner.utils.textrender, "PartText", runner.PartTextAscii)
+    monkeypatch.setattr(runner.svg_export, "fltStr", runner.fltStr)
+    source = Path(__file__).resolve().parents[1] / "examples/contour_labels.vsz"
+    expected = tmp_path / "expected.selftest"
+    actual = tmp_path / "actual.selftest"
+    runner.renderVszTest(str(source), str(expected))
+
+    def unexpected_native_metrics(*args):
+        raise AssertionError("Contour label padding bypassed device font metrics")
+
+    monkeypatch.setattr(runner.qt, "QFontMetricsF", unexpected_native_metrics)
+    runner.renderVszTest(str(source), str(actual))
+    assert actual.read_bytes() == expected.read_bytes()

@@ -660,7 +660,7 @@ class Contour(plotters.GenericPlotter):
         cl = s.get("ContourLabels")
         font = cl.makeQFont(painter)
         labelpen = cl.makeQPen(painter)
-        descent = qt.QFontMetricsF(font).descent()
+        descent = utils.FontMetrics(font, painter.device()).descent()
 
         # linelabeller does clipping and labelling of contours
         linelabeller = ContourLineLabeller(

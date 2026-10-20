@@ -4,6 +4,20 @@ All changes relative to Veusz 4.2 (base fork).
 
 ## [Unreleased]
 
+### Added
+- Complete graphical references for the five 3D examples and MathML, reviewed
+  against their equations, data and rendered output.
+- Regression checks that all twelve formerly excluded examples report changed
+  output as a failure.
+
+### Changed
+- Compare every rendered graphical test with its reference; remove the twelve
+  inherited exclusions and refresh reviewed 2D references for current styles.
+
+### Fixed
+- Use the painting device's font metrics for contour-label padding, matching
+  text layout and avoiding platform-dependent label placement and clipping.
+
 ## [1.7.2] - 2026-10-20
 
 Includes the corrections distributed locally as 1.7.1 and the subsequent

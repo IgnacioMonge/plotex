@@ -1,0 +1,453 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="531.4px" height="531.4px" version="1.1"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink">
+<desc>Plotex output document</desc>
+<defs>
+<clipPath id="c0">
+<path d="m0,0l531.4,0l0,531.4l-531.4,0l0,-531.4"/>
+</clipPath>
+</defs>
+<g stroke-linejoin="bevel" stroke-linecap="square" stroke="#000000" fill-rule="evenodd">
+<g clip-path="url(#c0)">
+<g fill="#ffffff" stroke-width="0.6">
+<path d="m88.5,14.5l435.8,0l0,428.3l-435.8,0l0,-428.3"/>
+</g>
+<g fill="none" stroke-width="0.6">
+<path d="M88.5,442.9l0,-428.3"/>
+<path d="M88.5,442.9l3.7,0M88.5,421.4l3.7,0M88.5,400l3.7,0M88.5,378.6l3.7,0M88.5,357.2l3.7,0M88.5,335.8l3.7,0M88.5,314.4l3.7,0M88.5,293l3.7,0M88.5,271.5l3.7,0M88.5,250.1l3.7,0M88.5,228.7l3.7,0M88.5,207.3l3.7,0M88.5,185.9l3.7,0M88.5,164.5l3.7,0M88.5,143l3.7,0M88.5,121.6l3.7,0M88.5,100.2l3.7,0M88.5,78.8l3.7,0M88.5,57.4l3.7,0M88.5,36l3.7,0M88.5,14.5l3.7,0"/>
+<path d="M88.5,442.9l7.5,0M88.5,357.2l7.5,0M88.5,271.5l7.5,0M88.5,185.9l7.5,0M88.5,100.2l7.5,0M88.5,14.5l7.5,0"/>
+</g>
+<g fill="none" stroke-width="1">
+<g transform="matrix(0 -0.1875 0.1875 0 35 340.7)">
+<text x="0" y="31" font-size="75pt" fill="#000000">x</text>
+</g>
+<g transform="matrix(0 -0.1875 0.1875 0 35 318.4)">
+<text x="0" y="31" font-size="75pt" fill="#000000">=</text>
+</g>
+<g transform="matrix(0 -0.1875 0.1875 0 22.3 293.8)">
+<text x="0" y="31" font-size="75pt" fill="#000000">&#8722;</text>
+</g>
+<g transform="matrix(0 -0.1875 0.1875 0 22.3 274.3)">
+<text x="0" y="31" font-size="75pt" fill="#000000">b</text>
+</g>
+<g transform="matrix(0 -0.1875 0.1875 0 22.3 256.7)">
+<text x="0" y="31" font-size="75pt" fill="#000000">&#177;</text>
+</g>
+<g transform="matrix(0 -0.1875 0.1875 0 22.3 220.7)">
+<text x="0" y="31" font-size="75pt" fill="#000000">b</text>
+</g>
+<g transform="matrix(0 -0.1875 0.1875 0 10.6 203.3)">
+<text x="0" y="21" font-size="52pt" fill="#000000">2</text>
+</g>
+<g transform="matrix(0 -0.1875 0.1875 0 22.3 189)">
+<text x="0" y="31" font-size="75pt" fill="#000000">&#8722;</text>
+</g>
+<g transform="matrix(0 -0.1875 0.1875 0 22.3 169.5)">
+<text x="0" y="31" font-size="75pt" fill="#000000">4</text>
+</g>
+<g transform="matrix(0 -0.1875 0.1875 0 22.3 151.9)">
+<text x="0" y="31" font-size="75pt" fill="#000000">a</text>
+</g>
+<g transform="matrix(0 -0.1875 0.1875 0 22.3 134.3)">
+<text x="0" y="31" font-size="75pt" fill="#000000">c</text>
+</g>
+<g transform="matrix(0 -0.1875 0.3286 0 30.5 238.1)">
+<text x="0" y="0" font-size="75pt" fill="#000000">&#8730;</text>
+</g>
+<g transform="matrix(0 -0.1875 0.1875 0 22.3 220.7)">
+<path d="M-1,-119l554,0"/>
+</g>
+<g transform="matrix(0 -0.1875 0.1875 0 51.3 223.7)">
+<text x="0" y="31" font-size="75pt" fill="#000000">2</text>
+</g>
+<g transform="matrix(0 -0.1875 0.1875 0 51.3 206.1)">
+<text x="0" y="31" font-size="75pt" fill="#000000">a</text>
+</g>
+<g transform="matrix(0 -0.1875 0.1875 0 35 206.3)">
+<path d="M-479,0l958,0"/>
+</g>
+<text x="76.3" y="451.6" font-size="14pt" fill="#000000">0</text>
+<text x="58.8" y="366" font-size="14pt" fill="#000000">0.2</text>
+<text x="58.8" y="280.3" font-size="14pt" fill="#000000">0.4</text>
+<text x="58.8" y="194.6" font-size="14pt" fill="#000000">0.6</text>
+<text x="58.8" y="109" font-size="14pt" fill="#000000">0.8</text>
+<text x="76.3" y="23.3" font-size="14pt" fill="#000000">1</text>
+</g>
+<g fill="none" stroke-width="0.6">
+<path d="M524.4,442.9l0,-428.3"/>
+<path d="M524.4,442.9l-3.7,0M524.4,421.4l-3.7,0M524.4,400l-3.7,0M524.4,378.6l-3.7,0M524.4,357.2l-3.7,0M524.4,335.8l-3.7,0M524.4,314.4l-3.7,0M524.4,293l-3.7,0M524.4,271.5l-3.7,0M524.4,250.1l-3.7,0M524.4,228.7l-3.7,0M524.4,207.3l-3.7,0M524.4,185.9l-3.7,0M524.4,164.5l-3.7,0M524.4,143l-3.7,0M524.4,121.6l-3.7,0M524.4,100.2l-3.7,0M524.4,78.8l-3.7,0M524.4,57.4l-3.7,0M524.4,36l-3.7,0M524.4,14.5l-3.7,0"/>
+<path d="M524.4,442.9l-7.5,0M524.4,357.2l-7.5,0M524.4,271.5l-7.5,0M524.4,185.9l-7.5,0M524.4,100.2l-7.5,0M524.4,14.5l-7.5,0"/>
+<path d="M88.5,442.9l435.8,0"/>
+<path d="M88.5,442.9l0,-3.7M110.3,442.9l0,-3.7M132.1,442.9l0,-3.7M153.9,442.9l0,-3.7M175.7,442.9l0,-3.7M197.5,442.9l0,-3.7M219.3,442.9l0,-3.7M241.1,442.9l0,-3.7M262.9,442.9l0,-3.7M284.7,442.9l0,-3.7M306.4,442.9l0,-3.7M328.2,442.9l0,-3.7M350,442.9l0,-3.7M371.8,442.9l0,-3.7M393.6,442.9l0,-3.7M415.4,442.9l0,-3.7M437.2,442.9l0,-3.7M459,442.9l0,-3.7M480.8,442.9l0,-3.7M502.6,442.9l0,-3.7M524.4,442.9l0,-3.7"/>
+<path d="M88.5,442.9l0,-7.5M175.7,442.9l0,-7.5M262.9,442.9l0,-7.5M350,442.9l0,-7.5M437.2,442.9l0,-7.5M524.4,442.9l0,-7.5"/>
+</g>
+<g fill="none" stroke-width="1">
+<g transform="matrix(0.1875 0 0 0.1875 189.4 475.7)">
+<text x="0" y="31" font-size="75pt" fill="#000000">f</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 207.1 475.7)">
+<text x="0" y="31" font-size="75pt" fill="#000000">(</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 224.7 475.7)">
+<text x="0" y="31" font-size="75pt" fill="#000000">a</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 242.3 475.7)">
+<text x="0" y="31" font-size="75pt" fill="#000000">)</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 264.6 475.7)">
+<text x="0" y="31" font-size="75pt" fill="#000000">=</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.2278 286.9 478.2)">
+<text x="0" y="31" font-size="75pt" fill="#000000">&#8750;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 304.4 481.4)">
+<text x="0" y="21" font-size="52pt" fill="#000000">&#947;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 317.1 466.7)">
+<text x="0" y="31" font-size="75pt" fill="#000000">f</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 334.8 466.7)">
+<text x="0" y="31" font-size="75pt" fill="#000000">(</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 352.4 466.7)">
+<text x="0" y="31" font-size="75pt" fill="#000000">z</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 370 466.7)">
+<text x="0" y="31" font-size="75pt" fill="#000000">)</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 324.1 490.7)">
+<text x="0" y="31" font-size="75pt" fill="#000000">z</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 343.6 490.7)">
+<text x="0" y="31" font-size="75pt" fill="#000000">&#8722;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 363.1 490.7)">
+<text x="0" y="31" font-size="75pt" fill="#000000">a</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 352.2 475.7)">
+<path d="M-189,0l378,0"/>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 388 475.7)">
+<text x="0" y="31" font-size="75pt" fill="#000000">d</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 405.6 475.7)">
+<text x="0" y="31" font-size="75pt" fill="#000000">z</text>
+</g>
+<text x="84.2" y="448.1" font-size="14pt" fill="#000000">0</text>
+<text x="162.6" y="448.1" font-size="14pt" fill="#000000">0.2</text>
+<text x="249.7" y="448.1" font-size="14pt" fill="#000000">0.4</text>
+<text x="336.9" y="448.1" font-size="14pt" fill="#000000">0.6</text>
+<text x="424.1" y="448.1" font-size="14pt" fill="#000000">0.8</text>
+<text x="520" y="448.1" font-size="14pt" fill="#000000">1</text>
+</g>
+<g fill="none" stroke-width="0.6">
+<path d="M88.5,14.5l435.8,0"/>
+<path d="M88.5,14.5l0,3.7M110.3,14.5l0,3.7M132.1,14.5l0,3.7M153.9,14.5l0,3.7M175.7,14.5l0,3.7M197.5,14.5l0,3.7M219.3,14.5l0,3.7M241.1,14.5l0,3.7M262.9,14.5l0,3.7M284.7,14.5l0,3.7M306.4,14.5l0,3.7M328.2,14.5l0,3.7M350,14.5l0,3.7M371.8,14.5l0,3.7M393.6,14.5l0,3.7M415.4,14.5l0,3.7M437.2,14.5l0,3.7M459,14.5l0,3.7M480.8,14.5l0,3.7M502.6,14.5l0,3.7M524.4,14.5l0,3.7"/>
+<path d="M88.5,14.5l0,7.5M175.7,14.5l0,7.5M262.9,14.5l0,7.5M350,14.5l0,7.5M437.2,14.5l0,7.5M524.4,14.5l0,7.5"/>
+</g>
+<g fill="#ffffff" stroke="none" stroke-width="1">
+<g transform="translate(175.2,74.9)">
+<path d="m-5,-40l272.5,0l0,45l-272.5,0l0,-45"/>
+</g>
+</g>
+<g fill="none" stroke-width="1">
+<text x="175.2" y="74.9" font-size="28pt" fill="#000000">MathML examples</text>
+</g>
+<g fill="#ffffff" stroke="none" stroke-width="1">
+<g transform="translate(-26.5,381.2)">
+<path d="m-5,-53l676,0l0,58l-676,0l0,-58"/>
+</g>
+</g>
+<g fill="none" stroke-width="1">
+<g transform="matrix(0.1875 0 0 0.1875 -26.5 359.6)">
+<text x="0" y="31" font-size="75pt" fill="#000000">&#8711;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 -23.8 341.5)">
+<text x="0" y="21" font-size="52pt" fill="#000000">&#8594;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 -4.1 359.6)">
+<text x="0" y="31" font-size="75pt" fill="#000000">&#215;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 18.1 359.6)">
+<text x="0" y="31" font-size="75pt" fill="#000000">F</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 20.7 341.5)">
+<text x="0" y="21" font-size="52pt" fill="#000000">&#8594;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 40.4 359.6)">
+<text x="0" y="31" font-size="75pt" fill="#000000">=</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.4939 62.7 365.5)">
+<text x="0" y="31" font-size="75pt" fill="#000000">(</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 80.7 346.5)">
+<text x="0" y="31" font-size="75pt" fill="#000000">&#8706;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 100.2 346.5)">
+<text x="0" y="31" font-size="75pt" fill="#000000">F</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 117.6 352.1)">
+<text x="0" y="21" font-size="52pt" fill="#000000">z</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 86.9 375)">
+<text x="0" y="31" font-size="75pt" fill="#000000">&#8706;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 106.4 375)">
+<text x="0" y="31" font-size="75pt" fill="#000000">y</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 105.3 359.6)">
+<path d="M-133,0l266,0"/>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 132.3 359.6)">
+<text x="0" y="31" font-size="75pt" fill="#000000">&#8722;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 152.1 346.5)">
+<text x="0" y="31" font-size="75pt" fill="#000000">&#8706;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 171.6 346.5)">
+<text x="0" y="31" font-size="75pt" fill="#000000">F</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 189.1 352.1)">
+<text x="0" y="21" font-size="52pt" fill="#000000">y</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 158.3 375)">
+<text x="0" y="31" font-size="75pt" fill="#000000">&#8706;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 177.8 375)">
+<text x="0" y="31" font-size="75pt" fill="#000000">z</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 176.7 359.6)">
+<path d="M-133,0l266,0"/>
+</g>
+<g transform="matrix(0.1875 0 0 0.4939 201.8 365.5)">
+<text x="0" y="31" font-size="75pt" fill="#000000">)</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 219.4 359.6)">
+<text x="0" y="31" font-size="75pt" fill="#000000">i</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 241.8 359.6)">
+<text x="0" y="31" font-size="75pt" fill="#000000">+</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.4939 264.1 365.5)">
+<text x="0" y="31" font-size="75pt" fill="#000000">(</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 282.1 346.5)">
+<text x="0" y="31" font-size="75pt" fill="#000000">&#8706;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 301.6 346.5)">
+<text x="0" y="31" font-size="75pt" fill="#000000">F</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 319 352.1)">
+<text x="0" y="21" font-size="52pt" fill="#000000">x</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 288.3 375)">
+<text x="0" y="31" font-size="75pt" fill="#000000">&#8706;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 307.8 375)">
+<text x="0" y="31" font-size="75pt" fill="#000000">z</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 306.6 359.6)">
+<path d="M-133,0l266,0"/>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 333.6 359.6)">
+<text x="0" y="31" font-size="75pt" fill="#000000">&#8722;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 353.5 346.5)">
+<text x="0" y="31" font-size="75pt" fill="#000000">&#8706;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 373 346.5)">
+<text x="0" y="31" font-size="75pt" fill="#000000">F</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 390.4 352.1)">
+<text x="0" y="21" font-size="52pt" fill="#000000">z</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 359.7 375)">
+<text x="0" y="31" font-size="75pt" fill="#000000">&#8706;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 379.2 375)">
+<text x="0" y="31" font-size="75pt" fill="#000000">x</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 378.1 359.6)">
+<path d="M-133,0l266,0"/>
+</g>
+<g transform="matrix(0.1875 0 0 0.4939 403.2 365.5)">
+<text x="0" y="31" font-size="75pt" fill="#000000">)</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 420.8 359.6)">
+<text x="0" y="31" font-size="75pt" fill="#000000">j</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 443.1 359.6)">
+<text x="0" y="31" font-size="75pt" fill="#000000">+</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.4939 465.4 365.5)">
+<text x="0" y="31" font-size="75pt" fill="#000000">(</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 483.4 346.5)">
+<text x="0" y="31" font-size="75pt" fill="#000000">&#8706;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 502.9 346.5)">
+<text x="0" y="31" font-size="75pt" fill="#000000">F</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 520.4 352.1)">
+<text x="0" y="21" font-size="52pt" fill="#000000">y</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 489.6 375)">
+<text x="0" y="31" font-size="75pt" fill="#000000">&#8706;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 509.1 375)">
+<text x="0" y="31" font-size="75pt" fill="#000000">x</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 508 359.6)">
+<path d="M-133,0l266,0"/>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 535 359.6)">
+<text x="0" y="31" font-size="75pt" fill="#000000">&#8722;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 554.9 346.5)">
+<text x="0" y="31" font-size="75pt" fill="#000000">&#8706;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 574.4 346.5)">
+<text x="0" y="31" font-size="75pt" fill="#000000">F</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 591.8 352.1)">
+<text x="0" y="21" font-size="52pt" fill="#000000">x</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 561.1 375)">
+<text x="0" y="31" font-size="75pt" fill="#000000">&#8706;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 580.6 375)">
+<text x="0" y="31" font-size="75pt" fill="#000000">y</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 579.4 359.6)">
+<path d="M-133,0l266,0"/>
+</g>
+<g transform="matrix(0.1875 0 0 0.4939 604.6 365.5)">
+<text x="0" y="31" font-size="75pt" fill="#000000">)</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 622.2 359.6)">
+<text x="0" y="31" font-size="75pt" fill="#000000">k</text>
+</g>
+</g>
+<g fill="#ffffff" stroke="none" stroke-width="1">
+<g transform="translate(102.2,429.3)">
+<path d="m-5,-6.7l491.2,0l0,11.7l-491.2,0l0,-11.7"/>
+</g>
+</g>
+<g fill="none" stroke-width="1">
+<text x="102.2" y="429.3" font-size="14pt" fill="#000000">Taken from http://www.mathjax.org/demos/mathml-samples/</text>
+</g>
+<g fill="#ffffff" stroke="none" stroke-width="1">
+<g transform="translate(25.9,263.7)">
+<path d="m-5,-75l571,0l0,80l-571,0l0,-80"/>
+</g>
+</g>
+<g fill="none" stroke-width="1">
+<g transform="matrix(0.1875 0 0 0.2295 25.9 231.8)">
+<text x="0" y="35" font-size="85pt" fill="#000000">(</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 46.2 228.8)">
+<text x="0" y="35" font-size="85pt" fill="#000000">&#8711;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 66.3 235.1)">
+<text x="0" y="25" font-size="60pt" fill="#000000">X</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 80.5 228.8)">
+<text x="0" y="35" font-size="85pt" fill="#000000">Y</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.2295 100.8 231.8)">
+<text x="0" y="35" font-size="85pt" fill="#000000">)</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 120.8 215.3)">
+<text x="0" y="25" font-size="60pt" fill="#000000">k</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 140.5 228.8)">
+<text x="0" y="35" font-size="85pt" fill="#000000">=</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 166.2 228.8)">
+<text x="0" y="35" font-size="85pt" fill="#000000">X</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 186.3 215.3)">
+<text x="0" y="25" font-size="60pt" fill="#000000">i</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.2295 200.5 231.8)">
+<text x="0" y="35" font-size="85pt" fill="#000000">(</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 220.8 228.8)">
+<text x="0" y="35" font-size="85pt" fill="#000000">&#8711;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 240.8 235.1)">
+<text x="0" y="25" font-size="60pt" fill="#000000">i</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 255.1 228.8)">
+<text x="0" y="35" font-size="85pt" fill="#000000">Y</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.2295 275.3 231.8)">
+<text x="0" y="35" font-size="85pt" fill="#000000">)</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 295.4 215.3)">
+<text x="0" y="25" font-size="60pt" fill="#000000">k</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 315.1 228.8)">
+<text x="0" y="35" font-size="85pt" fill="#000000">=</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 340.8 228.8)">
+<text x="0" y="35" font-size="85pt" fill="#000000">X</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 360.8 215.3)">
+<text x="0" y="25" font-size="60pt" fill="#000000">i</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.6571 375.1 241)">
+<text x="0" y="35" font-size="85pt" fill="#000000">(</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 395.7 216.6)">
+<text x="0" y="35" font-size="85pt" fill="#000000">&#8706;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 418 216.6)">
+<text x="0" y="35" font-size="85pt" fill="#000000">Y</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 438.1 203.1)">
+<text x="0" y="25" font-size="60pt" fill="#000000">k</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 395.7 257.5)">
+<text x="0" y="35" font-size="85pt" fill="#000000">&#8706;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 418 257.5)">
+<text x="0" y="35" font-size="85pt" fill="#000000">x</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 438.1 244)">
+<text x="0" y="25" font-size="60pt" fill="#000000">i</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 423.8 228.8)">
+<path d="M-152,0l304,0"/>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 458.1 228.8)">
+<text x="0" y="35" font-size="85pt" fill="#000000">+</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 483.8 228.8)">
+<text x="0" y="35" font-size="85pt" fill="#000000">&#915;</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 503.9 235.1)">
+<text x="0" y="25" font-size="60pt" fill="#000000">i</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 518.1 235.1)">
+<text x="0" y="25" font-size="60pt" fill="#000000">m</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 503.9 215.3)">
+<text x="0" y="25" font-size="60pt" fill="#000000">k</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 532.4 228.8)">
+<text x="0" y="35" font-size="85pt" fill="#000000">Y</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.1875 552.4 215.3)">
+<text x="0" y="25" font-size="60pt" fill="#000000">m</text>
+</g>
+<g transform="matrix(0.1875 0 0 0.6571 566.7 241)">
+<text x="0" y="35" font-size="85pt" fill="#000000">)</text>
+</g>
+</g>
+</g>
+</g>
+</svg>
