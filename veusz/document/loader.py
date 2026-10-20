@@ -383,7 +383,9 @@ def _compileScriptThreaded(thedoc, filename, script, bridge):
     # permissive files first; HMAC compare runs in constant time.
     try:
         if (
-            os.path.exists(cachefile)
+            # Cached bytecode carries no current permission to execute.
+            thedoc.evaluate.inSecureMode()
+            and os.path.exists(cachefile)
             and not os.path.islink(cachefile)
             and os.path.getmtime(cachefile) >= os.path.getmtime(filename)
         ):
@@ -416,6 +418,12 @@ def _compileScriptThreaded(thedoc, filename, script, bridge):
                     mode="exec",
                     filename=filename,
                     ignoresecurity=(thedoc.evaluate.inSecureMode() or needs_security),
+                    allowed_calls=(
+                        CommandInterface.safe_commands
+                        + CommandInterface.unsafe_commands
+                        + CommandInterface.import_commands
+                        + list(thedoc.evaluate.context)
+                    ),
                 )
                 break
             except utils.SafeEvalException:
@@ -491,6 +499,9 @@ def executeScript(
     User should wipe docment before calling this.
     """
 
+    from ..dataimport import ensureAllImportersLoaded
+    ensureAllImportersLoaded()
+
     def genexception(exc):
         info = sys.exc_info()
         backtrace = "".join(traceback.format_exception(*info))
@@ -504,6 +515,12 @@ def executeScript(
                 mode="exec",
                 filename=filename,
                 ignoresecurity=thedoc.evaluate.inSecureMode(),
+                allowed_calls=(
+                    CommandInterface.safe_commands
+                    + CommandInterface.unsafe_commands
+                    + CommandInterface.import_commands
+                    + list(thedoc.evaluate.context)
+                ),
             )
             break
         except utils.SafeEvalException:
@@ -675,14 +692,8 @@ def loadHDF5Doc(thedoc, filename, callbackunsafe=None, callbackimporterror=None)
 def _takeDocumentSnapshot(thedoc):
     """Return a side-effect-free snapshot of current document state.
 
-    Holds the document's read lock for the entire snapshot so that the
-    serialised script, data dict and history lists are mutually
-    consistent. Without this, a render thread (which only takes the read
-    lock) or a concurrent operation could mutate ``thedoc.data`` between
-    ``serializeToText`` and ``dict(thedoc.data)`` and produce a snapshot
-    whose script no longer matches its data — silently corrupting the
-    rollback path. ``QReadLocker`` releases the lock even if
-    ``serializeToText`` raises.
+    Loading replaces the widget tree, datasets and evaluation containers.
+    Retain those objects under the read lock instead of serialising arrays.
     """
     render_lock = getattr(thedoc, "_render_lock", None)
     if render_lock is not None:
@@ -695,18 +706,21 @@ def _takeDocumentSnapshot(thedoc):
 
 
 def _takeDocumentSnapshotUnlocked(thedoc):
-    snapshot = io.StringIO()
-    try:
-        thedoc.serializeToText(snapshot)
-    except Exception:
-        snapshot = None
+    evalstate = dict(thedoc.evaluate.__dict__)
+    # Unlike the other evaluation containers, wipe() retains importpath.
+    evalstate["importpath"] = list(thedoc.evaluate.importpath)
 
     return {
-        "script": snapshot,
+        "script": None,
+        "basewidget": thedoc.basewidget,
+        "evaluate": evalstate,
         "data": dict(thedoc.data),
         "filename": thedoc.filename,
+        "compatlevel": thedoc.compatlevel,
+        "locale": qt.QLocale(thedoc.locale),
         "modified": thedoc.isModified(),
         "changeset": thedoc.changeset,
+        "historybatch": list(thedoc.historybatch),
         "historyundo": list(thedoc.historyundo),
         "historyredo": list(thedoc.historyredo),
     }
@@ -716,36 +730,24 @@ def _restoreDocumentSnapshot(
     thedoc, snapshot, load_err, callbackunsafe=None, callbackimporterror=None
 ):
     """Restore document state after a failed load."""
-    thedoc.wipe()
-    thedoc.filename = snapshot["filename"]
+    thedoc._acquireWriteLock()
+    try:
+        thedoc.data = snapshot["data"]
+        thedoc.basewidget = snapshot["basewidget"]
+        thedoc.evaluate.__dict__.clear()
+        thedoc.evaluate.__dict__.update(snapshot["evaluate"])
+        thedoc.filename = snapshot["filename"]
+        thedoc.compatlevel = snapshot["compatlevel"]
+        thedoc.locale = snapshot["locale"]
+        thedoc.historybatch = snapshot["historybatch"]
+        thedoc.historyundo = snapshot["historyundo"]
+        thedoc.historyredo = snapshot["historyredo"]
+    finally:
+        thedoc._releaseWriteLock()
 
-    if snapshot["script"] is not None:
-        try:
-            snapshot["script"].seek(0)
-            executeScript(
-                thedoc,
-                snapshot["filename"],
-                snapshot["script"].read(),
-                callbackunsafe=callbackunsafe,
-                callbackimporterror=callbackimporterror,
-            )
-        except Exception as restore_err:
-            raise LoadError(
-                _(
-                    "Load failed AND rollback failed.\n\n"
-                    "Load error: %s\n"
-                    "Restore error: %s"
-                )
-                % (load_err, restore_err),
-                backtrace=getattr(load_err, "backtrace", ""),
-            )
-
-    thedoc.data = {}
-    for name, dataset in snapshot["data"].items():
-        thedoc._setDataUnlocked(name, dataset)
-
-    thedoc.historyundo = snapshot["historyundo"]
-    thedoc.historyredo = snapshot["historyredo"]
+    # Listeners must see the restored root, not the discarded partial tree.
+    thedoc.sigWiped.emit()
+    thedoc.sigSecuritySet.emit(thedoc.evaluate.secure_document)
     # setModified() bumps changeset, so restore the saved counter last.
     thedoc.setModified(snapshot["modified"])
     thedoc.changeset = snapshot["changeset"]
@@ -764,6 +766,8 @@ def loadDocument(
     mode is 'vsz' or 'hdf5'
     """
 
+    from ..dataimport import ensureAllImportersLoaded
+    ensureAllImportersLoaded()
     snapshot = _takeDocumentSnapshot(thedoc)
 
     try:
@@ -815,7 +819,9 @@ def loadDocument(
             )
         else:
             raise RuntimeError("Invalid load mode")
-    except LoadError as load_err:
+    except Exception as load_err:
+        if not isinstance(load_err, LoadError):
+            load_err = LoadError(str(load_err), backtrace=traceback.format_exc())
         _restoreDocumentSnapshot(
             thedoc,
             snapshot,
@@ -823,7 +829,7 @@ def loadDocument(
             callbackunsafe=callbackunsafe,
             callbackimporterror=callbackimporterror,
         )
-        raise
+        raise load_err
 
     thedoc.setModified(False)
     thedoc.clearHistory()

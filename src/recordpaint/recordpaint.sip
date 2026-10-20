@@ -32,7 +32,8 @@ class RecordPaintDevice : QPaintDevice
 public:
   RecordPaintDevice(int width, int height, int dpix, int dpiy);
   ~RecordPaintDevice();
-  void play(QPainter& painter);
+  // Replay can take seconds on dense plots; Python UI slots must keep running.
+  void play(QPainter& painter) /ReleaseGIL/;
 
   QPaintEngine* paintEngine() const;
 

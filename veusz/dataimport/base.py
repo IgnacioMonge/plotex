@@ -313,28 +313,34 @@ class OperationDataImportBase:
         else:
             retn = None
 
+        # Rename simultaneously so swaps cannot overwrite an imported dataset.
+        renames = self.params.renames or {}
+        renamed = {}
+        for name, ds in self.outdatasets.items():
+            newname = renames.get(name, name)
+            if newname in renamed:
+                raise ImportingError("Duplicate dataset name after renaming: %s" % newname)
+            renamed[newname] = ds
+
         # these are custom values returned from the plugin
         if self.outcustoms:
             self.addCustoms(document, self.outcustoms)
 
-        # handle tagging/renaming
-        for name, ds in list(self.outdatasets.items()):
+        # handle tagging
+        for ds in renamed.values():
             if self.params.tags:
                 ds.tags.update(self.params.tags)
-            if self.params.renames and name in self.params.renames:
-                del self.outdatasets[name]
-                self.outdatasets[self.params.renames[name]] = ds
 
         # Capture old datasets and apply new ones in a single pass.
         # The previous code built ``self.olddatasets`` via comprehension
         # and then immediately reset it to ``[]`` at the next line,
         # discarding the list — so the comprehension was dead code.
         self.olddatasets = []
-        for name, ds in self.outdatasets.items():
+        for name, ds in renamed.items():
             self.olddatasets.append((name, document.data.get(name)))
             document._setDataUnlocked(name, ds)
 
-        self.outnames = sorted(self.outdatasets)
+        self.outnames = sorted(renamed)
 
         return retn
 

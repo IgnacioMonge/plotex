@@ -33,7 +33,7 @@
 - **Fit widget with confidence/prediction bands**: persisted across save/load, Levenberg-Marquardt and Minuit backends
 - **Modernized UI**: ribbon toolbar, command palette, split view, rulers, dark/light themes
 - **6 scientific color palettes**: Okabe-Ito, Wong, Tol-Vibrant, Tol-Muted, Tableau 10, Plotex custom
-- **Improved reliability**: reentrant document locking, document snapshot/rollback on failed loads, render thread resilience, HMAC-signed bytecode cache, hardened safe-mode AST validator, 107 automated regression tests
+- **Improved reliability**: atomic document saves, reentrant document locking, document snapshot/rollback on failed loads, render thread resilience, HMAC-signed bytecode cache, hardened safe-mode AST validator, automated regression tests
 - **Excel, JSON, and ODS import** support
 - **Debounced zoom** with fast preview
 - **Pan with middle mouse button**
@@ -80,14 +80,33 @@ python -m PyInstaller support/veusz_windows_pyinst.spec --noconfirm
 
 ```bash
 pip install pytest
-pytest tests/test_audit_fixes.py -v
+python -m pytest tests -q
 ```
 
 The suite covers document locking, painter state, loader rollback,
 HMAC-signed bytecode cache, AST safe-mode validator (with bypass
 regression cases), capture shell-injection guards, image cache
 thread-safety, settings type-strict validators, ENVIRON whitelist, and
-statistical correctness for ROC/Bland-Altman/Kaplan-Meier.
+statistical correctness for ROC, polar trending, curve fitting,
+Bland-Altman and Kaplan-Meier. Tests exercise the production widgets,
+document loaders, importers and embedding protocol.
+
+Run the graphical regression suite from the repository root with
+`VEUSZ_INPLACE_TEST=1` and `QT_QPA_PLATFORM=minimal` in the environment:
+
+```bash
+python tests/runselftest.py
+python tests/runselftest.py --test-saves
+```
+
+Missing reference files and rendering errors fail the suite without stopping
+the remaining cases. Optional FITS/HDF5 support and existing platform-sensitive
+comparison exclusions are reported separately. Review visual differences
+before regenerating references.
+
+Untrusted documents allow numerical expressions and ordinary document commands.
+Python assignments, definitions, attribute methods and NumPy file I/O require
+the existing explicit trust approval. Cached bytecode does not retain approval.
 
 ## File formats
 

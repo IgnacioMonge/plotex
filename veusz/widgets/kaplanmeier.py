@@ -304,8 +304,13 @@ class KaplanMeier(GenericPlotter):
         t = t[order]
         e = e[order]
 
-        # unique event times (where at least one event occurred)
-        event_times = N.unique(t[e == 1])
+        # Count each sorted time group once, including tied censorings at risk.
+        unique_times, starts = N.unique(t, return_index=True)
+        events_per_time = N.add.reduceat(e == 1, starts, dtype=N.int64)
+        has_events = events_per_time > 0
+        event_times = unique_times[has_events]
+        event_risk = len(t) - starts[has_events]
+        event_counts = events_per_time[has_events]
 
         km_times = [0.0]
         km_surv = [1.0]
@@ -320,11 +325,8 @@ class KaplanMeier(GenericPlotter):
         survival = 1.0
         greenwood_sum = 0.0
 
-        for ti in event_times:
-            # number at risk just before ti
-            n = int(N.sum(t >= ti))
-            # number of events at ti
-            d = int(N.sum((t == ti) & (e == 1)))
+        for ti, n, d in zip(event_times, event_risk, event_counts):
+            n, d = int(n), int(d)
 
             if n <= 0:
                 continue
@@ -351,12 +353,10 @@ class KaplanMeier(GenericPlotter):
             # for each censored time, find survival at that time
             km_t_arr = N.array(km_times)
             km_s_arr = N.array(km_surv)
-            for ci in ct:
-                # survival is the last KM value at or before this time
-                idx = N.searchsorted(km_t_arr, ci, side="right") - 1
-                idx = max(0, min(idx, len(km_s_arr) - 1))
-                censor_t.append(float(ci))
-                censor_s.append(float(km_s_arr[idx]))
+            idx = N.searchsorted(km_t_arr, ct, side="right") - 1
+            idx = N.clip(idx, 0, len(km_s_arr) - 1)
+            censor_t = ct
+            censor_s = km_s_arr[idx]
 
         result.times = N.array(km_times, dtype=N.float64)
         result.survival = N.array(km_surv, dtype=N.float64)

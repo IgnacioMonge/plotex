@@ -31,6 +31,7 @@
 #include <QRectF>
 #include <QRect>
 #include <QPixmap>
+#include <memory>
 
 class RecordPaintDevice;
 
@@ -72,6 +73,7 @@ public:
 private:
   int _drawitemcount;
   RecordPaintDevice* _pdev;
+  std::shared_ptr<QPainterPath> _lastPath;
 };
 
 #endif

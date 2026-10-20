@@ -214,7 +214,10 @@ class sip_build_ext(build_ext):
         for sip in sip_sources:
             sip_basename = os.path.basename(sip)[:-4]
             sip_builddir = os.path.join(self.build_temp, 'sip-' + sip_basename)
-            if not os.path.exists(sip_builddir) or self.force:
+            project_file = os.path.join(sip_builddir, 'pyproject.toml')
+            if (self.force or not os.path.exists(project_file)
+                    or any(os.path.getmtime(dep) > os.path.getmtime(project_file)
+                           for dep in [sip] + depends)):
                 os.makedirs(sip_builddir, exist_ok=True)
                 self._sip_compile(sip, sip_builddir)
 
@@ -256,7 +259,7 @@ class sip_build_ext(build_ext):
 
         # location of sip output files
         output_dir = os.path.abspath(os.path.join(sip_builddir, 'output'))
-        os.makedirs(output_dir)
+        os.makedirs(output_dir, exist_ok=True)
 
         def toml_esc(s):
             s = s.replace("\\", "\\\\").replace('"', r'\"')

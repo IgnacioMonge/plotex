@@ -340,8 +340,6 @@ class BoxPlot(GenericPlotter):
                     "pointsMarker",
                     "pointsSize",
                     "jitter",
-                    "showOutliers",
-                    "outliersmarker",
                 ),
                 formatting=True,
             )
@@ -376,11 +374,11 @@ class BoxPlot(GenericPlotter):
             )
         )
 
-        # outlier settings (only available when showPoints is on)
+        # outlier settings
         s.add(
             setting.Bool(
                 "showOutliers",
-                False,
+                True,
                 descr=_("Highlight outliers with a different marker"),
                 usertext=_("Show outliers"),
                 formatting=True,
@@ -668,8 +666,8 @@ class BoxPlot(GenericPlotter):
             painter.setBrush(s.PointsFill.makeQBrushWHide(painter))
             utils.plotMarkers(painter, px, py, s.pointsMarker, pt_size, clip=clip)
 
-        # draw outliers (only when showPoints is on and showOutliers is enabled)
-        if s.showPoints and s.showOutliers and stats.outliers.shape[0] != 0:
+        # draw outliers
+        if s.showOutliers and stats.outliers.shape[0] != 0:
             pltvals = axes[not horz].dataToPlotterCoords(posn, stats.outliers)
             otherpos = N.zeros(pltvals.shape) + boxposn
             if horz:

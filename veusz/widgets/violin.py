@@ -36,6 +36,10 @@ from .. import qtall as qt
 from .. import setting
 from .. import document
 from .. import utils
+from ..utils.kde import (
+    gaussian_kde as _kde_gaussian,
+    epanechnikov_kde as _kde_epanechnikov,
+)
 
 from .plotters import GenericPlotter
 
@@ -44,24 +48,6 @@ def _(text, disambiguation=None, context='ViolinPlot'):
     return qt.QCoreApplication.translate(context, text, disambiguation)
 
 # ── KDE helpers ──────────────────────────────────────────────────────
-
-def _kde_gaussian(data, grid, bw):
-    """Gaussian kernel density estimation."""
-    n = len(data)
-    if n == 0 or bw <= 0:
-        return N.zeros_like(grid)
-    u = (grid[:, None] - data[None, :]) / bw
-    kernel = N.exp(-0.5 * u * u)
-    return kernel.sum(axis=1) / (n * bw * N.sqrt(2 * N.pi))
-
-def _kde_epanechnikov(data, grid, bw):
-    """Epanechnikov kernel density estimation."""
-    n = len(data)
-    if n == 0 or bw <= 0:
-        return N.zeros_like(grid)
-    u = (grid[:, None] - data[None, :]) / bw
-    kernel = N.where(N.abs(u) <= 1, 0.75 * (1 - u * u), 0.0)
-    return kernel.sum(axis=1) / (n * bw)
 
 _KDE_FUNCS = {
     'gaussian': _kde_gaussian,

@@ -397,6 +397,7 @@ class Stream:
     def newLine(self):
         """Read in, and split the next line."""
 
+        del self.remainingline[:self._colindex]
         self._colindex = 0
 
         while True:
@@ -454,6 +455,8 @@ class CSVStream(Stream):
 
     def newLine(self):
         """Get next line from CSV file."""
+        del self.remainingline[:self._colindex]
+        self._colindex = 0
         try:
             line = next(self.csvfile)
         except StopIteration:
@@ -551,7 +554,7 @@ class SimpleRead:
 
                 # automatically create parts if data are remaining
                 if self.autodescr:
-                    while len(stream.remainingline) > 0:
+                    while stream._colindex < len(stream.remainingline):
                         p = DescriptorPart(
                             str(len(self.parts)+1), None, 'D', None )
                         p.readFromStream(stream, self.datasets)
@@ -586,7 +589,7 @@ class SimpleRead:
 
                 # automatically create parts if data are remaining
                 if self.autodescr:
-                    while len(stream.remainingline) > 0:
+                    while stream._colindex < len(stream.remainingline):
                         p = DescriptorPart(
                             str(len(self.parts)+1), None, 'D', None )
                         p.readFromStream(stream, self.datasets, block=block)
@@ -763,7 +766,9 @@ class SimpleRead2D:
                 except ValueError:
                     raise Read2DError("Could not interpret number '%s'" % v)
 
-            rows.insert(0, line)
+            rows.append(line)
+
+        rows.reverse()
 
         if self.params.gridatedge:
 

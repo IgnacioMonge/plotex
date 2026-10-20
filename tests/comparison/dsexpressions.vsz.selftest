@@ -4,7 +4,7 @@
 <svg width="531.4px" height="531.4px" version="1.1"
     xmlns="http://www.w3.org/2000/svg"
     xmlns:xlink="http://www.w3.org/1999/xlink">
-<desc>Veusz output document</desc>
+<desc>Plotex output document</desc>
 <defs>
 <clipPath id="c0">
 <path d="m0,0l531.4,0l0,531.4l-531.4,0l0,-531.4"/>
@@ -17,9 +17,6 @@
 <g clip-path="url(#c0)">
 <g fill="#ffffff" stroke-width="0.6">
 <path d="m60.2,7l464.1,0l0,464.1l-464.1,0l0,-464.1"/>
-</g>
-<g fill="none" stroke-width="1">
-<text x="165.4" y="18.1" font-size="14pt" fill="#000000">Using expressions of datasets</text>
 </g>
 </g>
 <g clip-path="url(#c1)">
@@ -142,7 +139,7 @@
 </g>
 </g>
 <g clip-path="url(#c0)">
-<g fill="none" stroke-linecap="butt" stroke-width="0.6">
+<g fill="none" stroke-width="0.6">
 <path d="M60.2,471.2l0,-464.1"/>
 <path d="M60.2,471.2l3.7,0M60.2,448l3.7,0M60.2,424.8l3.7,0M60.2,401.6l3.7,0M60.2,378.4l3.7,0M60.2,355.2l3.7,0M60.2,332l3.7,0M60.2,308.7l3.7,0M60.2,285.5l3.7,0M60.2,262.3l3.7,0M60.2,239.1l3.7,0M60.2,215.9l3.7,0M60.2,192.7l3.7,0M60.2,169.5l3.7,0M60.2,146.3l3.7,0M60.2,123.1l3.7,0M60.2,99.9l3.7,0M60.2,76.7l3.7,0M60.2,53.5l3.7,0M60.2,30.2l3.7,0M60.2,7l3.7,0"/>
 <path d="M60.2,471.2l7.5,0M60.2,355.2l7.5,0M60.2,239.1l7.5,0M60.2,123.1l7.5,0M60.2,7l7.5,0"/>
@@ -157,7 +154,7 @@
 <text x="47.9" y="131.8" font-size="14pt" fill="#000000">1</text>
 <text x="47.9" y="21" font-size="14pt" fill="#000000">2</text>
 </g>
-<g fill="none" stroke-linecap="butt" stroke-width="0.6">
+<g fill="none" stroke-width="0.6">
 <path d="M524.4,471.2l0,-464.1"/>
 <path d="M524.4,471.2l-3.7,0M524.4,448l-3.7,0M524.4,424.8l-3.7,0M524.4,401.6l-3.7,0M524.4,378.4l-3.7,0M524.4,355.2l-3.7,0M524.4,332l-3.7,0M524.4,308.7l-3.7,0M524.4,285.5l-3.7,0M524.4,262.3l-3.7,0M524.4,239.1l-3.7,0M524.4,215.9l-3.7,0M524.4,192.7l-3.7,0M524.4,169.5l-3.7,0M524.4,146.3l-3.7,0M524.4,123.1l-3.7,0M524.4,99.9l-3.7,0M524.4,76.7l-3.7,0M524.4,53.5l-3.7,0M524.4,30.2l-3.7,0M524.4,7l-3.7,0"/>
 <path d="M524.4,471.2l-7.5,0M524.4,355.2l-7.5,0M524.4,239.1l-7.5,0M524.4,123.1l-7.5,0M524.4,7l-7.5,0"/>
@@ -175,10 +172,18 @@
 <text x="421" y="476.5" font-size="14pt" fill="#000000">5</text>
 <text x="492.5" y="476.5" font-size="14pt" fill="#000000">6</text>
 </g>
-<g fill="none" stroke-linecap="butt" stroke-width="0.6">
+<g fill="none" stroke-width="0.6">
 <path d="M60.2,7l464.1,0"/>
 <path d="M67.3,7l0,3.7M103.1,7l0,3.7M138.9,7l0,3.7M174.7,7l0,3.7M210.5,7l0,3.7M246.3,7l0,3.7M282.1,7l0,3.7M317.9,7l0,3.7M353.7,7l0,3.7M389.5,7l0,3.7M425.3,7l0,3.7M461.1,7l0,3.7M496.9,7l0,3.7"/>
 <path d="M67.3,7l0,7.5M138.9,7l0,7.5M210.5,7l0,7.5M282.1,7l0,7.5M353.7,7l0,7.5M425.3,7l0,7.5M496.9,7l0,7.5"/>
+</g>
+<g fill="#ffffff" stroke="none" stroke-width="1">
+<g transform="translate(165.4,23.1)">
+<path d="m-5,-6.7l263.7,0l0,11.7l-263.7,0l0,-11.7"/>
+</g>
+</g>
+<g fill="none" stroke-width="1">
+<text x="165.4" y="23.1" font-size="14pt" fill="#000000">Using expressions of datasets</text>
 </g>
 </g>
 </g>

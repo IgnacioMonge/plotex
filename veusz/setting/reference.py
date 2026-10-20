@@ -34,8 +34,35 @@ class ReferenceBase:
     def getPaths(self):
         """Return list of paths linked by reference."""
 
-    def resolve(self, setn):
-        """Return setting this is linked to."""
+    def resolve(self, setn, _visited=None):
+        """Return the API destination after validating its reference chain."""
+        return self._resolveInfo(setn, set() if _visited is None else _visited)[0]
+
+    def resolveValue(self, setn):
+        """Read the terminal setting without resolving the chain again."""
+        return self._resolveInfo(setn, set())[1].get()
+
+    def _resolveDirect(self, setn):
+        # Keep support for external reference classes implementing resolve().
+        return self.resolve(setn)
+
+    def _resolveInfo(self, setn, visited):
+        """Return API destination, terminal setting and exposed jump count."""
+        key = id(setn)
+        if key in visited:
+            raise self.ResolveException("Circular reference detected")
+        visited.add(key)
+        try:
+            direct = self._resolveDirect(setn)
+            if id(direct) in visited:
+                raise self.ResolveException("Circular reference detected")
+            ref = getattr(direct, "_ref", None)
+            if isinstance(ref, ReferenceBase):
+                _, terminal, jumps = ref._resolveInfo(direct, visited)
+                return direct, terminal, jumps + 1
+            return direct, direct, 1
+        finally:
+            visited.remove(key)
 
     def setOnModified(self, setn, fn):
         """Set on modified on settings pointed to by this reference."""
@@ -62,25 +89,11 @@ class Reference(ReferenceBase):
         """Path linked by setting."""
         return [self.value]
 
-    def resolve(self, thissetting):
-        """Return the setting object associated with the reference.
-
-        Detects circular references by walking through chained
-        ``Reference`` values and tracking visited setting ids. Without
-        this, a stylesheet like ``Set('/StyleSheet/Line/color', '/Foo/x')``
-        where ``/Foo/x`` itself references back into the chain would
-        recurse until Python's stack overflowed (``RecursionError`` deep
-        inside ``Setting.get()``). ``ReferenceMultiple`` already had
-        cycle detection; ``Reference`` did not.
-        """
-
-        # this is for stylesheet references which don't move
-        if self.resolved:
-            return self.resolved
-
-        item = thissetting.parent
-        parts = list(self.split)
-        if parts[0] == "":
+    def _resolveDirect(self, thissetting):
+        """Look up the immediate destination without traversing its links."""
+        item = self.resolved or thissetting.parent
+        parts = [] if self.resolved else list(self.split)
+        if parts and parts[0] == "":
             # need root widget if begins with slash
             while item.parent is not None:
                 item = item.parent
@@ -109,31 +122,15 @@ class Reference(ReferenceBase):
                     except KeyError:
                         raise self.ResolveException()
 
-        # Walk through chained references, rejecting cycles. ``visited``
-        # uses id() because settings are not hashable. The upper bound on
-        # chain length is also a sanity guard against pathological docs.
-        visited = {id(thissetting)}
-        max_chain = 64
-        steps = 0
-        while isinstance(getattr(item, "_val", None), ReferenceBase):
-            steps += 1
-            if steps > max_chain:
-                raise self.ResolveException(
-                    "Reference chain too deep (>%d hops)" % max_chain
-                )
-            if id(item) in visited:
-                raise self.ResolveException(
-                    "Circular reference detected at %s" % self.value
-                )
-            visited.add(id(item))
-            item = item._val.resolve(item)
+        return item
 
+    def _resolveInfo(self, thissetting, visited):
+        info = super()._resolveInfo(thissetting, visited)
         # shortcut to resolve stylesheets
         # hopefully this won't ever change
         if len(self.split) > 2 and self.split[1] == "StyleSheet":
-            self.resolved = item
-
-        return item
+            self.resolved = info[0]
+        return info
 
     def setOnModified(self, setn, fn):
         """Set on modified on settings pointed to by this reference."""
@@ -158,7 +155,7 @@ class ReferenceMultiple(ReferenceBase):
         """List of paths linked by setting."""
         return self.value
 
-    def resolve(self, thissetting):
+    def _resolveInfo(self, thissetting, visited):
         """Resolve to setting.
 
         We prefer destination settings which are:
@@ -172,17 +169,7 @@ class ReferenceMultiple(ReferenceBase):
         minjumps = 99999
         for ref in self.refs:
             try:
-                setn = ref.resolve(thissetting)
-                jumps = 1
-                # detect cycles with a visited set keyed by id(setn)
-                # to prevent infinite recursion on circular references
-                visited = {id(setn)}
-                while isinstance(setn._val, ReferenceBase):
-                    setn = setn._val.resolve(setn)
-                    jumps += 1
-                    if id(setn) in visited:
-                        raise self.ResolveException("Circular reference detected")
-                    visited.add(id(setn))
+                _, setn, jumps = ref._resolveInfo(thissetting, visited)
 
                 if retn is None:
                     retn = setn
@@ -197,7 +184,8 @@ class ReferenceMultiple(ReferenceBase):
         if retn is None:
             raise self.ResolveException("Not linked to any settings")
 
-        return retn
+        # Public resolve() exposes the selected terminal as one jump to callers.
+        return retn, retn, 1
 
     def setOnModified(self, setn, fn):
         """Set on modified on settings pointed to by this reference."""

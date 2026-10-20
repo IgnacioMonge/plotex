@@ -74,7 +74,7 @@ def _fitScipy(func, params, xvals, yvals, errors, maxiters, log=None):
         )
 
     params[:] = result.x
-    dof = max(len(yvals) - len(params), 1)
+    dof = len(yvals) - len(params)
     chi2 = (result.fun**2).sum()  # weighted residuals squared
 
     # convert back to unweighted chi2
@@ -99,7 +99,7 @@ def _fitScipy(func, params, xvals, yvals, errors, maxiters, log=None):
     if log is None:
         log = sys.stdout
     print("chi^2 = %g, dof = %i, reduced-chi^2 = %g" % (
-        chi2, dof, chi2 / dof), file=log)
+        chi2, dof, chi2 / dof if dof > 0 else N.nan), file=log)
     print("Parameter errors: " + ", ".join(
         ["%g" % e for e in param_errors]), file=log)
 
@@ -170,9 +170,9 @@ def _fitLMFallback(func, params, xvals, yvals, errors,
 
     if log is None:
         log = sys.stdout
-    dof = max(len(yvals) - len(params), 1)
+    dof = len(yvals) - len(params)
     print("chi^2 = %g, dof = %i, reduced-chi^2 = %g" % (
-        chi2, dof, chi2 / dof), file=log)
+        chi2, dof, chi2 / dof if dof > 0 else N.nan), file=log)
 
     cov = None
     param_errors = N.zeros(len(params))

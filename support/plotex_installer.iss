@@ -46,6 +46,13 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "fileassoc_vsz"; Description: "Associate .vsz files with {#MyAppName}"; GroupDescription: "File associations:"
 Name: "fileassoc_vszh5"; Description: "Associate .vszh5 files with {#MyAppName}"; GroupDescription: "File associations:"
 
+[InstallDelete]
+; Native modules left by older NumPy/SciPy layouts can override the new runtime.
+Type: filesandordirs; Name: "{app}\numpy"
+Type: filesandordirs; Name: "{app}\numpy.libs"
+Type: filesandordirs; Name: "{app}\scipy"
+Type: filesandordirs; Name: "{app}\scipy.libs"
+
 [Files]
 Source: "{#BuildDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 

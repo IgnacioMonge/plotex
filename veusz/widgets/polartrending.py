@@ -17,7 +17,8 @@ of changes (delta_test, delta_ref) plotted in polar coordinates:
 
   - Distance from center = mean magnitude = (|dTest| + |dRef|) / 2
   - Angle from 12 o'clock = agreement angle =
-        atan2(dTest - dRef, dTest + dRef)
+        atan2(dTest - dRef, dTest + dRef), after reflecting
+        both changes when dRef is negative
   - Perfect agreement = 0 degrees (straight up)
 
 Statistics:
@@ -338,11 +339,11 @@ class PolarTrending(GenericPlotter):
         # Mean magnitude (distance from center)
         mean_mag = (N.abs(delta_test) + N.abs(delta_ref)) / 2.0
 
-        # Agreement angle (0 degrees = perfect agreement, from 12 o'clock)
-        # atan2 gives angle from X axis; we rotate so 0 is from Y axis
+        # Reflect decreasing reference changes so equal rises and falls share 0°.
+        direction = N.where(delta_ref < 0, -1.0, 1.0)
         agreement_angle = N.degrees(N.arctan2(
-            delta_test - delta_ref,
-            delta_test + delta_ref))
+            direction * (delta_test - delta_ref),
+            direction * (delta_test + delta_ref)))
 
         # Apply exclusion zone (small changes are noisy)
         exclusion = s.exclusionZone

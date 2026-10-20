@@ -356,7 +356,7 @@ class Fit(FunctionPlotter):
             setn = setting.FloatList(name, default, descr=descr, usertext=descr)
             setn.hidden = True
             s.add(setn)
-        for name, default, descr in (("bandResidVar", 0.0, "Residual variance"),):
+        for name, default, descr in (("bandResidVar", 0.0, "Residual variance (-1 if unavailable)"),):
             if isinstance(default, float):
                 setn = setting.Float(name, default, descr=descr, usertext=descr)
             else:
@@ -544,7 +544,7 @@ class Fit(FunctionPlotter):
                 if s.defErrType == "absolute":
                     yserr = err + yvals * 0
                 else:
-                    yserr = yvals * err
+                    yserr = N.abs(yvals) * err
                     yserr[yserr < 1e-8] = 1e-8
 
         # range filtering
@@ -569,7 +569,7 @@ class Fit(FunctionPlotter):
                     )
                 else:
                     drange = ax.getPlottedRange()
-                    mask = (yvals >= drange[0]) & (yvals <= drange[1])
+                    mask = (xvals >= drange[0]) & (xvals <= drange[1])
             if mask is not None:
                 xvals, yvals, yserr = xvals[mask], yvals[mask], yserr[mask]
 
@@ -586,25 +586,24 @@ class Fit(FunctionPlotter):
 
         # min/max filtering
         if s.fitMin != "Auto":
-            mask = (xvals >= s.fitMin) if s.variable == "x" else (yvals >= s.fitMin)
+            mask = xvals >= s.fitMin
             xvals, yvals, yserr = xvals[mask], yvals[mask], yserr[mask]
         if s.fitMax != "Auto":
-            mask = (xvals <= s.fitMax) if s.variable == "x" else (yvals <= s.fitMax)
+            mask = xvals <= s.fitMax
             xvals, yvals, yserr = xvals[mask], yvals[mask], yserr[mask]
 
         # error checks
         if len(xvals) == 0:
             sys.stderr.write(_("No data values. Not fitting.\n"))
             return
-        if len(params) > len(xvals):
-            sys.stderr.write(_("No degrees of freedom. Not fitting.\n"))
-            return
-
         # finite values only
         finite = N.isfinite(xvals) & N.isfinite(yvals) & N.isfinite(yserr)
         xvals, yvals, yserr = xvals[finite], yvals[finite], yserr[finite]
         if len(xvals) == 0:
             sys.stderr.write(_("No finite data. Not fitting.\n"))
+            return
+        if len(params) > len(xvals):
+            sys.stderr.write(_("No degrees of freedom. Not fitting.\n"))
             return
 
         # ── Do the fit ───────────────────────────────────────
@@ -632,17 +631,11 @@ class Fit(FunctionPlotter):
             print(_("Fit failed (chi² is NaN). Check data/function."))
             return
 
-        # residual variance (in Y units, for prediction band).
-        # ``max(dof, 1)`` historically prevented a div-by-zero, but it
-        # also masked the over-fitted case (dof <= 0) by silently
-        # returning the raw residual sum-of-squares, which then got fed
-        # into prediction bands as if it were a valid σ². When dof is
-        # not positive there is no statistically meaningful prediction
-        # band: emit ``nan`` so downstream code can detect and skip it.
+        # -1 marks unavailable residual variance; bands require positive dof.
         fitted_vals = N.array([vals[p] for p in paramnames])
         yfit = evalfunc(fitted_vals, xvals)
         residuals = yvals - yfit
-        resid_var = float(N.sum(residuals**2) / dof) if dof > 0 else float("nan")
+        resid_var = float(N.sum(residuals**2) / dof) if dof > 0 else -1.0
 
         # fingerprint
         # filter NaN from errors
@@ -796,9 +789,8 @@ class Fit(FunctionPlotter):
                 prediction=False,
             )
 
-        # draw the curve if fit has been done (chi2 > 0 or bands exist)
-        if s.chi2 > 0 or has_bands:
-            FunctionPlotter.dataDraw(self, painter, axes, posn, cliprect)
+        # Saved parameters and exact fits need no positive chi2 to draw.
+        FunctionPlotter.dataDraw(self, painter, axes, posn, cliprect)
 
     def _drawSavedBand(
         self, painter, axes, posn, cliprect, xdata, upper, lower, prediction=False

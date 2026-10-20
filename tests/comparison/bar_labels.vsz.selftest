@@ -4,7 +4,7 @@
 <svg width="372px" height="574px" version="1.1"
     xmlns="http://www.w3.org/2000/svg"
     xmlns:xlink="http://www.w3.org/1999/xlink">
-<desc>Veusz output document</desc>
+<desc>Plotex output document</desc>
 <defs>
 <clipPath id="c0">
 <path d="m0,0l372,0l0,574l-372,0l0,-574"/>
@@ -20,21 +20,6 @@
 <g clip-path="url(#c0)">
 <g fill="#ffffff" stroke-width="0.6">
 <path d="m60.2,7l251.5,0l0,251.5l-251.5,0l0,-251.5"/>
-</g>
-<g fill="#ffffff" stroke="none" stroke-width="1">
-<path d="m77.7,24.5l106.4,0l0,35l-106.4,0l0,-35"/>
-</g>
-<g fill="#aaffff" stroke-width="0.6">
-<path d="m77.7,26.3l35.4,0l0,12.2l-35.4,0l0,-12.2"/>
-</g>
-<g fill="none" stroke-width="1">
-<text x="130.6" y="26.3" font-size="14pt" fill="#000000">Spring</text>
-</g>
-<g fill="#00aaff" stroke-width="0.6">
-<path d="m77.7,43.8l35.4,0l0,12.2l-35.4,0l0,-12.2"/>
-</g>
-<g fill="none" stroke-width="1">
-<text x="130.6" y="43.8" font-size="14pt" fill="#000000">Summer</text>
 </g>
 </g>
 <g clip-path="url(#c1)">
@@ -56,7 +41,7 @@
 </g>
 </g>
 <g clip-path="url(#c0)">
-<g fill="none" stroke-linecap="butt" stroke-width="0.6">
+<g fill="none" stroke-width="0.6">
 <path d="M60.2,258.6l0,-251.5"/>
 <path d="M60.2,258.6l3.7,0M60.2,237.6l3.7,0M60.2,216.7l3.7,0M60.2,195.7l3.7,0M60.2,174.8l3.7,0M60.2,153.8l3.7,0M60.2,132.8l3.7,0M60.2,111.9l3.7,0M60.2,90.9l3.7,0M60.2,69.9l3.7,0M60.2,49l3.7,0M60.2,28l3.7,0M60.2,7l3.7,0"/>
 <path d="M60.2,258.6l7.5,0M60.2,216.7l7.5,0M60.2,174.8l7.5,0M60.2,132.8l7.5,0M60.2,90.9l7.5,0M60.2,49l7.5,0M60.2,7l7.5,0"/>
@@ -73,7 +58,7 @@
 <text x="47.9" y="57.7" font-size="14pt" fill="#000000">5</text>
 <text x="47.9" y="21" font-size="14pt" fill="#000000">6</text>
 </g>
-<g fill="none" stroke-linecap="butt" stroke-width="0.6">
+<g fill="none" stroke-width="0.6">
 <path d="M311.8,258.6l0,-251.5"/>
 <path d="M311.8,258.6l-3.7,0M311.8,237.6l-3.7,0M311.8,216.7l-3.7,0M311.8,195.7l-3.7,0M311.8,174.8l-3.7,0M311.8,153.8l-3.7,0M311.8,132.8l-3.7,0M311.8,111.9l-3.7,0M311.8,90.9l-3.7,0M311.8,69.9l-3.7,0M311.8,49l-3.7,0M311.8,28l-3.7,0M311.8,7l-3.7,0"/>
 <path d="M311.8,258.6l-7.5,0M311.8,216.7l-7.5,0M311.8,174.8l-7.5,0M311.8,132.8l-7.5,0M311.8,90.9l-7.5,0M311.8,49l-7.5,0M311.8,7l-7.5,0"/>
@@ -87,17 +72,32 @@
 <text x="164.1" y="263.9" font-size="14pt" fill="#000000">Green</text>
 <text x="252.3" y="263.9" font-size="14pt" fill="#000000">Blue</text>
 </g>
-<g fill="none" stroke-linecap="butt" stroke-width="0.6">
+<g fill="none" stroke-width="0.6">
 <path d="M60.2,7l251.5,0"/>
 <path d="M60.2,7l0,3.7M81.2,7l0,3.7M102.1,7l0,3.7M123.1,7l0,3.7M144,7l0,3.7M165,7l0,3.7M186,7l0,3.7M206.9,7l0,3.7M227.9,7l0,3.7M248.9,7l0,3.7M269.8,7l0,3.7M290.8,7l0,3.7M311.8,7l0,3.7"/>
 <path d="M60.2,7l0,7.5M102.1,7l0,7.5M144,7l0,7.5M186,7l0,7.5M227.9,7l0,7.5M269.8,7l0,7.5M311.8,7l0,7.5"/>
+</g>
+<g fill="#ffffff" stroke="none" stroke-width="1">
+<path d="m77.7,24.5l106.4,0l0,35l-106.4,0l0,-35"/>
+</g>
+<g fill="#aaffff" stroke-width="0.6">
+<path d="m77.7,26.3l35.4,0l0,12.2l-35.4,0l0,-12.2"/>
+</g>
+<g fill="none" stroke-width="1">
+<text x="130.6" y="26.3" font-size="14pt" fill="#000000">Spring</text>
+</g>
+<g fill="#00aaff" stroke-width="0.6">
+<path d="m77.7,43.8l35.4,0l0,12.2l-35.4,0l0,-12.2"/>
+</g>
+<g fill="none" stroke-width="1">
+<text x="130.6" y="43.8" font-size="14pt" fill="#000000">Summer</text>
 </g>
 <g fill="#ffffff" stroke-width="0.6">
 <path d="m60.2,340.1l251.5,0l0,173.6l-251.5,0l0,-173.6"/>
 </g>
 </g>
 <g clip-path="url(#c2)">
-<g fill="none" stroke-linecap="butt" stroke-width="0.6">
+<g fill="none" stroke="#377eb8" stroke-linecap="butt" stroke-width="0.6">
 <path d="M74.6,406.2l0,-49.6M146.4,513.7l0,-16.5M290.2,480.7l0,-33"/>
 <path d="M60.2,381.4l28.7,0M139.3,505.5l14.3,0M275.8,464.1l35.9,0"/>
 </g>
@@ -114,7 +114,7 @@
 </g>
 </g>
 <g clip-path="url(#c0)">
-<g fill="none" stroke-linecap="butt" stroke-width="0.6">
+<g fill="none" stroke-width="0.6">
 <path d="M311.8,513.7l0,-173.6"/>
 <path d="M311.8,513.7l-3.7,0M311.8,505.5l-3.7,0M311.8,497.2l-3.7,0M311.8,488.9l-3.7,0M311.8,480.7l-3.7,0M311.8,472.4l-3.7,0M311.8,464.1l-3.7,0M311.8,455.9l-3.7,0M311.8,447.6l-3.7,0M311.8,439.3l-3.7,0M311.8,431.1l-3.7,0M311.8,422.8l-3.7,0M311.8,414.5l-3.7,0M311.8,406.2l-3.7,0M311.8,398l-3.7,0M311.8,389.7l-3.7,0M311.8,381.4l-3.7,0M311.8,373.2l-3.7,0M311.8,364.9l-3.7,0M311.8,356.6l-3.7,0M311.8,348.4l-3.7,0M311.8,340.1l-3.7,0"/>
 <path d="M311.8,505.5l-7.5,0M311.8,464.1l-7.5,0M311.8,422.8l-7.5,0M311.8,381.4l-7.5,0M311.8,340.1l-7.5,0"/>
@@ -124,7 +124,7 @@
 <text x="315.2" y="514.2" font-size="14pt" fill="#000000">Green</text>
 <text x="315.2" y="472.9" font-size="14pt" fill="#000000">Blue</text>
 </g>
-<g fill="none" stroke-linecap="butt" stroke-width="0.6">
+<g fill="none" stroke-width="0.6">
 <path d="M60.2,340.1l251.5,0"/>
 <path d="M60.2,340.1l0,3.7M74.6,340.1l0,3.7M88.9,340.1l0,3.7M103.3,340.1l0,3.7M117.7,340.1l0,3.7M132.1,340.1l0,3.7M146.4,340.1l0,3.7M160.8,340.1l0,3.7M175.2,340.1l0,3.7M189.6,340.1l0,3.7M203.9,340.1l0,3.7M218.3,340.1l0,3.7M232.7,340.1l0,3.7M247.1,340.1l0,3.7M261.4,340.1l0,3.7M275.8,340.1l0,3.7M290.2,340.1l0,3.7M304.6,340.1l0,3.7"/>
 <path d="M74.6,340.1l0,7.5M146.4,340.1l0,7.5M218.3,340.1l0,7.5M290.2,340.1l0,7.5"/>
@@ -134,7 +134,7 @@
 <text x="124.6" y="336.6" font-size="14pt" fill="#000000">Green</text>
 <text x="272.7" y="336.6" font-size="14pt" fill="#000000">Blue</text>
 </g>
-<g fill="none" stroke-linecap="butt" stroke-width="0.6">
+<g fill="none" stroke-width="0.6">
 <path d="M60.2,513.7l0,-173.6"/>
 <path d="M60.2,513.7l3.7,0M60.2,505.5l3.7,0M60.2,497.2l3.7,0M60.2,488.9l3.7,0M60.2,480.7l3.7,0M60.2,472.4l3.7,0M60.2,464.1l3.7,0M60.2,455.9l3.7,0M60.2,447.6l3.7,0M60.2,439.3l3.7,0M60.2,431.1l3.7,0M60.2,422.8l3.7,0M60.2,414.5l3.7,0M60.2,406.2l3.7,0M60.2,398l3.7,0M60.2,389.7l3.7,0M60.2,381.4l3.7,0M60.2,373.2l3.7,0M60.2,364.9l3.7,0M60.2,356.6l3.7,0M60.2,348.4l3.7,0M60.2,340.1l3.7,0"/>
 <path d="M60.2,505.5l7.5,0M60.2,464.1l7.5,0M60.2,422.8l7.5,0M60.2,381.4l7.5,0M60.2,340.1l7.5,0"/>
@@ -149,7 +149,7 @@
 <text x="47.9" y="390.2" font-size="14pt" fill="#000000">4</text>
 <text x="30.4" y="348.9" font-size="14pt" fill="#000000">4.5</text>
 </g>
-<g fill="none" stroke-linecap="butt" stroke-width="0.6">
+<g fill="none" stroke-width="0.6">
 <path d="M60.2,513.7l251.5,0"/>
 <path d="M60.2,513.7l0,-3.7M74.6,513.7l0,-3.7M88.9,513.7l0,-3.7M103.3,513.7l0,-3.7M117.7,513.7l0,-3.7M132.1,513.7l0,-3.7M146.4,513.7l0,-3.7M160.8,513.7l0,-3.7M175.2,513.7l0,-3.7M189.6,513.7l0,-3.7M203.9,513.7l0,-3.7M218.3,513.7l0,-3.7M232.7,513.7l0,-3.7M247.1,513.7l0,-3.7M261.4,513.7l0,-3.7M275.8,513.7l0,-3.7M290.2,513.7l0,-3.7M304.6,513.7l0,-3.7"/>
 <path d="M74.6,513.7l0,-7.5M146.4,513.7l0,-7.5M218.3,513.7l0,-7.5M290.2,513.7l0,-7.5"/>

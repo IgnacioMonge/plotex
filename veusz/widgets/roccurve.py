@@ -236,13 +236,11 @@ class ROCCurve(GenericPlotter):
 
         tp = N.cumsum(truth_sorted == 1).astype(float)
         fp = N.cumsum(truth_sorted == 0).astype(float)
-        tpr = tp / P
-        fpr = fp / Neg
-
-        # remove duplicate fpr points (keep last = highest tpr)
-        unique_mask = N.concatenate([N.diff(fpr) > 0, [True]])
-        tpr_u = N.concatenate([[0.0], tpr[unique_mask]])
-        fpr_u = N.concatenate([[0.0], fpr[unique_mask]])
+        # Equal scores share one threshold; retain vertical ROC segments.
+        threshold_mask = N.concatenate([scores_sorted[:-1] != scores_sorted[1:], [True]])
+        thresholds = scores_sorted[threshold_mask]
+        tpr_u = N.concatenate([[0.0], tp[threshold_mask] / P])
+        fpr_u = N.concatenate([[0.0], fp[threshold_mask] / Neg])
 
         # AUC — N.trapezoid in numpy 2.x, N.trapz in 1.x
         _trapz = getattr(N, "trapezoid", None) or N.trapz
@@ -261,22 +259,8 @@ class ROCCurve(GenericPlotter):
         )
 
         # Youden's J = max(sensitivity + specificity - 1) = max(tpr - fpr)
-        tpr_full = N.concatenate([[0.0], tpr])
-        fpr_full = N.concatenate([[0.0], fpr])
-        j_values = tpr_full - fpr_full
-        youden_idx_full = int(N.argmax(j_values))
-
-        # map back to unique arrays for drawing
-        # find closest index in fpr_u
-        if youden_idx_full > 0 and youden_idx_full <= len(scores_sorted):
-            threshold = scores_sorted[min(youden_idx_full - 1, len(scores_sorted) - 1)]
-        else:
-            threshold = None
-
-        # youden in the unique arrays
-        youden_fpr = fpr_full[youden_idx_full]
-        youden_tpr = tpr_full[youden_idx_full]
-        youden_idx = int(N.argmin(N.abs(fpr_u - youden_fpr)))
+        youden_idx = int(N.argmax(tpr_u - fpr_u))
+        threshold = thresholds[youden_idx - 1] if youden_idx > 0 else None
 
         return fpr_u, tpr_u, auc, se, youden_idx, threshold
 

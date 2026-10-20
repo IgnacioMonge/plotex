@@ -1,0 +1,115 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="602.3px" height="460.6px" version="1.1"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink">
+<desc>Plotex output document</desc>
+<defs>
+<clipPath id="c0">
+<path d="m0,0l602.3,0l0,460.6l-602.3,0l0,-460.6"/>
+</clipPath>
+<clipPath id="c1">
+<path d="m60.2,7l535,0l0,393.3l-535,0l0,-393.3"/>
+</clipPath>
+</defs>
+<g stroke-linejoin="bevel" stroke-linecap="square" stroke="#000000" fill-rule="evenodd">
+<g clip-path="url(#c0)">
+<g fill="#ffffff" stroke-width="0.6">
+<path d="m60.2,7l535,0l0,393.3l-535,0l0,-393.3"/>
+</g>
+</g>
+<g clip-path="url(#c1)">
+<g fill="#e41a1c" fill-opacity="0.3" stroke="none" stroke-width="1">
+<path d="m156.5,25.4l0,9.4l53.5,0l0,14l21.4,0l0,15.8l53.5,0l0,18l53.5,0l0,20.8l21.4,0l0,23.1l53.5,0l0,27.5l53.5,0l0,35.3l21.4,0l0,44.1l85.6,0l0,159.1l-85.6,0l0,-17.9l-21.4,0l0,-38.3l-53.5,0l0,-31.4l-53.5,0l0,-27.3l-21.4,0l0,-29.6l-53.5,0l0,-27.4l-53.5,0l0,-25.8l-21.4,0l0,-27.6l-53.5,0l0,-27l-21.4,0l0,-29.7l-42.8,0l0,-31.5l-21.4,0l0,-53.4l-10.7,0l10.7,0l21.4,0l42.8,0"/>
+</g>
+<g fill="none" stroke="#e41a1c" stroke-width="0.6">
+<polyline fill="none" points="60.2,25.4 70.9,25.4 70.9,43.8 92.3,43.8 92.3,62.2 135.1,62.2 135.1,81.6 156.5,81.6 156.5,101.1 210,101.1 210,121.9 231.4,121.9 231.4,142.8 284.9,142.8 284.9,165.5 338.4,165.5 338.4,190.8 359.8,190.8 359.8,216.1 413.3,216.1 413.3,245.6 466.8,245.6 466.8,282.4 488.2,282.4 488.2,319.3 573.8,319.3 573.8,393"/>
+</g>
+<g fill="none" stroke="#e41a1c" stroke-linejoin="miter" stroke-width="0.6">
+<g transform="translate(113.7,62.2)">
+<path d="m2,5l0,-3l3,0l0,-4l-3,0l0,-3l-4,0l0,3l-3,0l0,4l3,0l0,3l4,0" id="p0"/>
+</g>
+<use xlink:href="#p0" x="188.6" y="101.1"/>
+<use xlink:href="#p0" x="252.8" y="142.8"/>
+<use xlink:href="#p0" x="317" y="165.5"/>
+<use xlink:href="#p0" x="381.2" y="216.1"/>
+<use xlink:href="#p0" x="445.4" y="245.6"/>
+<use xlink:href="#p0" x="509.6" y="319.3"/>
+</g>
+<g fill="#377eb8" fill-opacity="0.3" stroke="none" stroke-width="1">
+<path d="m381.2,191l0,-61.2l-139.1,0l0,-45l-117.7,0l0,-59.3l-64.2,0l64.2,0l117.7,0l139.1,0"/>
+</g>
+<g fill="none" stroke="#377eb8" stroke-width="0.6">
+<polyline fill="none" points="60.2,25.4 124.4,25.4 124.4,45.8 242.1,45.8 242.1,70.6 381.2,70.6 381.2,106.5 595.2,106.5"/>
+</g>
+<g fill="none" stroke="#377eb8" stroke-linejoin="miter" stroke-width="0.6">
+<use xlink:href="#p0" x="81.6" y="25.4"/>
+<use xlink:href="#p0" x="103" y="25.4"/>
+<use xlink:href="#p0" x="167.2" y="45.8"/>
+<use xlink:href="#p0" x="199.3" y="45.8"/>
+<use xlink:href="#p0" x="220.7" y="45.8"/>
+<use xlink:href="#p0" x="274.2" y="70.6"/>
+<use xlink:href="#p0" x="295.6" y="70.6"/>
+<use xlink:href="#p0" x="327.7" y="70.6"/>
+<use xlink:href="#p0" x="349.1" y="70.6"/>
+<use xlink:href="#p0" x="424" y="106.5"/>
+<use xlink:href="#p0" x="445.4" y="106.5"/>
+<use xlink:href="#p0" x="477.5" y="106.5"/>
+<use xlink:href="#p0" x="509.6" y="106.5"/>
+<use xlink:href="#p0" x="531" y="106.5"/>
+<use xlink:href="#p0" x="552.4" y="106.5"/>
+<use xlink:href="#p0" x="573.8" y="106.5"/>
+<use xlink:href="#p0" x="595.2" y="106.5"/>
+</g>
+</g>
+<g clip-path="url(#c0)">
+<g fill="none" stroke-width="0.6">
+<path d="M60.2,400.3l0,-393.3"/>
+<path d="M60.2,393l3.7,0M60.2,374.6l3.7,0M60.2,356.2l3.7,0M60.2,337.9l3.7,0M60.2,319.5l3.7,0M60.2,301.1l3.7,0M60.2,282.7l3.7,0M60.2,264.3l3.7,0M60.2,246l3.7,0M60.2,227.6l3.7,0M60.2,209.2l3.7,0M60.2,190.8l3.7,0M60.2,172.4l3.7,0M60.2,154.1l3.7,0M60.2,135.7l3.7,0M60.2,117.3l3.7,0M60.2,98.9l3.7,0M60.2,80.6l3.7,0M60.2,62.2l3.7,0M60.2,43.8l3.7,0M60.2,25.4l3.7,0M60.2,7l3.7,0"/>
+<path d="M60.2,393l7.5,0M60.2,319.5l7.5,0M60.2,246l7.5,0M60.2,172.4l7.5,0M60.2,98.9l7.5,0M60.2,25.4l7.5,0"/>
+</g>
+<g fill="none" stroke-width="1">
+<g transform="matrix(0 -1 1 0 21.7 308.7)">
+<text x="0" y="0" font-size="14pt" fill="#000000">Survival probability (%)</text>
+</g>
+<text x="47.9" y="401.7" font-size="14pt" fill="#000000">0</text>
+<text x="39.2" y="328.2" font-size="14pt" fill="#000000">20</text>
+<text x="39.2" y="254.7" font-size="14pt" fill="#000000">40</text>
+<text x="39.2" y="181.2" font-size="14pt" fill="#000000">60</text>
+<text x="39.2" y="107.7" font-size="14pt" fill="#000000">80</text>
+<text x="30.4" y="34.2" font-size="14pt" fill="#000000">100</text>
+</g>
+<g fill="none" stroke-width="0.6">
+<path d="M595.2,400.3l0,-393.3"/>
+<path d="M595.2,393l-3.7,0M595.2,374.6l-3.7,0M595.2,356.2l-3.7,0M595.2,337.9l-3.7,0M595.2,319.5l-3.7,0M595.2,301.1l-3.7,0M595.2,282.7l-3.7,0M595.2,264.3l-3.7,0M595.2,246l-3.7,0M595.2,227.6l-3.7,0M595.2,209.2l-3.7,0M595.2,190.8l-3.7,0M595.2,172.4l-3.7,0M595.2,154.1l-3.7,0M595.2,135.7l-3.7,0M595.2,117.3l-3.7,0M595.2,98.9l-3.7,0M595.2,80.6l-3.7,0M595.2,62.2l-3.7,0M595.2,43.8l-3.7,0M595.2,25.4l-3.7,0M595.2,7l-3.7,0"/>
+<path d="M595.2,393l-7.5,0M595.2,319.5l-7.5,0M595.2,246l-7.5,0M595.2,172.4l-7.5,0M595.2,98.9l-7.5,0M595.2,25.4l-7.5,0"/>
+<path d="M60.2,400.3l535,0"/>
+<path d="M60.2,400.3l0,-3.7M81.6,400.3l0,-3.7M103,400.3l0,-3.7M124.4,400.3l0,-3.7M145.8,400.3l0,-3.7M167.2,400.3l0,-3.7M188.6,400.3l0,-3.7M210,400.3l0,-3.7M231.4,400.3l0,-3.7M252.8,400.3l0,-3.7M274.2,400.3l0,-3.7M295.6,400.3l0,-3.7M317,400.3l0,-3.7M338.4,400.3l0,-3.7M359.8,400.3l0,-3.7M381.2,400.3l0,-3.7M402.6,400.3l0,-3.7M424,400.3l0,-3.7M445.4,400.3l0,-3.7M466.8,400.3l0,-3.7M488.2,400.3l0,-3.7M509.6,400.3l0,-3.7M531,400.3l0,-3.7M552.4,400.3l0,-3.7M573.8,400.3l0,-3.7M595.2,400.3l0,-3.7"/>
+<path d="M60.2,400.3l0,-7.5M167.2,400.3l0,-7.5M274.2,400.3l0,-7.5M381.2,400.3l0,-7.5M488.2,400.3l0,-7.5M595.2,400.3l0,-7.5"/>
+</g>
+<g fill="none" stroke-width="1">
+<text x="270.8" y="414.3" font-size="14pt" fill="#000000">Time (months)</text>
+<text x="55.8" y="405.6" font-size="14pt" fill="#000000">0</text>
+<text x="158.4" y="405.6" font-size="14pt" fill="#000000">10</text>
+<text x="265.5" y="405.6" font-size="14pt" fill="#000000">20</text>
+<text x="372.5" y="405.6" font-size="14pt" fill="#000000">30</text>
+<text x="479.5" y="405.6" font-size="14pt" fill="#000000">40</text>
+<text x="584.8" y="405.6" font-size="14pt" fill="#000000">50</text>
+</g>
+<g fill="none" stroke-width="0.6">
+<path d="M60.2,7l535,0"/>
+<path d="M60.2,7l0,3.7M81.6,7l0,3.7M103,7l0,3.7M124.4,7l0,3.7M145.8,7l0,3.7M167.2,7l0,3.7M188.6,7l0,3.7M210,7l0,3.7M231.4,7l0,3.7M252.8,7l0,3.7M274.2,7l0,3.7M295.6,7l0,3.7M317,7l0,3.7M338.4,7l0,3.7M359.8,7l0,3.7M381.2,7l0,3.7M402.6,7l0,3.7M424,7l0,3.7M445.4,7l0,3.7M466.8,7l0,3.7M488.2,7l0,3.7M509.6,7l0,3.7M531,7l0,3.7M552.4,7l0,3.7M573.8,7l0,3.7M595.2,7l0,3.7"/>
+<path d="M60.2,7l0,7.5M167.2,7l0,7.5M274.2,7l0,7.5M381.2,7l0,7.5M488.2,7l0,7.5M595.2,7l0,7.5"/>
+</g>
+<g fill="#ffffff" stroke="none" stroke-width="1">
+<g transform="translate(174.6,-5.7)">
+<path d="m-5,-6.7l316.2,0l0,11.7l-316.2,0l0,-11.7"/>
+</g>
+</g>
+<g fill="none" stroke-width="1">
+<text x="174.6" y="-5.7" font-size="14pt" fill="#000000">Kaplan-Meier: Survival by Treatment</text>
+</g>
+</g>
+</g>
+</svg>

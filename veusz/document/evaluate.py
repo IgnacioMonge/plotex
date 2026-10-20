@@ -31,6 +31,7 @@ from .. import setting
 from .. import utils
 from .. import datasets
 from .. import qtall as qt
+from ..utils.safe_eval import numpy_safe_context
 
 # python identifier
 identifier_re = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
@@ -138,7 +139,7 @@ class Evaluate:
                 and name[:1] != "_"
                 and name[-1:] != "_"
             }
-        c.update(Evaluate._numpy_safe_items)
+        c.update(Evaluate._numpy_safe_items if self.inSecureMode() else numpy_safe_context)
 
         # safe functions
         c["os_path_join"] = os.path.join
@@ -233,9 +234,9 @@ class Evaluate:
         self.secure_document = secure
         self.doc.sigSecuritySet.emit(secure)
 
-        if not oldsecure and secure:
-            # if we're now secure, and were not previously, update
-            # context
+        if oldsecure != secure:
+            self.compiled.clear()
+            self.compfailed.clear()
             self.exprdscache = {}
             self.exprdscachechangeset = None
             self.update()
@@ -252,7 +253,7 @@ class Evaluate:
 
     def inSecureMode(self):
         """Is the document in a safe location?"""
-        return setting.transient_settings["unsafe_mode"] or self.secure_document
+        return setting.transient_settings["unsafe_mode"] or getattr(self, "secure_document", False)
 
     def _updateImport(self, module, val):
         """Add an import statement to the eval function context."""
@@ -348,9 +349,8 @@ class Evaluate:
     def _updateDefinition(self, name, val):
         """Update a function or constant in eval function context."""
 
-        if identifier_re.match(name):
-            defn = val
-        else:
+        defn = None
+        if not identifier_re.match(name):
             m = function_re.match(name)
             if not m:
                 self.doc.log(
@@ -362,10 +362,13 @@ class Evaluate:
             defn = "lambda %s: %s" % (args, val)
 
         # evaluate, but we ignore any unsafe commands or exceptions
-        comp = self.compileCheckedExpression(defn)
+        comp = self.compileCheckedExpression(val)
         if comp is None:
             return
         try:
+            if defn is not None:
+                # The signature is restricted above; only the checked body is inserted.
+                comp = compile(defn, "<custom function>", "eval")
             self.context[name] = eval(comp, self.context)
         except Exception as e:
             self.doc.log(_("Error evaluating '%s': '%s'") % (name, str(e)))
@@ -397,6 +400,7 @@ class Evaluate:
             checked = utils.compileChecked(
                 expr,
                 ignoresecurity=self.inSecureMode(),
+                allowed_calls=tuple(self.context) + ("_DS_",),
             )
         except utils.SafeEvalException as e:
             if log:

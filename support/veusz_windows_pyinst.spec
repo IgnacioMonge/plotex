@@ -128,11 +128,8 @@ for pattern in data_glob:
     for fn in glob.glob(pattern):
         datas.append((fn, fn, 'DATA'))
 
-# Note: previously this section appended ('embed.py', 'veusz/embed.py', ...)
-# and ('__init__.py', 'veusz/__init__.py', ...) — but those source paths
-# pointed at the project root, where neither file exists. They live in
-# veusz/. PyInstaller already bundles the veusz package via the Analysis
-# entrypoint, so no manual copy is needed.
+# External Python clients import this file next to the installed executable.
+datas.append(('embed.py', os.path.join(_project_root, 'veusz', 'embed.py'), 'DATA'))
 
 # exclude unnecessary binaries
 exclude_binaries = {

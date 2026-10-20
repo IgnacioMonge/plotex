@@ -278,58 +278,21 @@ class TestStatisticalCorrectness:
         truth = N.array([0, 0, 0, 1, 1, 1])
         scores = N.array([0.1, 0.2, 0.3, 0.7, 0.8, 0.9])
 
-        # Compute ROC manually (same algo as roccurve.py)
-        order = N.argsort(-scores)
-        truth_sorted = truth[order]
-        P = N.sum(truth == 1)
-        Neg = N.sum(truth == 0)
-        tp = N.cumsum(truth_sorted == 1).astype(float)
-        fp = N.cumsum(truth_sorted == 0).astype(float)
-        tpr = tp / P
-        fpr = fp / Neg
-        unique_mask = N.concatenate([N.diff(fpr) > 0, [True]])
-        tpr_u = N.concatenate([[0.0], tpr[unique_mask]])
-        fpr_u = N.concatenate([[0.0], fpr[unique_mask]])
-        auc = float(N.trapezoid(tpr_u, fpr_u))
-
+        auc = rocmod.ROCCurve._computeROC(None, truth, scores)[2]
         assert auc == pytest.approx(1.0, abs=0.01)
 
     def test_roc_hanley_mcneil_se(self):
         """Hanley-McNeil SE should be reasonable for moderate sample."""
-        auc = 0.85
-        P, Neg = 50, 50
-        Q1 = auc / (2.0 - auc)
-        Q2 = 2.0 * auc * auc / (1.0 + auc)
-        se = math.sqrt(
-            (
-                auc * (1 - auc)
-                + (P - 1) * (Q1 - auc * auc)
-                + (Neg - 1) * (Q2 - auc * auc)
-            )
-            / (P * Neg)
-        )
-
-        # SE should be positive and reasonable
-        assert se > 0
-        assert se < 0.1  # for AUC=0.85 with n=100, SE should be small
+        truth = N.repeat([0, 1], 50)
+        result = rocmod.ROCCurve._computeROC(None, truth, N.ones(100))
+        assert result[2] == .5
+        assert result[3] == pytest.approx(math.sqrt(101 / 30000))
 
     def test_roc_se_not_naive(self):
         """Hanley-McNeil SE should differ from naive sqrt(pq/n)."""
-        auc = 0.75
-        P, Neg = 30, 30
-        naive_se = math.sqrt(auc * (1 - auc) / min(P, Neg))
-
-        Q1 = auc / (2.0 - auc)
-        Q2 = 2.0 * auc * auc / (1.0 + auc)
-        hm_se = math.sqrt(
-            (
-                auc * (1 - auc)
-                + (P - 1) * (Q1 - auc * auc)
-                + (Neg - 1) * (Q2 - auc * auc)
-            )
-            / (P * Neg)
-        )
-
+        result = rocmod.ROCCurve._computeROC(None, N.repeat([0, 1], 30), N.ones(60))
+        auc, hm_se = result[2:4]
+        naive_se = math.sqrt(auc * (1 - auc) / 30)
         assert naive_se != pytest.approx(hm_se, abs=1e-6)
 
 
@@ -650,13 +613,19 @@ class TestFitExtended:
         # stdout should be clean (nothing leaked)
         assert capture.getvalue() == ""
 
-    def test_fit_with_all_nan_data(self):
+    def test_fit_with_all_nan_data(self, newdoc, capsys):
         """Fit with all-NaN data should not crash."""
-        xvals = N.array([float("nan")] * 5)
-        yvals = N.array([float("nan")] * 5)
-        finite = N.isfinite(xvals) & N.isfinite(yvals)
-        # After filtering, arrays should be empty
-        assert N.sum(finite) == 0
+        graph = _setup_graph(newdoc)
+        widget = _add_widget(newdoc, graph, "fit")
+        for name in ("x", "y"):
+            newdoc.setData(name, document.datasets.Dataset([float("nan")] * 5))
+        widget.settings.get("xData").set("x")
+        widget.settings.get("yData").set("y")
+        before = dict(widget.settings.values)
+        widget.actionFit()
+        assert widget.settings.values == before
+        assert widget.settings.bandXData == []
+        assert "No finite data" in capsys.readouterr().err
 
 
 # ═════════════════════════════════════════════════════════════════
@@ -667,26 +636,31 @@ class TestFitExtended:
 class TestKaplanMeierData:
     """KM widget data handling edge cases."""
 
-    def test_groupdata_length_mismatch(self):
+    def test_groupdata_length_mismatch(self, newdoc):
         """Group data shorter than times/events should not crash."""
         times = N.array([1.0, 2.0, 3.0, 4.0, 5.0])
         events = N.array([1, 0, 1, 0, 1])
         groupdata = N.array([1, 2, 1])  # shorter
 
-        n = min(len(times), len(events), len(groupdata))
-        times = times[:n]
-        events = events[:n]
-        glabels = groupdata[:n]
-
-        assert len(times) == len(events) == len(glabels) == 3
+        widget = _add_widget(newdoc, _setup_graph(newdoc), "kaplanmeier")
+        for name, values in (("time", times), ("event", events), ("group", groupdata)):
+            newdoc.setData(name, document.datasets.Dataset(values))
+            widget.settings.get(name + "Data").set(name)
+        groups = widget._getGroups()
+        assert len(groups) == 2
+        N.testing.assert_array_equal(groups[0][1], [1, 3])
+        N.testing.assert_array_equal(groups[0][2], [1, 1])
+        N.testing.assert_array_equal(groups[1][1], [2])
+        N.testing.assert_array_equal(groups[1][2], [0])
 
     def test_empty_group_produces_no_crash(self):
         """KM with group that has no events should handle gracefully."""
         times = N.array([1.0, 2.0, 3.0])
         events = N.array([0, 0, 0])  # no events at all
-        # Should still compute (flat survival = 1.0)
-        n_events = N.sum(events)
-        assert n_events == 0
+        result = kmmod.KaplanMeier._computeKM(times, events)
+        N.testing.assert_array_equal(result.survival, [1.])
+        N.testing.assert_array_equal(result.censor_times, times)
+        N.testing.assert_array_equal(result.censor_surv, N.ones(3))
 
 
 # ═════════════════════════════════════════════════════════════════
@@ -700,17 +674,16 @@ class TestROCEdgeCases:
     def test_roc_all_positive(self):
         """ROC with no negatives should return AUC=0.5 (degenerate)."""
         truth = N.array([1, 1, 1, 1])
-        P = N.sum(truth == 1)
-        Neg = N.sum(truth == 0)
-        # P>0 but Neg=0 — degenerate case
-        assert Neg == 0
+        result = rocmod.ROCCurve._computeROC(None, truth, N.arange(4))
+        assert result[2] == .5
+        assert result[5] is None
 
     def test_roc_all_negative(self):
         """ROC with no positives should return AUC=0.5 (degenerate)."""
         truth = N.array([0, 0, 0, 0])
-        P = N.sum(truth == 1)
-        Neg = N.sum(truth == 0)
-        assert P == 0
+        result = rocmod.ROCCurve._computeROC(None, truth, N.arange(4))
+        assert result[2] == .5
+        assert result[5] is None
 
     def test_roc_random_classifier(self):
         """Random classifier should have AUC near 0.5."""
@@ -718,35 +691,14 @@ class TestROCEdgeCases:
         truth = N.random.randint(0, 2, 1000)
         scores = N.random.rand(1000)
 
-        order = N.argsort(-scores)
-        truth_sorted = truth[order]
-        P = N.sum(truth == 1)
-        Neg = N.sum(truth == 0)
-        tp = N.cumsum(truth_sorted == 1).astype(float)
-        fp = N.cumsum(truth_sorted == 0).astype(float)
-        tpr = tp / P
-        fpr = fp / Neg
-        unique_mask = N.concatenate([N.diff(fpr) > 0, [True]])
-        tpr_u = N.concatenate([[0.0], tpr[unique_mask]])
-        fpr_u = N.concatenate([[0.0], fpr[unique_mask]])
-        auc = float(N.trapezoid(tpr_u, fpr_u))
-
+        auc = rocmod.ROCCurve._computeROC(None, truth, scores)[2]
         assert 0.4 < auc < 0.6
 
     def test_hanley_mcneil_se_small_sample(self):
         """SE with very small sample should still be finite."""
-        auc = 0.7
-        P, Neg = 3, 3
-        Q1 = auc / (2.0 - auc)
-        Q2 = 2.0 * auc * auc / (1.0 + auc)
-        se = math.sqrt(
-            (
-                auc * (1 - auc)
-                + (P - 1) * (Q1 - auc * auc)
-                + (Neg - 1) * (Q2 - auc * auc)
-            )
-            / (P * Neg)
-        )
+        result = rocmod.ROCCurve._computeROC(
+            None, N.array([0, 0, 0, 1, 1, 1]), N.array([0, 1, 2, 1, 2, 3]))
+        se = result[3]
         assert math.isfinite(se)
         assert se > 0
 

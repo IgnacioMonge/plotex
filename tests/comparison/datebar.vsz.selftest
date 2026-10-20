@@ -4,7 +4,7 @@
 <svg width="531.4px" height="531.4px" version="1.1"
     xmlns="http://www.w3.org/2000/svg"
     xmlns:xlink="http://www.w3.org/1999/xlink">
-<desc>Veusz output document</desc>
+<desc>Plotex output document</desc>
 <defs>
 <clipPath id="c0">
 <path d="m0,0l531.4,0l0,531.4l-531.4,0l0,-531.4"/>
@@ -15,38 +15,23 @@
 </defs>
 <g stroke-linejoin="bevel" stroke-linecap="square" stroke="#000000" fill-rule="evenodd">
 <g clip-path="url(#c0)">
+<g fill="#ffffff" stroke="none" stroke-width="1">
+<g transform="translate(143.8,19.3)">
+<path d="m-5,-8.7l253.7,0l0,13.7l-253.7,0l0,-13.7"/>
+</g>
+</g>
 <g fill="none" stroke="#00557f" stroke-width="1">
-<text x="143.8" y="14.3" font-size="30pt" fill="#00557f">A graph title</text>
+<text x="143.8" y="19.3" font-size="30pt" fill="#00557f">A graph title</text>
 </g>
 <g fill="#f5ffcd" stroke="#005500" stroke-width="0.6">
 <path d="m56.3,74.7l460.4,0l0,314.2l-460.4,0l0,-314.2"/>
-</g>
-<g fill="#005500" stroke="#005500" stroke-linejoin="miter" stroke-width="0.6">
-<g transform="matrix(0.7013 0.7128 -0.7128 0.7013 275.8 272)">
-<path d="m0,0l-11.2,6.2l2.5,-6.2l-2.5,-6.2l11.2,6.2"/>
-</g>
-</g>
-<g fill="none" stroke="#005500" stroke-linejoin="miter" stroke-width="0.6">
-<g transform="matrix(-0.7013 -0.7128 -0.7128 0.7013 195.9 190.8)">
-<path d="m0,-6.2l0,12.5"/>
-</g>
-</g>
-<g fill="#005500" stroke="#005500" stroke-linecap="butt" stroke-width="0.6">
-<g transform="matrix(0.7013 0.7128 -0.7128 0.7013 195.9 190.8)">
-<path d="M0,0l113.9,0"/>
-</g>
-</g>
-<g fill="none" stroke="#00557f" stroke-width="1">
-<g transform="matrix(0.6427 0.766 -0.766 0.6427 158.5 142.1)">
-<text x="0" y="0" font-size="20pt" fill="#00557f">Look!</text>
-</g>
 </g>
 </g>
 <g clip-path="url(#c1)">
 <g fill="#d9ffe5" stroke="none" stroke-width="1">
 <path d="m286.5,276.8l76.7,-187l76.7,74.8l76.7,89.7l0,134.6l-460.4,0l0,-74.8l76.7,-74.8l76.7,52.3"/>
 </g>
-<g fill="none" stroke-linecap="butt" stroke-width="0.6">
+<g fill="none" stroke="#377eb8" stroke-linecap="butt" stroke-width="0.6">
 <path d="M56.3,321.7l0,-14.9M133,254.3l0,-29.9M209.8,300.7l0,-17.9M286.5,284.2l0,-14.9M363.2,104.6l0,-29.9M440,175.7l0,-22.4M516.7,269.3l0,-29.9"/>
 </g>
 <g fill="#00aa7f" stroke-width="1.2">
@@ -57,7 +42,7 @@
 </g>
 </g>
 <g clip-path="url(#c0)">
-<g fill="none" stroke="#005500" stroke-linecap="butt" stroke-width="0.6">
+<g fill="none" stroke="#005500" stroke-width="0.6">
 <path d="M56.3,389l0,-314.2"/>
 <path d="M56.3,389l3.7,0M56.3,374l3.7,0M56.3,359.1l3.7,0M56.3,344.1l3.7,0M56.3,329.1l3.7,0M56.3,314.2l3.7,0M56.3,299.2l3.7,0M56.3,284.2l3.7,0M56.3,269.3l3.7,0M56.3,254.3l3.7,0M56.3,239.3l3.7,0M56.3,224.4l3.7,0M56.3,209.4l3.7,0M56.3,194.4l3.7,0M56.3,179.5l3.7,0M56.3,164.5l3.7,0M56.3,149.5l3.7,0M56.3,134.6l3.7,0M56.3,119.6l3.7,0M56.3,104.6l3.7,0M56.3,89.7l3.7,0M56.3,74.7l3.7,0"/>
 <path d="M56.3,389l7.5,0M56.3,314.2l7.5,0M56.3,239.3l7.5,0M56.3,164.5l7.5,0M56.3,89.7l7.5,0"/>
@@ -72,7 +57,7 @@
 <text x="44" y="173.3" font-size="14pt" fill="#00557f">3</text>
 <text x="44" y="98.4" font-size="14pt" fill="#00557f">4</text>
 </g>
-<g fill="none" stroke="#005500" stroke-linecap="butt" stroke-width="0.6">
+<g fill="none" stroke="#005500" stroke-width="0.6">
 <path d="M516.7,389l0,-314.2"/>
 <path d="M516.7,389l-3.7,0M516.7,374l-3.7,0M516.7,359.1l-3.7,0M516.7,344.1l-3.7,0M516.7,329.1l-3.7,0M516.7,314.2l-3.7,0M516.7,299.2l-3.7,0M516.7,284.2l-3.7,0M516.7,269.3l-3.7,0M516.7,254.3l-3.7,0M516.7,239.3l-3.7,0M516.7,224.4l-3.7,0M516.7,209.4l-3.7,0M516.7,194.4l-3.7,0M516.7,179.5l-3.7,0M516.7,164.5l-3.7,0M516.7,149.5l-3.7,0M516.7,134.6l-3.7,0M516.7,119.6l-3.7,0M516.7,104.6l-3.7,0M516.7,89.7l-3.7,0M516.7,74.7l-3.7,0"/>
 <path d="M516.7,389l-7.5,0M516.7,314.2l-7.5,0M516.7,239.3l-7.5,0M516.7,164.5l-7.5,0M516.7,89.7l-7.5,0"/>
@@ -104,10 +89,35 @@
 <text x="0" y="0" font-size="14pt" fill="#00557f">2009-03-16</text>
 </g>
 </g>
-<g fill="none" stroke="#005500" stroke-linecap="butt" stroke-width="0.6">
+<g fill="none" stroke="#005500" stroke-width="0.6">
 <path d="M56.3,74.7l460.4,0"/>
 <path d="M56.3,74.7l0,3.7M75.5,74.7l0,3.7M94.7,74.7l0,3.7M113.8,74.7l0,3.7M133,74.7l0,3.7M152.2,74.7l0,3.7M171.4,74.7l0,3.7M190.6,74.7l0,3.7M209.8,74.7l0,3.7M228.9,74.7l0,3.7M248.1,74.7l0,3.7M267.3,74.7l0,3.7M286.5,74.7l0,3.7M305.7,74.7l0,3.7M324.9,74.7l0,3.7M344,74.7l0,3.7M363.2,74.7l0,3.7M382.4,74.7l0,3.7M401.6,74.7l0,3.7M420.8,74.7l0,3.7M440,74.7l0,3.7M459.2,74.7l0,3.7M478.3,74.7l0,3.7M497.5,74.7l0,3.7M516.7,74.7l0,3.7"/>
 <path d="M56.3,74.7l0,7.5M133,74.7l0,7.5M209.8,74.7l0,7.5M286.5,74.7l0,7.5M363.2,74.7l0,7.5M440,74.7l0,7.5M516.7,74.7l0,7.5"/>
+</g>
+<g fill="#005500" stroke="#005500" stroke-linejoin="miter" stroke-width="0.6">
+<g transform="matrix(0.7013 0.7128 -0.7128 0.7013 275.8 272)">
+<path d="m0,0l-11.2,6.2l2.5,-6.2l-2.5,-6.2l11.2,6.2"/>
+</g>
+</g>
+<g fill="none" stroke="#005500" stroke-linejoin="miter" stroke-width="0.6">
+<g transform="matrix(-0.7013 -0.7128 -0.7128 0.7013 195.9 190.8)">
+<path d="m0,-6.2l0,12.5"/>
+</g>
+</g>
+<g fill="#005500" stroke="#005500" stroke-linecap="butt" stroke-width="0.6">
+<g transform="matrix(0.7013 0.7128 -0.7128 0.7013 195.9 190.8)">
+<path d="M0,0l113.9,0"/>
+</g>
+</g>
+<g fill="#ffffff" stroke="none" stroke-width="1">
+<g transform="matrix(0.6427 0.766 -0.766 0.6427 153.5 137.1)">
+<path d="m-5,-7.5l72.5,0l0,12.5l-72.5,0l0,-12.5"/>
+</g>
+</g>
+<g fill="none" stroke="#00557f" stroke-width="1">
+<g transform="matrix(0.6427 0.766 -0.766 0.6427 153.5 137.1)">
+<text x="0" y="0" font-size="20pt" fill="#00557f">Look!</text>
+</g>
 </g>
 </g>
 </g>

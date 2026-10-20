@@ -1,0 +1,62 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="531.4px" height="531.4px" version="1.1"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink">
+<desc>Plotex output document</desc>
+<defs>
+<clipPath id="c0">
+<path d="m0,0l531.4,0l0,531.4l-531.4,0l0,-531.4"/>
+</clipPath>
+</defs>
+<g stroke-linejoin="bevel" stroke-linecap="square" stroke="#000000" fill-rule="evenodd">
+<g clip-path="url(#c0)">
+<g fill="#ffffff" stroke="none" stroke-width="1">
+<path d="m35.4,35.4l460.6,0l0,460.6l-460.6,0l0,-460.6"/>
+</g>
+<g fill="#e43e2c" stroke-width="0.6">
+<path d="m265.7,265.7l0,-147.4c81.4,0,147.4,65.9,147.4,147.4c0,33,-10.8,63.5,-29.2,88.1l-118.1,-88.1"/>
+</g>
+<g fill="#e43e2c" stroke-width="1">
+<text x="427.1" y="183.2" font-size="14pt" fill="#000000">Company A</text>
+<text x="427.1" y="204.2" font-size="14pt" fill="#000000">35.2%</text>
+</g>
+<g fill="#3786c1" stroke-width="0.6">
+<path d="m265.7,265.7l118.1,88.1c-26.8,35.9,-69.8,59.2,-118.1,59.2c-32.3,0,-62.3,-10.4,-86.6,-28.1l86.6,-119.2"/>
+</g>
+<g fill="#3786c1" stroke-width="1">
+<text x="292.8" y="442.7" font-size="14pt" fill="#000000">Company B</text>
+<text x="292.8" y="463.7" font-size="14pt" fill="#000000">24.8%</text>
+</g>
+<g fill="#4dae3d" stroke-width="0.6">
+<path d="m265.7,265.7l-86.6,119.2c-36.8,-26.8,-60.7,-70.2,-60.7,-119.2c0,-11,1.2,-21.8,3.5,-32.1l143.8,32.1"/>
+</g>
+<g fill="#4dae3d" stroke-width="1">
+<text x="-65.1" y="328" font-size="14pt" fill="#000000">Company C</text>
+<text x="6.8" y="349" font-size="14pt" fill="#000000">18.5%</text>
+</g>
+<g fill="#984ed2" stroke-width="0.6">
+<path d="m265.7,265.7l-143.8,-32.1c8.3,-37.4,30.9,-69.5,61.7,-90.2l82,122.4"/>
+</g>
+<g fill="#984ed2" stroke-width="1">
+<text x="-45.2" y="162.2" font-size="14pt" fill="#000000">Company D</text>
+<text x="26.7" y="183.2" font-size="14pt" fill="#000000">12.1%</text>
+</g>
+<g fill="#ffa316" stroke-width="0.6">
+<path d="m265.7,265.7l-82,-122.4c14.6,-9.8,31.2,-17.1,48.9,-21.2l33.1,143.6"/>
+</g>
+<g fill="#ffa316" stroke-width="1">
+<text x="32" y="98.5" font-size="14pt" fill="#000000">Company E</text>
+<text x="122" y="119.5" font-size="14pt" fill="#000000">5.8%</text>
+</g>
+<g fill="#ffff40" stroke-width="0.6">
+<path d="m265.7,265.7l-33.1,-143.6c10.6,-2.4,21.7,-3.7,33.1,-3.7l0,147.4"/>
+</g>
+<g fill="#ffff40" stroke-width="1">
+<text x="83.3" y="84.8" font-size="14pt" fill="#000000">Company F</text>
+<text x="173.3" y="105.8" font-size="14pt" fill="#000000">3.6%</text>
+</g>
+</g>
+</g>
+</svg>

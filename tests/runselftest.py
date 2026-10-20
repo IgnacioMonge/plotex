@@ -50,6 +50,7 @@ import os.path
 import sys
 import subprocess
 import optparse
+import traceback
 
 if sys.version_info[0] < 3:
     raise RuntimeError('Veusz only supports Python 3')
@@ -64,8 +65,8 @@ except ImportError:
 
 if 'VEUSZ_INPLACE_TEST' in os.environ:
     sys.path.append(os.getcwd())
-    os.environ['PYTHONPATH'] = ('%s:%s' % (
-        os.getcwd(), os.environ.get('PYTHONPATH', ''))).rstrip(':')
+    os.environ['PYTHONPATH'] = os.pathsep.join(
+        filter(None, (os.getcwd(), os.environ.get('PYTHONPATH', ''))))
 
 # workaround for CI tests - delete environment variable
 removeenv = os.environ.get('VEUSZ_REMOVE_FROM_ENV', '')
@@ -181,13 +182,15 @@ def renderVszTest(invsz, outfile, test_saves=False, test_unlink=False):
         doc = document.Document()
         doc.load(tempfilename, mode='vsz')
         os.unlink(tempfilename)
+        # Keep FILENAME()/BASENAME() labels comparable to the source document.
+        doc.filename = invsz
 
     ifc = document.CommandInterface(doc)
     ifc.Export(outfile)
 
 def renderPyTest(inpy, outfile):
     """Render py embedded script to create outfile."""
-    retn = subprocess.call([sys.executable, inpy, outfile])
+    retn = subprocess.call([sys.executable, inpy, outfile], timeout=60)
     return retn == 0
 
 class Dirs:
@@ -220,6 +223,12 @@ def renderAllTests():
         elif ext == '.py':
             renderPyTest(infile, outfile)
 
+def comparisonText(text):
+    """Ignore the application rename, while retaining all graphical content."""
+    return text.replace(
+        "<desc>Veusz output document</desc>", "<desc>Plotex output document</desc>")
+
+
 def runTests(test_saves=False, test_unlink=False):
     print("Testing output")
 
@@ -244,16 +253,20 @@ def runTests(test_saves=False, test_unlink=False):
 
         outfile = os.path.join(d.thisdir, base + '.temp.selftest')
 
-        if ext == '.vsz' or ext == '.vszh5':
-            renderVszTest(infile, outfile, test_saves=test_saves,
-                          test_unlink=test_unlink)
-        elif ext == '.py':
-            if not renderPyTest(infile, outfile):
-                print(" FAIL: did not execute cleanly")
-                fails += 1
-                continue
-        else:
-            raise RuntimeError('Invalid input file')
+        try:
+            if ext in ('.vsz', '.vszh5'):
+                renderVszTest(infile, outfile, test_saves=test_saves,
+                              test_unlink=test_unlink)
+            elif ext == '.py':
+                if not renderPyTest(infile, outfile):
+                    raise RuntimeError("did not execute cleanly")
+            else:
+                raise RuntimeError('Invalid input file')
+        except Exception:
+            print(" FAIL: could not render")
+            traceback.print_exc()
+            fails += 1
+            continue
 
         if base in excluded_tests:
             print(" SKIPWIP: rendered, but comparison skipped")
@@ -262,9 +275,13 @@ def runTests(test_saves=False, test_unlink=False):
             continue
 
         comparfile = os.path.join(d.thisdir, 'comparison', base + '.selftest')
-        with open(outfile) as f1:
-            with open(comparfile) as f2:
-                comp = f1.read() == f2.read()
+        if not os.path.isfile(comparfile):
+            print(" FAIL: missing comparison file %s" % comparfile)
+            fails += 1
+            continue
+        with open(outfile, encoding="utf-8") as f1:
+            with open(comparfile, encoding="utf-8") as f2:
+                comp = comparisonText(f1.read()) == comparisonText(f2.read())
 
         if not comp:
             print(" FAIL: results differed")

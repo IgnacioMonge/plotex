@@ -52,6 +52,17 @@ import functools
 import types
 import json
 
+
+def _json_default(value):
+    """Encode NumPy inputs without requiring Qt in embedding clients."""
+    import numpy
+
+    if isinstance(value, numpy.ndarray):
+        return value.tolist()
+    if isinstance(value, numpy.generic):
+        return value.item()
+    raise TypeError("Object of type %s is not JSON serializable" % type(value).__name__)
+
 # check remote process has this API version
 API_VERSION = 2
 
@@ -357,7 +368,7 @@ class Embedded:
             raise ConnectionError("Plotex embedded instance has been shut down")
 
         # Serialize command as JSON
-        outs = json.dumps(cmd).encode("utf-8")
+        outs = json.dumps(cmd, default=_json_default).encode("utf-8")
 
         with cls._send_lock:
             cls.writeToSocket(cls.serv_socket, struct.pack("<I", len(outs)))

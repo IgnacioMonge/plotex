@@ -131,6 +131,17 @@ class QQPlot(GenericPlotter):
         return scipystats.norm
 
     def _compute(self):
+        """Reuse a complete result; rendering holds the document read lock."""
+        s = self.settings
+        key = (self.document.changeset, s.data, s.distribution, s.dfparam)
+        cached = getattr(self, '_quantile_cache', None)
+        if cached is not None and cached[0] == key:
+            return cached[1]
+        result = self._computeQuantiles()
+        self._quantile_cache = (key, result)
+        return result
+
+    def _computeQuantiles(self):
         """Compute theoretical and observed quantiles."""
         s = self.settings
         doc = self.document

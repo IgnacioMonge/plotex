@@ -121,7 +121,7 @@ class Setting:
         """Get the value."""
 
         if self._ref:
-            return self._ref.resolve(self).get()
+            return self._ref.resolveValue(self)
         else:
             return self._val
 

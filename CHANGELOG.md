@@ -2,9 +2,79 @@
 
 All changes relative to Veusz 4.2 (base fork).
 
----
+## [Unreleased]
 
-## v1.7.0 (2026-04-27) — Sprint 1+2+3+4 from internal audit
+## [1.7.2] - 2026-10-20
+
+Includes the corrections distributed locally as 1.7.1 and the subsequent
+performance improvements, relative to the published 1.7.0 release.
+
+### Added
+- Performance regression checks for numerical equivalence, heatmap pixels,
+  recorded markers, document rollback and bounded reference traversal.
+- Regression tests using production widgets, imports, document persistence and
+  embedding, including ROC ties, falling trends, failed saves, nested loading,
+  reference cycles and cached-code permissions.
+- Graphical references for the nine statistical chart examples previously
+  missing from the comparison suite.
+
+### Changed
+- Share repeated marker paths and their raster caches during recorded painting;
+  release Python's interpreter lock during playback while serializing concurrent
+  playback of the same record.
+- Transform heatmap cell edges in bulk and skip cells outside the visible area
+  while retaining the global color range and cell annotations.
+- Evaluate violin and ridgeline densities in bounded blocks, preserving kernels,
+  bandwidths, grids and normalization; reuse Q-Q quantiles until inputs change.
+- Group Kaplan-Meier event counts once and build imported 2D rows in linear time.
+- Retain the original document objects for failed-load recovery instead of
+  converting all datasets to text, preserving widgets, links and undo history.
+- Resolve setting-reference chains without repeatedly traversing their suffixes.
+- Advance the application and Windows installer version to 1.7.2.
+- Include the current standalone embedding client in Windows packages.
+- Complete Plotex naming in package metadata and desktop integration; retain
+  the upstream changelog as `ChangeLog.veusz-upstream`.
+- Refresh graphical references after reviewing Plotex palette, label background
+  and SVG output differences. Report all rendering and missing-reference
+  failures instead of aborting at the first one.
+
+### Fixed
+- Regenerate native SIP bindings after interface changes, including incremental
+  builds that would otherwise retain an older binding implementation.
+- Refresh bundled NumPy/SciPy directories during Windows upgrades so stale
+  native modules cannot break HDF5 imports or mix incompatible runtime versions.
+- Preserve all ROC threshold points and score ties when calculating AUC and
+  the Youden cutoff; treat matching decreases as agreement in polar trending.
+- Weight negative observations correctly for relative-error fits, filter the
+  independent variable for both fit orientations, and retain actual residual
+  degrees of freedom. Do not publish residual bands without positive degrees
+  of freedom.
+- Draw fit curves from saved parameters, including exact fits and older files;
+  restore boxplot outliers independently of the optional individual-point layer.
+- Save text and HDF5 documents through a temporary file and atomic replacement;
+  failed writes preserve the previous file, filename and modified state.
+- Restore existing documents after malformed HDF5 loads and avoid deadlocks
+  when loading nested operations such as widget cloning.
+- Apply simultaneous import renames without losing swapped datasets; reject
+  duplicate destinations before changing the document.
+- Detect cycles through actual setting references, including cached stylesheet
+  and multiple-reference paths.
+- Keep the import stream cursor consistent across rows, including 2D/ND data,
+  CSV and automatic column descriptions.
+- Serialize NumPy arrays and scalars in embedding requests.
+- Preserve numerical custom functions and chained definitions in untrusted
+  documents while validating their signatures and expression bodies.
+- Replace copied numerical algorithms with tests of production code and remove
+  NumPy 2-only calls from tests; document the complete test commands.
+- Keep filename-dependent labels stable during graphical save/reload tests.
+
+### Security
+- Restrict untrusted expressions to numerical exports and array metadata;
+  native-pointer access, NumPy file I/O and indirect method calls require trust.
+- Recheck current document permission before reusing compiled scripts, and
+  clear expression caches when document trust changes.
+
+## [1.7.0] - 2026-04-27
 
 Consolidates Sprint 1 (HIGH quick wins), Sprint 2 (refactors), Sprint 3
 (MED batch) and Sprint 4 (LOW cleanup, hardening, docs) into a single
@@ -459,3 +529,7 @@ Classic, Black & White, Publication, Minimal, Dark, ggplot2, Seaborn, Economist,
 
 *Plotex is based on Veusz 4.2 by Jeremy Sanders.*
 *Extended by M. Ignacio Monge Garcia with assistance from Claude (Anthropic).*
+
+[Unreleased]: https://github.com/IgnacioMonge/plotex/compare/v1.7.2...master
+[1.7.2]: https://github.com/IgnacioMonge/plotex/compare/v1.7.0...v1.7.2
+[1.7.0]: https://github.com/IgnacioMonge/plotex/releases/tag/v1.7.0

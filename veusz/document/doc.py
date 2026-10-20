@@ -25,6 +25,8 @@
 
 import codecs
 import os.path
+import stat
+import tempfile
 import traceback
 import datetime
 from io import StringIO
@@ -226,11 +228,11 @@ class Document(qt.QObject):
 
         if self.loading:
             # loading from worker thread: acquire write lock for thread safety
-            self._render_lock.lockForWrite()
+            self._acquireWriteLock()
             try:
                 retn = operation.do(self)
             finally:
-                self._render_lock.unlock()
+                self._releaseWriteLock()
             return retn
 
         self._acquireWriteLock()
@@ -362,18 +364,14 @@ class Document(qt.QObject):
 
     def setData(self, name, dataset):
         """Set dataset in document."""
-        if self.loading:
-            self.data[name] = dataset
-            dataset.document = self
-            return
-
         self._acquireWriteLock()
         try:
             self.data[name] = dataset
             dataset.document = self
         finally:
             self._releaseWriteLock()
-        self.setModified()
+        if not self.loading:
+            self.setModified()
 
     def deleteData(self, name):
         """Remove a dataset"""
@@ -576,8 +574,7 @@ class Document(qt.QObject):
     def serializeToText(self, fileobj):
         """Serialize the document to text without side effects.
 
-        Unlike saveToFile(), this does NOT call setModified(False)
-        or emit signals.  Use for snapshots/rollback.
+        Does not call setModified(False) or emit signals. Use for snapshots/rollback.
         """
         self._writeFileHeader(fileobj, "saved document")
         fileobj.write("SetCompatLevel(%s)\n" % self.compatlevel)
@@ -596,7 +593,7 @@ class Document(qt.QObject):
         # save widget tree
         fileobj.write(self.basewidget.getSaveText())
 
-    def saveToFile(self, fileobj):
+    def saveToFile(self, fileobj, filename=None):
         """Save the text representing a document to a file.
 
         The ordering can be important, as some things override
@@ -615,8 +612,9 @@ class Document(qt.QObject):
 
         # add file directory to import path if we know it
         reldirname = None
-        if getattr(fileobj, "name", False):
-            reldirname = os.path.dirname(os.path.abspath(fileobj.name))
+        filename = filename or getattr(fileobj, "name", None)
+        if filename:
+            reldirname = os.path.dirname(os.path.abspath(filename))
             if setting.settingdb["docfile_addimportpaths"]:
                 fileobj.write("AddImportPath(%s)\n" % utils.rrepr(reldirname))
 
@@ -639,9 +637,7 @@ class Document(qt.QObject):
         # save the actual tree structure
         fileobj.write(self.basewidget.getSaveText())
 
-        self.setModified(False)
-
-    def saveToHDF5File(self, fileobj):
+    def saveToHDF5File(self, fileobj, filename=None):
         """Save to HDF5 (h5py) output file given."""
 
         # groups in output hdf5
@@ -658,8 +654,9 @@ class Document(qt.QObject):
 
         # add file directory to import path if we know it
         reldirname = None
-        if getattr(fileobj, "filename", False):
-            reldirname = os.path.dirname(os.path.abspath(fileobj.filename))
+        filename = filename or getattr(fileobj, "filename", None)
+        if filename:
+            reldirname = os.path.dirname(os.path.abspath(filename))
             textstream.write("AddImportPath(%s)\n" % utils.rrepr(reldirname))
 
         # add custom definitions
@@ -693,25 +690,42 @@ class Document(qt.QObject):
         # create single dataset contains document
         docgrp["document"] = [textstream.getvalue().encode("utf-8")]
 
-        self.setModified(False)
-
     def save(self, filename, mode="vsz"):
         """Save to output file.
 
         mode is 'vsz' or 'hdf5'
         """
-        if mode == "vsz":
-            with codecs.open(filename, "w", "utf-8") as f:
-                self.saveToFile(f)
-        elif mode == "hdf5":
-            if h5py is None:
-                raise RuntimeError("Missing h5py module")
-            with h5py.File(filename, "w") as f:
-                self.saveToHDF5File(f)
-        else:
+        if mode not in ("vsz", "hdf5"):
             raise RuntimeError("Invalid save mode")
+        if mode == "hdf5" and h5py is None:
+            raise RuntimeError("Missing h5py module")
+
+        # Follow existing symlinks, and keep relative import paths in the same directory.
+        target = os.path.realpath(filename)
+        fd, tempname = tempfile.mkstemp(dir=os.path.dirname(target), suffix=".tmp")
+        os.close(fd)
+        try:
+            if mode == "vsz":
+                with codecs.open(tempname, "w", "utf-8") as f:
+                    self.saveToFile(f, filename=filename)
+            else:
+                with h5py.File(tempname, "w") as f:
+                    self.saveToHDF5File(f, filename=filename)
+
+            if os.path.exists(target):
+                os.chmod(tempname, stat.S_IMODE(os.stat(target).st_mode))
+            os.replace(tempname, target)
+            tempname = None
+        finally:
+            if tempname is not None:
+                try:
+                    os.unlink(tempname)
+                except PermissionError:
+                    os.chmod(tempname, stat.S_IWRITE)
+                    os.unlink(tempname)
 
         self.filename = filename
+        self.setModified(False)
 
     def load(
         self,

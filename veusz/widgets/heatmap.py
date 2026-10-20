@@ -187,6 +187,18 @@ class Heatmap(GenericPlotter):
         rgba = getColormapArray(cmap, ncolors)
 
         borderpen = s.CellBorder.makeQPenWHide(painter)
+        xedges = xaxis.dataToPlotterCoords(widgetposn, N.arange(ncols + 1, dtype=float))
+        yedges = yaxis.dataToPlotterCoords(widgetposn, N.arange(nrows + 1, dtype=float))
+        inverse, invertible = painter.deviceTransform().inverted()
+        pixel = inverse.mapRect(qt.QRectF(0, 0, 1, 1)) if invertible else qt.QRectF(0, 0, 1, 1)
+        xmargin = borderpen.widthF() / 2 + pixel.width()
+        ymargin = borderpen.widthF() / 2 + pixel.height()
+        columns = N.flatnonzero(
+            (N.minimum(xedges[:-1], xedges[1:]) <= clip.right() + xmargin) &
+            (N.maximum(xedges[:-1], xedges[1:]) >= clip.left() - xmargin))
+        rows = N.flatnonzero(
+            (N.minimum(yedges[:-1], yedges[1:]) <= clip.bottom() + ymargin) &
+            (N.maximum(yedges[:-1], yedges[1:]) >= clip.top() - ymargin))
 
         # font for values
         font = s.get('ValueLabel').makeQFont(painter)
@@ -195,17 +207,15 @@ class Heatmap(GenericPlotter):
 
         alpha_factor = (100 - s.transparency) / 100.0
 
-        for row in range(nrows):
-            for col in range(ncols):
+        for row in rows:
+            for col in columns:
                 val = data[row, col]
                 if not N.isfinite(val):
                     continue
 
                 # cell bounds in data coords: col->col+1, row->row+1
-                x0 = xaxis.dataToPlotterCoords(widgetposn, N.array([float(col)]))[0]
-                x1 = xaxis.dataToPlotterCoords(widgetposn, N.array([float(col + 1)]))[0]
-                y0 = yaxis.dataToPlotterCoords(widgetposn, N.array([float(row)]))[0]
-                y1 = yaxis.dataToPlotterCoords(widgetposn, N.array([float(row + 1)]))[0]
+                x0, x1 = xedges[col:col + 2]
+                y0, y1 = yedges[row:row + 2]
 
                 # normalize value to colormap index
                 norm = max(0.0, min(1.0, (val - vmin) / (vmax - vmin)))

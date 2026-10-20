@@ -74,6 +74,8 @@ int RecordPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const
 
 void RecordPaintDevice::play(QPainter& painter)
 {
+  // Qt mutates path raster caches, even when replaying an otherwise finished record.
+  QMutexLocker locker(&_playMutex);
   QTransform origtransform(painter.worldTransform());
   foreach(PaintElement* el, _elements)
     {

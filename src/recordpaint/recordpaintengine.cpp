@@ -98,16 +98,16 @@ namespace {
   // draw QPainterPath
   class PathElement : public PaintElement {
   public:
-    PathElement(const QPainterPath& path)
+    PathElement(const std::shared_ptr<QPainterPath>& path)
       : _path(path) {}
 
     void paint(QPainter& painter, const QTransform&)
     {
-      painter.drawPath(_path);
+      painter.drawPath(*_path);
     }
 
   private:
-    QPainterPath _path;
+    std::shared_ptr<QPainterPath> _path;
   };
 
   // draw Pixmap
@@ -504,7 +504,10 @@ void RecordPaintEngine::drawLines(const QLine* lines, int lineCount)
 
 void RecordPaintEngine::drawPath(const QPainterPath& path)
 {
-  _pdev->addElement( new PathElement(path) );
+  // Repeated markers share Qt's raster cache instead of retaining one per point.
+  if (!_lastPath || *_lastPath != path)
+    _lastPath = std::make_shared<QPainterPath>(path);
+  _pdev->addElement( new PathElement(_lastPath) );
   _drawitemcount++;
 }
 

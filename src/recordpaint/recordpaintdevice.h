@@ -23,6 +23,7 @@
 
 #include <QPaintDevice>
 #include <QList>
+#include <QMutex>
 #include "paintelement.h"
 #include "recordpaintengine.h"
 
@@ -54,6 +55,7 @@ private:
   int _width, _height, _dpix, _dpiy;
   RecordPaintEngine* _engine;
   QList<PaintElement*> _elements;
+  QMutex _playMutex;
 };
 
 #endif

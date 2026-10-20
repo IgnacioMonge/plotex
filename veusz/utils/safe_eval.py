@@ -27,6 +27,7 @@ entries
 
 import ast
 import builtins
+import numpy as N
 
 from .. import qtall as qt
 
@@ -36,38 +37,15 @@ def _(text, disambiguation=None, context="SafeEval"):
     return qt.QCoreApplication.translate(context, text, disambiguation)
 
 
-# blacklist of AST node types. The blacklist is intentionally explicit:
-# anything that can introduce bindings the visitor can't see (Import*,
-# Global), produce callable objects whose identity can't be checked at
-# parse time (Lambda, comprehensions), bypass name resolution
-# (NamedExpr := walrus, Starred), or smuggle code through formatting
-# (JoinedStr / FormattedValue, which invoke __format__ on arbitrary
-# objects).
-forbidden_nodes = set(
-    (
-        ast.Global,
-        ast.Import,
-        ast.ImportFrom,
-        ast.Lambda,
-        ast.ListComp,
-        ast.SetComp,
-        ast.DictComp,
-        ast.GeneratorExp,
-        ast.Starred,
-        ast.JoinedStr,
-        ast.FormattedValue,
-        ast.Yield,
-        ast.YieldFrom,
-        ast.Await,
-    )
+# Binding names or creating callable objects requires document trust.
+allowed_nodes = (
+    ast.Expression, ast.Module, ast.Expr, ast.Call, ast.Name, ast.Constant,
+    ast.List, ast.Tuple, ast.Dict, ast.Set, ast.Load, ast.keyword,
+    ast.BinOp, ast.UnaryOp, ast.BoolOp, ast.Compare, ast.IfExp,
+    ast.Subscript, ast.Slice, ast.Attribute,
+    ast.operator, ast.unaryop, ast.boolop, ast.cmpop,
+    ast.Index, ast.ExtSlice,
 )
-
-if hasattr(ast, "NamedExpr"):
-    forbidden_nodes.add(ast.NamedExpr)
-if hasattr(ast, "Exec"):
-    forbidden_nodes.add(ast.Exec)
-if hasattr(ast, "AsyncFunctionDef"):
-    forbidden_nodes.add(ast.AsyncFunctionDef)
 
 # whitelist of allowed builtins
 allowed_builtins = frozenset(
@@ -156,6 +134,10 @@ numpy_forbidden = set(
         "load",
         "loads",
         "loadtxt",
+        "memmap",
+        "genfromtxt",
+        "fromregex",
+        "DataSource",
         "ndfromtxt",
         "newbuffer",
         "pkgload",
@@ -172,46 +154,38 @@ numpy_forbidden = set(
     )
 )
 
-# Attribute names that should never be reachable in safe-mode
-# expressions — even if the user is dotting through an object whose
-# runtime type the AST walker can't determine. The set covers numpy
-# submodules that expose I/O, C-interop, or compiler functionality, and
-# a few introspection helpers that double as attribute enumerators.
-# Anything reaching for ``something.lib.npyio.read_array_header_1_0``
-# or ``np.ctypeslib`` or ``np.f2py.compile`` is rejected at parse time.
-forbidden_attrs = frozenset(
-    (
-        "lib",
-        "core",
-        "distutils",
-        "f2py",
-        "testing",
-        "ctypeslib",
-        "tests",
-        "system_info",
-        "show_config",
-        "info",
-        "lookfor",
-        "source",
-        "compile",
-        "test",
-        "setup",
-        # Generic Python attributes that would otherwise smuggle escapes
-        "globals",
-        "locals",
-        "vars",
-        "dir",
-        "exec",
-        "eval",
-        "compile",
-        "open",
-        "input",
-        "breakpoint",
-        "exit",
-        "quit",
-        "subclasshook",
-    )
+# Array metadata is useful; methods, native pointers and module traversal are not.
+allowed_attrs = frozenset(
+    ("shape", "ndim", "size", "dtype", "itemsize", "nbytes", "T", "real", "imag")
 )
+
+# Deliberately opt in to numerical functions, not every callable NumPy exports.
+numpy_safe_names = frozenset("""
+array asarray asanyarray copy zeros zeros_like ones ones_like full full_like
+arange linspace logspace geomspace eye identity diag diagonal diagflat
+reshape ravel transpose swapaxes moveaxis squeeze expand_dims
+concatenate stack vstack hstack dstack column_stack row_stack
+split array_split hsplit vsplit dsplit repeat tile
+where choose select take compress extract nonzero flatnonzero argwhere
+sort argsort lexsort searchsorted unique
+sum prod cumsum cumprod mean std var median percentile quantile
+nanmean nanstd nanvar nanmedian nanpercentile nanquantile nansum nanprod
+min max amin amax nanmin nanmax argmin argmax nanargmin nanargmax
+all any allclose isclose diff gradient ediff1d
+clip round around fix angle real imag real_if_close nan_to_num
+dot inner outer tensordot einsum cross
+interp histogram histogram2d histogramdd bincount digitize
+trapz trapezoid meshgrid indices tril triu fliplr flipud flip rot90
+polyval polyfit roots convolve correlate
+float16 float32 float64 longdouble int8 int16 int32 int64
+uint8 uint16 uint32 uint64 complex64 complex128 bool_
+""".split())
+numpy_safe_context = {
+    name: value for name, value in vars(N).items()
+    if not name.startswith("_") and name not in vars(builtins) and (
+        isinstance(value, N.ufunc) or type(value) is float or name in numpy_safe_names
+    )
+}
 
 # blacklist using whitelist above
 forbidden_builtins = set(builtins.__dict__.keys()) - allowed_builtins | numpy_forbidden
@@ -226,8 +200,11 @@ class SafeEvalException(Exception):
 class CheckNodeVisitor(ast.NodeVisitor):
     """Visit ast nodes to look for unsafe entries."""
 
+    def __init__(self, allowed_calls=()):
+        self.allowed_calls = allowed_builtins | numpy_safe_context.keys() | set(allowed_calls)
+
     def generic_visit(self, node):
-        if type(node) in forbidden_nodes:
+        if not isinstance(node, allowed_nodes):
             raise SafeEvalException(_("%s not safe") % type(node))
         ast.NodeVisitor.generic_visit(self, node)
 
@@ -254,29 +231,21 @@ class CheckNodeVisitor(ast.NodeVisitor):
             raise SafeEvalException(
                 _('Access to special functions not allowed: "%s"') % call.func.id
             )
+        if call.func.id not in self.allowed_calls:
+            raise SafeEvalException(_('Function not allowed: "%s"') % call.func.id)
         self.generic_visit(call)
 
     def visit_Attribute(self, attr):
-        if not hasattr(attr, "attr"):
-            raise SafeEvalException(_("Access denied to attribute"))
         name = attr.attr
-        if (
-            name[:2] == "__"
-            or name[:5] == "func_"
-            or name[:3] == "im_"
-            or name[:3] == "tb_"
-        ):
-            raise SafeEvalException(
-                _('Access to special attributes not allowed: "%s"') % name
-            )
-        if name in forbidden_attrs:
+        if name not in allowed_attrs:
             raise SafeEvalException(
                 _('Access to attribute "%s" not allowed in safe mode') % name
             )
         self.generic_visit(attr)
 
 
-def compileChecked(code, mode="eval", filename="<string>", ignoresecurity=False):
+def compileChecked(code, mode="eval", filename="<string>", ignoresecurity=False,
+                   allowed_calls=()):
     """Compile code, checking for security errors.
 
     Returns a compiled code object.
@@ -289,7 +258,7 @@ def compileChecked(code, mode="eval", filename="<string>", ignoresecurity=False)
         raise ValueError(_("Unable to parse file: %s") % str(e))
 
     if not ignoresecurity:
-        visitor = CheckNodeVisitor()
+        visitor = CheckNodeVisitor(allowed_calls)
         visitor.visit(tree)
 
     compiled = compile(tree, filename, mode)

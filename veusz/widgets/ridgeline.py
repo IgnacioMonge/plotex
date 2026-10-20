@@ -6,6 +6,7 @@ from .. import qtall as qt
 from .. import setting
 from .. import document
 from .. import utils
+from ..utils.kde import gaussian_kde
 
 from .plotters import GenericPlotter
 
@@ -29,11 +30,7 @@ def _kde(data, grid, bandwidth):
             h = std if std > 1e-15 else 1.0
     else:
         h = bandwidth
-    result = N.zeros_like(grid, dtype=float)
-    for x in data:
-        result += N.exp(-0.5 * ((grid - x) / h) ** 2)
-    result /= len(data) * h * N.sqrt(2 * N.pi)
-    return result
+    return gaussian_kde(data, grid, h)
 
 
 class _RidgeFill(setting.Brush):

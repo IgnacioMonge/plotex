@@ -51,6 +51,25 @@
   <url type="bugtracker">https://github.com/IgnacioMonge/plotex/issues</url>
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="1.7.2" date="2026-10-20">
+      <description>
+        <p>Reduce memory use and interpreter blocking during marker rendering;
+        accelerate heatmaps, kernel density estimates, Kaplan-Meier curves,
+        Q-Q redraws and 2D imports. Preserve document objects during failed-load
+        recovery and avoid repeated setting-reference traversal. Include the
+        numerical, persistence and import corrections from the local 1.7.1
+        release.</p>
+      </description>
+    </release>
+    <release version="1.7.1" date="2026-10-20">
+      <description>
+        <p>Correct ROC and polar-trending calculations, fit weighting and
+        uncertainty bands, document saves and recovery, import renaming and
+        stream parsing, setting references and NumPy embedding requests.
+        Restore saved fit curves and boxplot outliers; extend numerical,
+        persistence and graphical regression coverage.</p>
+      </description>
+    </release>
     <release version="1.7.0" date="2026-04-27">
       <description>
         <p>Audit fixes: security (HMAC cache, hardened safe-mode AST validator,
